@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Candidate",
+  "type": "object",
+  "required": [
+    "id",
+    "hypothesis_ids",
+    "kind",
+    "changes",
+    "expected_mechanism",
+    "resource_delta",
+    "validators",
+    "schema_version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^CAND-[A-Fa-f0-9]{8,}$"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "hypothesis_ids": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "parent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "kind": {
+      "enum": [
+        "architecture",
+        "optimizer",
+        "objective",
+        "data",
+        "inference",
+        "memory",
+        "routing",
+        "compression",
+        "composition"
+      ]
+    },
+    "changes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object"
+      }
+    },
+    "expected_mechanism": {
+      "type": "string"
+    },
+    "resource_delta": {
+      "type": "object"
+    },
+    "validators": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

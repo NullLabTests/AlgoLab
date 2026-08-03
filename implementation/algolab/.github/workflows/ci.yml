@@ -1,0 +1,36 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: implementation/algolab
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          cd implementation/algolab
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: |
+          cd implementation/algolab
+          ruff check src tests
+      - name: Typecheck (mypy)
+        run: |
+          cd implementation/algolab
+          mypy
+      - name: Test (pytest)
+        run: |
+          cd implementation/algolab
+          pytest -q

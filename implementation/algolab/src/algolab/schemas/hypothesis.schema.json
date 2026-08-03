@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hypothesis",
+  "type": "object",
+  "required": [
+    "id",
+    "statement",
+    "mechanism",
+    "baseline",
+    "primary_metric",
+    "predicted_effect",
+    "disconfirmation",
+    "status",
+    "schema_version"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^HYP-[A-Fa-f0-9]{8,}$"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 20
+    },
+    "mechanism": {
+      "type": "string",
+      "minLength": 20
+    },
+    "baseline": {
+      "type": "string"
+    },
+    "primary_metric": {
+      "type": "string"
+    },
+    "predicted_effect": {
+      "type": "object",
+      "required": [
+        "direction",
+        "minimum_relative_change"
+      ],
+      "properties": {
+        "direction": {
+          "enum": [
+            "increase",
+            "decrease"
+          ]
+        },
+        "minimum_relative_change": {
+          "type": "number"
+        }
+      }
+    },
+    "disconfirmation": {
+      "type": "string"
+    },
+    "confounders": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "vetting",
+        "approved",
+        "rejected",
+        "tested",
+        "archived"
+      ]
+    },
+    "parent_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

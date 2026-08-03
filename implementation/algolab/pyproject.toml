@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "algolab"
+version = "0.1.0"
+description = "AlgoLab — Autonomous AI Algorithm Discovery Laboratory (M0 contracts layer)"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.6",
+    "jsonschema>=4.20",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+    "mypy>=1.9",
+    "types-jsonschema>=4.20",
+    "types-PyYAML>=6.0",
+]
+
+[project.scripts]
+algolab = "algolab.cli.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+algolab = ["schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+exclude = [".venv", "docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["B008"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+exclude = ["tests", ".venv"]
+files = ["src/algolab"]
+
+[[tool.mypy.overrides]]
+# sqlite3.Row field access and Dict[str, Any] manifests are dynamic by design.
+module = [
+    "algolab.storage.*",
+    "algolab.control.budget",
+    "algolab.control.config",
+    "algolab.cli.*",
+    "algolab.core.models",
+]
+disable_error_code = ["assignment", "arg-type", "index"]

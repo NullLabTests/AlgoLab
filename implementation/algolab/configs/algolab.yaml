@@ -1,0 +1,11 @@
+# AlgoLab default configuration (M0).
+# Monetary limits override compute-credit limits (MASTER_SPEC.md §2).
+storage:
+  path: data/algolab.sqlite3
+budget:
+  weekly_credits: 100.0
+  lifetime_cap_credits: 5000.0
+  max_run_credits: 200.0
+  max_cost: 500.0
+  currency: USD
+producer: algolab

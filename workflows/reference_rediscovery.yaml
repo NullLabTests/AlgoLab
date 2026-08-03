@@ -1,0 +1,32 @@
+name: reference-rediscovery
+objective: Rediscover a known small-scale training improvement reproducibly.
+task:
+  dataset: MNIST
+  model: small_mlp
+baseline:
+  optimizer: sgd
+  activation: relu
+candidates:
+  - optimizer: adamw
+  - activation: gelu
+primary_metric: validation_accuracy
+secondary_metrics:
+  - training_time
+  - peak_memory
+  - loss_auc
+seeds: [11, 23, 37, 41, 59]
+stages:
+  - static_validation
+  - smoke_test
+  - baseline_reproduction
+  - screening
+  - confirmation
+  - ablation
+  - clean_replication
+budget:
+  max_compute_credits: 1.0
+  max_cost: 10.0
+  currency: USD
+promotion:
+  minimum_relative_improvement: 0.005
+  confidence_level: 0.95
