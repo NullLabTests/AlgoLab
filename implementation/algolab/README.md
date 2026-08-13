@@ -111,10 +111,15 @@ docs/decisions/  architecture decision records (ADR-0001..0008)
   status; promotion claims require the statistical analysis stored with them.
 - Operators are invoked only by registered agent roles (`knowledge.registry`),
   and each invocation draws from a per-operator credit budget.
+- The causal knowledge loop (research-loop step 10) is a claim under
+  experimental validation, gated by the pre-registered A/B/C protocol in
+  `../../spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md`; no documentation
+  asserts it as demonstrated until the study passes.
 
 ## Documentation
 
 - `../../MASTER_SPEC.md` — canonical specification (§8 evidence, §11 statistics)
+- `../../spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md` — the A/B/C protocol gating the knowledge-loop claim
 - `M1_PLAN.md` / `M1_COMPLETION_REPORT.md` — execution-core plan and verification
 - `docs/M1_EXECUTION_MODEL.md` — pipeline: approve → expand → claim → run → seal → recover
 - `docs/WORKLOAD_ADAPTERS.md` — adapter interface + `quadratic_optimizer` workload

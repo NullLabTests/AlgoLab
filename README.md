@@ -21,7 +21,10 @@ statistical gates no claim may bypass.
 7. Train and benchmark against strong baselines.
 8. Perform statistical analysis and ablation.
 9. Accept, reject, revise, or archive.
-10. Update the knowledge base and search policy.
+10. Update the knowledge base and search policy — the causal loop at the
+    heart of the platform; under experimental validation per
+    `spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md` (A/B/C protocol), not
+    yet demonstrated.
 11. Publish reproducible reports.
 
 Every step in this loop has a versioned contract in this repository; no step
@@ -57,9 +60,12 @@ implementation/algolab/         the executable core (see its README)
 | M0 | Contracts: IDs, models, state machines, append-only event store, budget ledger, manifest validation, CLI | Delivered |
 | M1 | Deterministic execution core: expansion, persistent queue, isolated workers, hash-sealed artifacts, recovery, aggregation | Delivered |
 | M4 | Knowledge layer: schema v3, deterministic statistics, evidence records, operator catalog, skill registry | In progress |
+| M5 | Causal loop evaluation: A/B/C search-policy protocol (discoveries/compute), staged autonomy ladder | Planned |
 
 ## Non-negotiable constraints
 
+- **Human oversight by default, autonomy by exception** — autonomy is
+  earned experimentally, stage by stage, never asserted by design changes.
 - Fixed compute and monetary budgets.
 - Reproducible runs and immutable provenance.
 - No benchmark result without a baseline.
