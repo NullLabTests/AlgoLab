@@ -23,13 +23,8 @@ from algolab.core.models import (
     Hypothesis,
     Report,
     Result,
-    Run,
 )
-from algolab.core.state import (
-    EXPERIMENT_MACHINE,
-    RUN_MACHINE,
-    StateMachine,
-)
+from algolab.core.state import EXPERIMENT_MACHINE, StateMachine
 from algolab.storage.event_store import EventStore
 from algolab.validation.schema_validator import validate_manifest
 
@@ -123,6 +118,16 @@ class _BaseRepository:
 
     def _require_exists(self, entity_id: str, expected_type: str | None = None,
                         what: str = "referenced entity") -> None:
+        if expected_type == "run":
+            # M1: runs live in the structured `runs` table, not `entities`.
+            row = self._conn.execute(
+                "SELECT run_id FROM runs WHERE run_id = ?", (entity_id,)
+            ).fetchone()
+            if row is None:
+                raise InvariantViolation(
+                    f"{what} {entity_id} does not exist"
+                )
+            return
         try:
             row = self._entity(entity_id)
         except EntityNotFound as exc:
@@ -281,42 +286,6 @@ class ExperimentRepository(_BaseRepository):
     def status(self, experiment_id: str) -> str:
         self._expect_type(experiment_id, "experiment")
         return self._current_status(experiment_id)
-
-
-class RunRepository(_BaseRepository):
-    def create(self, run: Run) -> str:
-        self._require_exists(run.experiment_id, "experiment",
-                             what="experiment of run")
-        self._require_status(run.experiment_id, "approved",
-                             what="experiment of run")
-        self._insert_entity(
-            entity_type="run",
-            schema_version=_SCHEMA_VERSION,
-            status="pending",
-            payload=run.model_dump(mode="json"),
-        )
-        EventStore(self._conn).append(
-            EventEnvelope(
-                entity_type="run",
-                entity_id=run.id,
-                mutation="created",
-                new_state="pending",
-                payload={"experiment_id": run.experiment_id,
-                         "seed": run.seed},
-                producer=self._producer,
-                trace_id=self._trace_id,
-            )
-        )
-        return run.id
-
-    def get(self, run_id: str) -> Run:
-        payload = self._get_payload(run_id, "run")
-        payload["status"] = self._current_status(run_id)
-        return Run.model_validate(payload)
-
-    def transition(self, run_id: str, target: str) -> str:
-        self._transition(run_id, RUN_MACHINE, target, expected_type="run")
-        return target
 
 
 class ResultRepository(_BaseRepository):

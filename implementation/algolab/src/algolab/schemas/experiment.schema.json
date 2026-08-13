@@ -43,6 +43,16 @@
         "type": "string"
       }
     },
+    "baseline_configs": {
+      "type": "object",
+      "description": "Optional per-baseline config changes. Keys must appear in baseline_ids. When absent, the workload adapter's default config is the baseline.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
+      }
+    },
     "primary_metric": {
       "type": "string"
     },

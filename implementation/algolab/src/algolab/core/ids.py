@@ -1,6 +1,7 @@
 """Typed identifier helpers.
 
-Canonical ID prefixes (MASTER_SPEC.md §12):
+Canonical ID prefixes (MASTER_SPEC.md §12, extended for the evidence
+archive):
 
     HYP-  hypothesis
     CAND- candidate
@@ -9,6 +10,9 @@ Canonical ID prefixes (MASTER_SPEC.md §12):
     RES-  result
     DISC- discovery
     REP-  report
+    TASK- benchmark task
+    EVID- evidence record
+    EPIS- search episode
     EVT-  event
 
 Format: ``<PREFIX>-<8+ hex chars>`` (e.g. ``HYP-3F2A9C01``).
@@ -21,11 +25,12 @@ import secrets
 from typing import Final
 
 PREFIXES: Final[frozenset[str]] = frozenset(
-    {"HYP", "CAND", "EXP", "RUN", "RES", "DISC", "REP", "EVT"}
+    {"HYP", "CAND", "EXP", "RUN", "RES", "DISC", "REP",
+     "TASK", "EVID", "EPIS", "EVT"}
 )
 
 _PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"^(HYP|CAND|EXP|RUN|RES|DISC|REP|EVT)-([0-9A-Fa-f]{8,})$"
+    r"^(HYP|CAND|EXP|RUN|RES|DISC|REP|TASK|EVID|EPIS|EVT)-([0-9A-Fa-f]{8,})$"
 )
 
 _HEX_DIGITS: Final[int] = 8

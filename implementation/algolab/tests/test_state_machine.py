@@ -46,14 +46,53 @@ def test_experiment_failed_to_draft_is_revision() -> None:
     assert EXPERIMENT_MACHINE.can_transition("failed", "archived")
 
 
-def test_run_machine() -> None:
-    assert RUN_MACHINE.can_transition("pending", "running")
-    assert RUN_MACHINE.can_transition("running", "completed")
-    assert RUN_MACHINE.can_transition("running", "failed")
+def test_run_machine_happy_path() -> None:
+    """M1 run lifecycle: all allowed transitions."""
+    path: list[tuple[str, str]] = [
+        ("CREATED", "QUEUED"),
+        ("QUEUED", "CLAIMED"),
+        ("CLAIMED", "STARTING"),
+        ("STARTING", "RUNNING"),
+        ("RUNNING", "SUCCEEDED"),
+    ]
+    for current, target in path:
+        assert RUN_MACHINE.can_transition(current, target)
+        RUN_MACHINE.require_transition(current, target)
+
+
+def test_run_machine_failure_and_cancellation_paths() -> None:
+    assert RUN_MACHINE.can_transition("QUEUED", "CANCELLED")
+    assert RUN_MACHINE.can_transition("CLAIMED", "FAILED")
+    assert RUN_MACHINE.can_transition("STARTING", "CANCELLED")
+    assert RUN_MACHINE.can_transition("RUNNING", "FAILED")
+    assert RUN_MACHINE.can_transition("RUNNING", "CANCELLED")
+    assert RUN_MACHINE.can_transition("RUNNING", "ORPHANED")
+    assert RUN_MACHINE.can_transition("ORPHANED", "QUEUED")
+    assert RUN_MACHINE.can_transition("ORPHANED", "FAILED")
+
+
+def test_run_machine_terminals_are_terminal() -> None:
+    for terminal in ("SUCCEEDED", "FAILED", "CANCELLED"):
+        assert RUN_MACHINE.states()
+        assert not RUN_MACHINE.can_transition(terminal, "CREATED")
+        assert not RUN_MACHINE.can_transition(terminal, "QUEUED")
+        for target in RUN_MACHINE.states():
+            if target != terminal:
+                with pytest.raises(InvalidStateTransition):
+                    RUN_MACHINE.require_transition(terminal, target)
+
+
+def test_run_machine_invalid_transitions_raise() -> None:
     with pytest.raises(InvalidStateTransition):
-        RUN_MACHINE.require_transition("pending", "completed")
+        RUN_MACHINE.require_transition("CREATED", "CLAIMED")
     with pytest.raises(InvalidStateTransition):
-        RUN_MACHINE.require_transition("completed", "running")
+        RUN_MACHINE.require_transition("QUEUED", "RUNNING")
+    with pytest.raises(InvalidStateTransition):
+        RUN_MACHINE.require_transition("SUCCEEDED", "FAILED")
+    with pytest.raises(InvalidStateTransition):
+        RUN_MACHINE.require_transition("ORPHANED", "RUNNING")
+    with pytest.raises(InvalidStateTransition):
+        RUN_MACHINE.require_transition("FAILED", "QUEUED")
 
 
 def test_unknown_state_rejected() -> None:

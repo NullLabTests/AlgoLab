@@ -35,21 +35,40 @@ EXPERIMENT_TRANSITIONS: Final[Mapping[str, frozenset[str]]] = {
     "archived": frozenset(),
 }
 
+# M1 run lifecycle (execution core; see M1_PLAN.md §3).
 RUN_STATUSES: Final[tuple[str, ...]] = (
-    "pending",
-    "running",
-    "completed",
-    "failed",
-    "cancelled",
+    "CREATED",
+    "QUEUED",
+    "CLAIMED",
+    "STARTING",
+    "RUNNING",
+    "SUCCEEDED",
+    "FAILED",
+    "CANCELLED",
+    "ORPHANED",
 )
+# ORPHANED transitions are defined in *RUN_TRANSITIONS* below.
 
 RUN_TRANSITIONS: Final[Mapping[str, frozenset[str]]] = {
-    "pending": frozenset({"running", "cancelled"}),
-    "running": frozenset({"completed", "failed", "cancelled"}),
-    "completed": frozenset(),
-    "failed": frozenset(),
-    "cancelled": frozenset(),
+    "CREATED": frozenset({"QUEUED"}),
+    "QUEUED": frozenset({"CLAIMED", "CANCELLED"}),
+    "CLAIMED": frozenset({"STARTING", "FAILED", "CANCELLED"}),
+    "STARTING": frozenset({"RUNNING", "FAILED", "CANCELLED"}),
+    "RUNNING": frozenset({"SUCCEEDED", "FAILED", "CANCELLED", "ORPHANED"}),
+    # Recovery may requeue, fail, or finalize a verified completion.
+    "ORPHANED": frozenset({"QUEUED", "FAILED", "SUCCEEDED"}),
+    "SUCCEEDED": frozenset(),
+    "FAILED": frozenset(),
+    "CANCELLED": frozenset(),
 }
+
+RUN_TERMINAL_STATUSES: Final[frozenset[str]] = frozenset(
+    {"SUCCEEDED", "FAILED", "CANCELLED"}
+)
+
+RUN_ACTIVE_STATUSES: Final[frozenset[str]] = frozenset(
+    {"CLAIMED", "STARTING", "RUNNING"}
+)
 
 
 class InvalidStateTransition(ValueError):

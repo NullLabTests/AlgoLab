@@ -21,14 +21,43 @@ class BudgetConfig(BaseModel):
     max_run_credits: float = Field(default=200.0, ge=0)
     max_cost: float = Field(default=500.0, ge=0)
     currency: str = "USD"
+    compute_credit_rate: float = Field(default=0.001, gt=0)
 
 
 class StorageConfig(BaseModel):
-    """Where the SQLite database lives."""
+    """Where the SQLite database and run artifacts live."""
 
     model_config = ConfigDict(extra="forbid")
 
     path: Path = Field(default=Path("data/algolab.sqlite3"))
+    artifacts_dir: Path = Field(default=Path("artifacts"))
+
+
+class ExecutionConfig(BaseModel):
+    """Execution-plane tunables (M1)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    workload: str = "quadratic_optimizer"
+    max_attempts: int = Field(default=2, ge=1)
+    lease_seconds: float = Field(default=60.0, gt=0)
+    heartbeat_interval_seconds: float = Field(default=10.0, gt=0)
+    default_timeout_seconds: float = Field(default=120.0, gt=0)
+    max_stdout_bytes: int = Field(default=1_048_576, gt=0)
+    max_stderr_bytes: int = Field(default=1_048_576, gt=0)
+    max_artifact_bytes: int = Field(default=10_485_760, gt=0)
+    env_allowlist: list[str] = Field(
+        default_factory=lambda: ["PATH", "PYTHONPATH", "LANG", "LC_ALL", "TMPDIR", "TZ"]
+    )
+    priority_default: int = 0
+
+
+class RecoveryConfig(BaseModel):
+    """Recovery behavior for orphaned runs (M1)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    requeue_backoff_seconds: float = Field(default=5.0, ge=0)
 
 
 class AlgolabConfig(BaseModel):
@@ -38,6 +67,8 @@ class AlgolabConfig(BaseModel):
 
     storage: StorageConfig = Field(default_factory=StorageConfig)
     budget: BudgetConfig = Field(default_factory=BudgetConfig)
+    execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
+    recovery: RecoveryConfig = Field(default_factory=RecoveryConfig)
     producer: str = "algolab"
 
     @model_validator(mode="after")
@@ -50,6 +81,13 @@ class AlgolabConfig(BaseModel):
             raise ValueError(
                 "budget.max_run_credits must be <= budget.lifetime_cap_credits"
             )
+        if (
+            self.execution.max_attempts < 1
+            or self.execution.lease_seconds <= 0
+            or self.execution.heartbeat_interval_seconds <= 0
+            or self.execution.default_timeout_seconds <= 0
+        ):
+            raise ValueError("execution limits must be positive")
         return self
 
 

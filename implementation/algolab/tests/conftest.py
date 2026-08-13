@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from algolab.control.config import AlgolabConfig, StorageConfig
 from algolab.core.ids import new_id
 from algolab.core.models import (
     Candidate,
@@ -25,8 +26,8 @@ from algolab.storage.repositories import (
     HypothesisRepository,
     ReportRepository,
     ResultRepository,
-    RunRepository,
 )
+from algolab.storage.run_repository import RunRepository
 
 CANONICAL_SCHEMAS_DIR = (
     Path(__file__).resolve().parents[3] / "schemas"
@@ -132,7 +133,7 @@ def make_experiment(hypothesis_id: str, candidate_id: str | None = None,
         "primary_metric": "validation_accuracy",
         "secondary_metrics": ["training_time", "peak_memory"],
         "seeds": [11, 23, 37, 41, 59],
-        "budget": {"max_compute_credits": 1.0, "max_cost": 10.0,
+        "budget": {"max_compute_credits": 10000.0, "max_cost": 1000.0,
                    "currency": "USD"},
         "stages": ["static_validation", "smoke_test",
                    "baseline_reproduction", "screening", "confirmation"],
@@ -199,3 +200,109 @@ def make_report(evidence: list[str], **overrides) -> Report:
 def approve_experiment(exp_repo: ExperimentRepository, exp_id: str) -> None:
     exp_repo.transition(exp_id, "planned")
     exp_repo.transition(exp_id, "approved")
+
+
+# -- M1 helpers -----------------------------------------------------------
+
+def grant(conn, credits: float = 5000.0, key: str = "grant:test") -> None:
+    from algolab.control.budget import BudgetLedger, DuplicateOperation
+
+    with conn:
+        try:
+            BudgetLedger(conn, producer="test").grant(
+                credits, cost=credits, key=key)
+        except DuplicateOperation:
+            pass  # idempotent on key
+
+
+def make_approved_experiment(conn, *,
+                             candidate_count: int = 1,
+                             candidate_changes: list[dict] | None = None,
+                             seeds: tuple[int, ...] = (11, 23, 37),
+                             **overrides) -> str:
+    """Hypothesis + candidates + an approved experiment, persisted.
+
+    The experiment's budget caps are large enough for small workloads;
+    pass ``budget=`` overrides to make expansion fail.
+    """
+    hyp = make_hypothesis()
+    with conn:
+        HypothesisRepository(conn, producer="test").create(hyp)
+        candidate_ids = []
+        for i in range(candidate_count):
+            changes = None
+            if candidate_changes is not None and i == 0:
+                changes = candidate_changes
+            else:
+                # Distinct changes per candidate so fingerprint dedup keeps
+                # them separate (strategy alternates; lr differs per index).
+                changes = [{
+                    "strategy": "nesterov" if i % 2 else "momentum",
+                    "learning_rate": 0.1 + 0.05 * i,
+                }]
+            cand = make_candidate(hyp.id, changes=changes)
+            CandidateRepository(conn, producer="test").create(cand)
+            candidate_ids.append(cand.id)
+        defaults: dict = {
+            "id": new_id("EXP"),
+            "schema_version": "1.0.0",
+            "hypothesis_ids": [hyp.id],
+            "candidate_ids": candidate_ids,
+            "baseline_ids": ["small_mlp/gelu"],
+            "primary_metric": "validation_accuracy",
+            "secondary_metrics": ["training_time"],
+            "seeds": list(seeds),
+            "budget": {"max_compute_credits": 10000.0, "max_cost": 1000.0,
+                       "currency": "USD"},
+            "stages": ["baseline_reproduction", "screening"],
+            "stop_conditions": ["budget_exceeded"],
+            "status": "planned",
+        }
+        defaults.update(overrides)
+        exp = Experiment.model_validate(defaults)
+        exp_id = ExperimentRepository(conn, producer="test").create(exp)
+        ExperimentRepository(conn, producer="test").transition(exp_id, "approved")
+    return exp_id
+
+
+def expand(conn, exp_id: str, key: str = "key-1", config=None):
+    """Expand *exp_id* with default settings; grants budget first."""
+    from algolab.control.config import AlgolabConfig
+    from algolab.execution.expansion import ExperimentExpansion
+
+    grant(conn)
+    return ExperimentExpansion(
+        conn, config or AlgolabConfig(producer="test")).expand(exp_id, key)
+
+
+def run_through_success(conn, run_id: str) -> None:
+    """Drive a run row to SUCCEEDED without a subprocess (fast path)."""
+    from algolab.storage.run_repository import RunRepository
+
+    repo = RunRepository(conn, producer="test")
+    with conn:
+        repo.transition(run_id, "CLAIMED")
+        repo.transition(run_id, "STARTING")
+        repo.transition(run_id, "RUNNING")
+        repo.set_metrics(run_id, {
+            "final_objective": 0.0,
+            "initial_objective": 1.0,
+            "converged": True,
+            "iterations": 10,
+            "compute_units": 160.0,
+            "gradient_norm": 1e-12,
+            "strategy": "gradient_descent",
+            "seed": 11,
+            "dim": 16,
+        })
+        repo.transition(run_id, "SUCCEEDED")
+
+
+def tmp_config(tmp_path) -> AlgolabConfig:
+    return AlgolabConfig(
+        storage=StorageConfig(
+            path=tmp_path / "db.sqlite3",
+            artifacts_dir=tmp_path / "artifacts",
+        ),
+        producer="test",
+    )

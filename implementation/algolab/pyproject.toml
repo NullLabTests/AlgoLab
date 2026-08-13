@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "algolab"
-version = "0.1.0"
-description = "AlgoLab — Autonomous AI Algorithm Discovery Laboratory (M0 contracts layer)"
+version = "0.3.0"
+description = "AlgoLab — Autonomous AI Algorithm Discovery Laboratory (M1 deterministic execution core)"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.6",

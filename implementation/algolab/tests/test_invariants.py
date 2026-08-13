@@ -23,34 +23,23 @@ from algolab.validation.schema_validator import (
 )
 from tests.conftest import (
     approve_experiment,
+    expand,
+    make_approved_experiment,
     make_candidate,
     make_discovery,
     make_experiment,
     make_hypothesis,
     make_report,
     make_result,
-    make_run,
+    run_through_success,
 )
 
 
-def _approved_experiment(conn, hyp_repo, cand_repo, exp_repo) -> tuple[str, str]:
-    """Create hypothesis + candidate + experiment and approve it."""
-    with conn:
-        h = make_hypothesis()
-        hyp_repo.create(h)
-        c = make_candidate(h.id)
-        cand_repo.create(c)
-        exp_id = exp_repo.create(make_experiment(h.id, c.id))
-        approve_experiment(exp_repo, exp_id)
-    return exp_id, c.id
-
-
 def _completed_run(conn, run_repo, exp_id: str, seed: int) -> str:
-    with conn:
-        run_id = run_repo.create(make_run(exp_id, seed=seed))
-        run_repo.transition(run_id, "running")
-        run_repo.transition(run_id, "completed")
-    return run_id
+    run = next(r for r in run_repo.list_runs(experiment_id=exp_id)
+               if r.seed == seed)
+    run_through_success(conn, run.run_id)
+    return run.run_id
 
 
 def test_invariant_1_result_requires_run(conn, res_repo) -> None:
@@ -60,23 +49,34 @@ def test_invariant_1_result_requires_run(conn, res_repo) -> None:
             res_repo.create(make_result("RUN-00000000"))
 
 
-def test_invariant_2_run_requires_approved_experiment(
-    conn, hyp_repo, cand_repo, exp_repo, run_repo
-) -> None:
-    """No run exists without an approved experiment."""
+def test_invariant_2_run_requires_approved_experiment(conn) -> None:
+    """No run exists without an approved experiment: expansion is refused
+    for non-approved experiments and nothing is persisted."""
+    from algolab.control.config import AlgolabConfig
+    from algolab.execution.expansion import (
+        ExperimentExpansion,
+        ExperimentNotApproved,
+    )
+    from algolab.storage.repositories import (
+        CandidateRepository,
+        ExperimentRepository,
+        HypothesisRepository,
+    )
+    from algolab.storage.run_repository import RunRepository
+
     with conn:
         h = make_hypothesis()
-        hyp_repo.create(h)
-        c = make_candidate(h.id)
-        cand_repo.create(c)
-        exp_id = exp_repo.create(make_experiment(h.id, c.id))
-        # Experiment exists but is still draft -> run refused.
-        with pytest.raises(InvariantViolation):
-            run_repo.create(make_run(exp_id))
-    # After approval the same run manifest is accepted.
-    approve_experiment(exp_repo, exp_id)
-    with conn:
-        run_repo.create(make_run(exp_id))
+        hid = HypothesisRepository(conn, producer="test").create(h)
+        c = make_candidate(hid)
+        cid = CandidateRepository(conn, producer="test").create(c)
+        exp = make_experiment(hid, cid, seeds=[11, 23, 37], status="draft")
+        exp_id = ExperimentRepository(conn, producer="test").create(exp)
+
+    with pytest.raises(ExperimentNotApproved):
+        ExperimentExpansion(
+            conn, AlgolabConfig(producer="test")).expand(exp_id, "k")
+    # No runs were persisted (all-or-nothing).
+    assert RunRepository(conn, producer="test").list_runs() == []
 
 
 def test_invariant_3a_experiment_requires_hypothesis_schema() -> None:
@@ -95,11 +95,14 @@ def test_invariant_3b_experiment_hypothesis_must_exist(conn, exp_repo) -> None:
 
 
 def test_invariant_4_discovery_requires_replication_evidence(
-    conn, hyp_repo, cand_repo, exp_repo, run_repo, res_repo, disc_repo
+    conn, run_repo, res_repo, disc_repo
 ) -> None:
     """No discovery exists without replication evidence: >= 2 results from
     >= 2 distinct runs."""
-    exp_id, cand_id = _approved_experiment(conn, hyp_repo, cand_repo, exp_repo)
+    exp_id = make_approved_experiment(conn, candidate_count=1)
+    expand(conn, exp_id)
+    runs = run_repo.list_runs(experiment_id=exp_id)
+    cand_id = next(r.candidate_id for r in runs if not r.is_baseline)
     run_a = _completed_run(conn, run_repo, exp_id, seed=11)
     run_b = _completed_run(conn, run_repo, exp_id, seed=23)
 

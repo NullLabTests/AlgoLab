@@ -157,24 +157,72 @@ class BudgetLedger:
         )
         return entry_id
 
-    def charge(self, reservation_id: str, *, key: str | None = None,
+    def charge(self, reservation_id: str, *, credits: float | None = None,
+               cost: float | None = None, key: str | None = None,
                trace_id: str | None = None) -> None:
-        """Convert an active reservation into consumption."""
+        """Convert an active reservation into consumption.
+
+        When *credits*/*cost* are given they may be **less** than the
+        reserved amounts (partial charge): the consumed portion is charged
+        and the remainder is released back to the pool in the same
+        transaction. An overrun (actual > reserved) is never charged beyond
+        the reservation; the difference is recorded as an ``overrun`` audit
+        event instead.
+        """
         self._ensure_active(reservation_id, "charge")
-        credits, cost = self._reservation_amounts(reservation_id)
+        reserved_credits, reserved_cost = self._reservation_amounts(reservation_id)
+        actual_credits = reserved_credits if credits is None else _to_float(credits)
+        actual_cost = reserved_cost if cost is None else _to_float(cost)
+        charge_credits = min(actual_credits, reserved_credits)
+        charge_cost = min(actual_cost, reserved_cost)
+        overrun_credits = actual_credits - reserved_credits
+        overrun_cost = actual_cost - reserved_cost
+        if overrun_credits > _EPSILON or overrun_cost > _EPSILON:
+            self._append_event(
+                mutation="overrun",
+                entity_id=reservation_id,
+                payload={
+                    "reserved_credits": reserved_credits,
+                    "reserved_cost": reserved_cost,
+                    "actual_credits": actual_credits,
+                    "actual_cost": actual_cost,
+                    "overrun_credits": round(overrun_credits, 6),
+                    "overrun_cost": round(overrun_cost, 6),
+                },
+                trace_id=trace_id,
+            )
         self._insert_entry(
             kind="charge",
-            credits=credits,
-            cost=cost,
+            credits=charge_credits,
+            cost=charge_cost,
             key=key,
             entity_id=reservation_id,
             trace_id=trace_id,
             ref_entry=reservation_id,
         )
-        self._conn.execute(
-            "UPDATE reservations SET status = 'charged' WHERE reservation_id = ?",
-            (reservation_id,),
-        )
+        if (
+            charge_credits < reserved_credits - _EPSILON
+            or charge_cost < reserved_cost - _EPSILON
+        ):
+            # Partial charge: return the un-consumed remainder to the pool.
+            self._insert_entry(
+                kind="release",
+                credits=0.0,
+                cost=0.0,
+                key=None,
+                entity_id=reservation_id,
+                trace_id=trace_id,
+                ref_entry=reservation_id,
+            )
+            self._conn.execute(
+                "UPDATE reservations SET status = 'released' WHERE reservation_id = ?",
+                (reservation_id,),
+            )
+        else:
+            self._conn.execute(
+                "UPDATE reservations SET status = 'charged' WHERE reservation_id = ?",
+                (reservation_id,),
+            )
 
     def release(self, reservation_id: str, *, key: str | None = None,
                 trace_id: str | None = None) -> None:
@@ -195,6 +243,14 @@ class BudgetLedger:
         )
 
     # -- internals -------------------------------------------------------
+
+    def reservation_status(self, reservation_id: str) -> str | None:
+        """Current lifecycle state of a reservation (or None if unknown)."""
+        row = self._conn.execute(
+            "SELECT status FROM reservations WHERE reservation_id = ?",
+            (reservation_id,),
+        ).fetchone()
+        return str(row[0]) if row is not None else None
 
     def _reservation_amounts(self, reservation_id: str) -> tuple[float, float]:
         row = self._conn.execute(

@@ -2,6 +2,7 @@
 
 import pytest
 
+from algolab.core.state import InvalidStateTransition
 from algolab.storage.event_store import EventStore
 from algolab.storage.repositories import (
     EntityNotFound,
@@ -10,11 +11,12 @@ from algolab.storage.repositories import (
 )
 from tests.conftest import (
     approve_experiment,
+    expand,
+    make_approved_experiment,
     make_candidate,
     make_experiment,
     make_hypothesis,
     make_result,
-    make_run,
 )
 
 
@@ -62,19 +64,33 @@ def test_run_requires_approved_experiment(conn, hyp_repo, cand_repo, exp_repo,
         cand_repo.create(c)
         exp_id = exp_repo.create(make_experiment(h.id, c.id))
 
-        # draft experiment -> run refused
-        with pytest.raises(InvariantViolation):
-            run_repo.create(make_run(exp_id))
+        # draft experiment -> expansion refused (all-or-nothing)
+        from algolab.control.config import AlgolabConfig
+        from algolab.execution.expansion import (
+            ExperimentExpansion,
+            ExperimentNotApproved,
+        )
+
+        with pytest.raises(ExperimentNotApproved):
+            ExperimentExpansion(
+                conn, AlgolabConfig(producer="test")).expand(exp_id, "k")
 
         approve_experiment(exp_repo, exp_id)
-        run_id = run_repo.create(make_run(exp_id))
-        assert run_repo.get(run_id).status == "pending"
+        result = expand(conn, exp_id)
+        assert len(result.run_ids) >= 1
+        run = run_repo.get(result.run_ids[0])
+        assert run.status in ("QUEUED", "CLAIMED")
+        assert run.experiment_id == exp_id
 
 
 def test_run_requires_existing_experiment(conn, run_repo) -> None:
-    with conn:
-        with pytest.raises(InvariantViolation):
-            run_repo.create(make_run("EXP-00000000"))
+    from algolab.control.config import AlgolabConfig
+    from algolab.execution.expansion import ExperimentExpansion
+    from algolab.storage.run_repository import RunNotFound
+
+    with pytest.raises(RunNotFound):
+        ExperimentExpansion(
+            conn, AlgolabConfig(producer="test")).expand("EXP-00000000", "k")
 
 
 def test_experiment_lifecycle_and_events(conn, hyp_repo, cand_repo, exp_repo) -> None:
@@ -94,22 +110,37 @@ def test_experiment_lifecycle_and_events(conn, hyp_repo, cand_repo, exp_repo) ->
     assert exp_repo.status(exp_id) == "approved"
 
 
-def test_run_transitions_and_events(conn, hyp_repo, cand_repo, exp_repo,
-                                    run_repo) -> None:
+def test_run_transitions_and_events(conn, run_repo) -> None:
+    exp_id = make_approved_experiment(conn)
+    result = expand(conn, exp_id)
+    run_id = result.run_ids[0]
     with conn:
-        h = make_hypothesis()
-        hyp_repo.create(h)
-        c = make_candidate(h.id)
-        cand_repo.create(c)
-        exp_id = exp_repo.create(make_experiment(h.id, c.id))
-        approve_experiment(exp_repo, exp_id)
-        run_id = run_repo.create(make_run(exp_id, seed=23))
-        run_repo.transition(run_id, "running")
-        run_repo.transition(run_id, "completed")
+        run_repo.transition(run_id, "CLAIMED")
+        run_repo.transition(run_id, "STARTING")
+        run_repo.transition(run_id, "RUNNING")
+        run_repo.transition(run_id, "SUCCEEDED")
     events = EventStore(conn).list_for_entity(run_id)
     assert [e.mutation for e in events] == ["created", "status_changed",
-                                            "status_changed"]
-    assert [e.new_state for e in events] == ["pending", "running", "completed"]
+                                            "status_changed", "status_changed",
+                                            "status_changed", "status_changed"]
+    assert [e.new_state for e in events] == [
+        "CREATED", "QUEUED", "CLAIMED", "STARTING", "RUNNING", "SUCCEEDED",
+    ]
+
+
+def test_rejected_transition_is_audited(conn, run_repo) -> None:
+    exp_id = make_approved_experiment(conn)
+    run_id = expand(conn, exp_id).run_ids[0]
+    with conn:
+        with pytest.raises(InvalidStateTransition):
+            run_repo.transition(run_id, "RUNNING")  # QUEUED -> RUNNING illegal
+    events = EventStore(conn).list_for_entity(run_id)
+    rejected = [e for e in events if e.mutation == "transition_rejected"]
+    assert len(rejected) == 1
+    assert rejected[0].old_state == "QUEUED"
+    assert rejected[0].new_state == "RUNNING"
+    # Status unchanged.
+    assert run_repo.get(run_id).status == "QUEUED"
 
 
 def test_result_requires_run(conn, res_repo) -> None:
