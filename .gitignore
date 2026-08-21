@@ -1,0 +1,16 @@
+# Local scratch and artifacts
+*.zip
+thinking.md
+
+# Saved web pages
+Highest Leverage Activity.html
+Highest Leverage Activity_files/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
