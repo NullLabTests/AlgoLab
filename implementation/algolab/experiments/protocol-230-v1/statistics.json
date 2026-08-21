@@ -1,0 +1,126 @@
+{
+  "ablations": [
+    {
+      "base": "adaptive",
+      "base_mean": 0.02791369261644749,
+      "candidate": "c-permuted",
+      "candidate_mean": 0.01707826394843029,
+      "ci_high": -0.007554939493013295,
+      "ci_low": -0.015139123618680042,
+      "delta": -0.010835428668017202,
+      "effect_size": -2.040751279237111,
+      "note": "permuted-outcome feedback (machinery kept)",
+      "p_value": 0.0079960019990005,
+      "relative_delta": -0.38817611187824996
+    },
+    {
+      "base": "knowledge-informed",
+      "base_mean": 0.021648550724637682,
+      "candidate": "b-shuffled",
+      "candidate_mean": 0.022971370342056527,
+      "ci_high": 0.009892893299065416,
+      "ci_low": -0.006442563955365107,
+      "delta": 0.0013228196174188446,
+      "effect_size": 0.1390545760950511,
+      "note": "shuffled-K0 knowledge (association destroyed)",
+      "p_value": 0.8035982008995503,
+      "relative_delta": 0.06110430366654412
+    },
+    {
+      "base": "b-shuffled",
+      "base_mean": 0.022971370342056527,
+      "candidate": "static",
+      "candidate_mean": 0.01675257731958763,
+      "ci_high": 0.002175453385771819,
+      "ci_low": -0.014874788975888509,
+      "delta": -0.0062187930224688985,
+      "effect_size": -0.6569942936183489,
+      "note": "shuffled knowledge vs no knowledge",
+      "p_value": 0.22588705647176413,
+      "relative_delta": -0.27071928796008243
+    }
+  ],
+  "comparisons": [
+    {
+      "adjusted_p": 0.006496751624187906,
+      "base": "static",
+      "base_mean": 0.01675257731958763,
+      "candidate": "knowledge-informed",
+      "candidate_mean": 0.021648550724637682,
+      "ci_high": 0.0063312415956969965,
+      "ci_low": 0.003407477962049902,
+      "delta": 0.004895973405050054,
+      "effect_size": 2.867037691964681,
+      "p_value": 0.006496751624187906,
+      "relative_delta": 0.2922519509476032
+    },
+    {
+      "adjusted_p": 0.006496751624187906,
+      "base": "static",
+      "base_mean": 0.01675257731958763,
+      "candidate": "adaptive",
+      "candidate_mean": 0.02791369261644749,
+      "ci_high": 0.015430128377253136,
+      "ci_low": 0.007090361887443801,
+      "delta": 0.011161115296859862,
+      "effect_size": 2.4779624319568843,
+      "p_value": 0.006496751624187906,
+      "relative_delta": 0.666232728489481
+    },
+    {
+      "adjusted_p": 0.006496751624187906,
+      "base": "knowledge-informed",
+      "base_mean": 0.021648550724637682,
+      "candidate": "adaptive",
+      "candidate_mean": 0.02791369261644749,
+      "ci_high": 0.009126634480438609,
+      "ci_low": 0.0036249306233629495,
+      "delta": 0.006265141891809808,
+      "effect_size": 1.361101247756148,
+      "p_value": 0.006496751624187906,
+      "relative_delta": 0.2894023702325535
+    }
+  ],
+  "interpretation": {
+    "outcome": 1,
+    "verdict": "H1 supported in this environment: C > B > A"
+  },
+  "per_condition": {
+    "adaptive": {
+      "attempts": 525,
+      "compute_credits": 11080.0,
+      "discoveries_per_credit": 0.028069,
+      "validated_discoveries": 311
+    },
+    "b-shuffled": {
+      "attempts": 907,
+      "compute_credits": 11205.0,
+      "discoveries_per_credit": 0.02365,
+      "validated_discoveries": 265
+    },
+    "c-permuted": {
+      "attempts": 541,
+      "compute_credits": 11100.0,
+      "discoveries_per_credit": 0.017117,
+      "validated_discoveries": 190
+    },
+    "knowledge-informed": {
+      "attempts": 624,
+      "compute_credits": 11040.0,
+      "discoveries_per_credit": 0.021649,
+      "validated_discoveries": 239
+    },
+    "random": {
+      "attempts": 623,
+      "compute_credits": 11060.0,
+      "discoveries_per_credit": 0.016637,
+      "validated_discoveries": 184
+    },
+    "static": {
+      "attempts": 648,
+      "compute_credits": 11640.0,
+      "discoveries_per_credit": 0.016753,
+      "validated_discoveries": 195
+    }
+  }
+}

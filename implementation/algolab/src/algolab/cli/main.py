@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sqlite3
 import sys
 from pathlib import Path
@@ -139,6 +140,38 @@ def _build_parser() -> argparse.ArgumentParser:
     p_audit.add_argument("--entity", default=None, help="filter by entity id")
     p_audit.add_argument("--limit", type=int, default=100)
     p_audit.add_argument("--json", action="store_true")
+
+    p_search = sub.add_parser(
+        "search-run",
+        help="run the protocol-230 A/B/C cumulative-search policy comparison")
+    p_search.add_argument("experiment_id", help="experiment id (also the manifest id)")
+    p_search.add_argument("--dir", type=Path, default=None,
+                          help="artifact directory "
+                               "(default: <artifacts>/<experiment_id>)")
+    p_search.add_argument("--path", type=Path, default=None,
+                          help="override database path from config")
+    p_search.add_argument("--budget", type=float,
+                          default=float("nan"),
+                          help="credits per episode (default: manifest default)")
+    p_search.add_argument("--episodes", type=int, default=0,
+                          help="episodes per trial (default: manifest default)")
+    p_search.add_argument("--trials", type=int, default=0,
+                          help="number of trials/seeds (default: manifest default)")
+    p_search.add_argument("--prior-attempts", type=int, default=0,
+                          help="prior attempts per family (default: manifest default)")
+    p_search.add_argument("--prior-seed", type=int, default=0,
+                          help="seed for the K0 prior (default: manifest default)")
+    p_search.add_argument("--analysis-seed", type=int, default=0,
+                          help="seed for statistics (default: manifest default)")
+    p_search.add_argument("--seed-base", type=int, default=0,
+                          help="measurement seed base (default: manifest default)")
+    p_search.add_argument("--top-k", type=int, default=0,
+                          help="top-K operators cycled by condition B "
+                               "(default: manifest default)")
+    p_search.add_argument("--force", action="store_true",
+                          help="reuse an existing artifact directory")
+    p_search.add_argument("--json", action="store_true",
+                          help="emit the statistics document as JSON")
 
     return parser
 
@@ -438,6 +471,46 @@ def cmd_audit_log(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_search_run(args: argparse.Namespace) -> int:
+    from algolab.search import ExperimentConfig, HarnessError
+    from algolab.search import main as run_search
+    from algolab.search.harness import (
+        DEFAULT_BUDGET_CREDITS,
+        DEFAULT_EPISODES_PER_TRIAL,
+        DEFAULT_PRIOR_ATTEMPTS_PER_FAMILY,
+        DEFAULT_TRIALS,
+    )
+
+    conn, config = _open(args.config, args.path)
+    artifact_dir = args.dir or config.storage.artifacts_dir / args.experiment_id
+    cfg = ExperimentConfig(
+        experiment_id=args.experiment_id,
+        budget_credits=args.budget if not math.isnan(args.budget)
+        else DEFAULT_BUDGET_CREDITS,
+        episodes_per_trial=args.episodes or DEFAULT_EPISODES_PER_TRIAL,
+        trials=args.trials or DEFAULT_TRIALS,
+        prior_attempts_per_family=args.prior_attempts
+        or DEFAULT_PRIOR_ATTEMPTS_PER_FAMILY,
+        prior_seed=args.prior_seed or 101,
+        analysis_seed=args.analysis_seed or 11,
+        seed_base=args.seed_base or 7,
+        top_k=args.top_k or 3,
+        producer=config.producer,
+    )
+    try:
+        rc = run_search(cfg, conn, artifact_dir, force=args.force)
+    except HarnessError as exc:
+        conn.close()
+        return _error(str(exc))
+    if args.json:
+        stats_path = artifact_dir / "statistics.json"
+        if stats_path.exists():
+            print(json.dumps(json.loads(stats_path.read_text()),
+                             indent=2, sort_keys=True))
+    conn.close()
+    return rc
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -470,6 +543,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_aggregate_experiment(args)
     if command == "audit-log":
         return cmd_audit_log(args)
+    if command == "search-run":
+        return cmd_search_run(args)
     parser.print_help()
     return 2
 

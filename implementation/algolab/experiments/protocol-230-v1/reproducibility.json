@@ -1,0 +1,67 @@
+{
+  "checks": [
+    {
+      "actual": "1.1.0",
+      "check": "protocol_version",
+      "expected": "1.1.0",
+      "pass": true
+    },
+    {
+      "actual": "1.1.0",
+      "check": "environment_version",
+      "expected": "1.1.0",
+      "pass": true
+    },
+    {
+      "actual": [
+        "static",
+        "knowledge-informed",
+        "adaptive",
+        "random"
+      ],
+      "check": "arms_match",
+      "expected": [
+        "static",
+        "knowledge-informed",
+        "adaptive",
+        "random"
+      ],
+      "pass": true
+    },
+    {
+      "actual": 150.0,
+      "check": "budget_match",
+      "expected": 150.0,
+      "pass": true
+    },
+    {
+      "actual": [
+        "adaptive",
+        "b-shuffled",
+        "c-permuted",
+        "knowledge-informed",
+        "random",
+        "static"
+      ],
+      "check": "stats_arms_present",
+      "expected": [
+        "adaptive",
+        "b-shuffled",
+        "c-permuted",
+        "knowledge-informed",
+        "random",
+        "static"
+      ],
+      "pass": true
+    },
+    {
+      "actual": true,
+      "check": "held_out_family_in_manifest",
+      "expected": true,
+      "pass": true
+    }
+  ],
+  "manifest_path": "/tmp/full-artifacts/manifest.json",
+  "reproducible": true,
+  "statistics_path": "/tmp/full-artifacts/statistics.json"
+}

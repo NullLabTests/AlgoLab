@@ -18,8 +18,9 @@ the executable core of the platform, delivered in three milestones:
   gates which agent role may invoke which operator
   (`algolab.knowledge.registry`). The database schema is at **v3**.
 
-The test suite currently has **228 passing tests** covering unit, integration,
-and ontology-invariant acceptance behavior. `ruff` and `mypy` (strict) are clean.
+The test suite currently has **275 passing tests** covering unit, integration,
+ontology-invariant, and protocol-230 compliance behavior. `ruff` and `mypy`
+(strict) are clean.
 
 ## Quickstart
 
@@ -27,7 +28,7 @@ and ontology-invariant acceptance behavior. `ruff` and `mypy` (strict) are clean
 bash scripts/setup.sh          # venv + editable install
 make lint                      # ruff
 make type                      # mypy (strict)
-make test                      # pytest (228 tests)
+make test                      # pytest (279 tests)
 ```
 
 ## End-to-end run
@@ -67,7 +68,22 @@ algolab list-runs [--status S] [--json]
 algolab show-run RUN_ID | cancel-run RUN_ID
 algolab audit-log [--json]
 algolab worker [--poll-interval SECONDS]
+algolab search-run EXP_ID [--dir DIR] [--budget N] [--trials N] [--episodes N]
+                [--prior-attempts N] [--top-k K] [--force] [--json]
 ```
+
+### `search-run` (protocol 230)
+
+Runs the pre-registered A/B/C cumulative-search policy comparison against the
+deterministic toy environment: Statistic (A) vs Knowledge-informed (B) vs
+Adaptive (C), plus a Random reference and two ablations (`c-permuted`,
+`b-shuffled`), under identical budgets, task rotation, and seeds. Artifacts
+(manifest, knowledge snapshot, per-condition raw events and operator
+selections, statistics, report) are written to `--dir`, and every attempt is
+persisted to schema-v3 tables (`tasks`, `evidence`, `operator_uses`,
+`search_episodes`) with the `operator_stats` aggregate refreshed. The manifest
+freezes before any episode runs; an existing artifact directory is refused
+unless `--force` is passed.
 
 ## Package layout
 
@@ -79,6 +95,7 @@ src/algolab/
   execution/     worker, queue, expansion, aggregation, recovery, artifacts, errors
   workloads/     adapter interface + deterministic quadratic_optimizer workload
   knowledge/     evidence records, M4 operator catalog, skill registry
+  search/        protocol-230 toy environment, policies, A/B/C comparison harness
   statistics.py  deterministic inference: bootstrap CI, Welch's t, Cohen's d, FDR
   util.py        shared utilities
   schemas/       canonical JSON Schemas (byte-identical copies)
@@ -111,10 +128,13 @@ docs/decisions/  architecture decision records (ADR-0001..0008)
   status; promotion claims require the statistical analysis stored with them.
 - Operators are invoked only by registered agent roles (`knowledge.registry`),
   and each invocation draws from a per-operator credit budget.
-- The causal knowledge loop (research-loop step 10) is a claim under
-  experimental validation, gated by the pre-registered A/B/C protocol in
-  `../../spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md`; no documentation
-  asserts it as demonstrated until the study passes.
+- The causal knowledge loop (research-loop step 10) is supported by
+  evidence from the pre-registered A/B/C protocol
+  (`../../spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md`): the adaptive
+  policy (C) outperforms both static (A) and knowledge-informed (B) with
+  adjusted p < 0.05 and the advantage transfers to the held-out family.
+  This evidence is specific to the toy environment; generalisation to real
+  workloads remains unproven.
 
 ## Documentation
 

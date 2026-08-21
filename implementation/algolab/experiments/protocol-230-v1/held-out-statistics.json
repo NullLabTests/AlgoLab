@@ -1,0 +1,71 @@
+{
+  "comparisons": [
+    {
+      "adjusted_p": 0.2623688155922039,
+      "base": "static",
+      "base_mean": 0.01563573883161512,
+      "candidate": "knowledge-informed",
+      "candidate_mean": 0.016304347826086956,
+      "ci_high": 0.0016089571193784547,
+      "ci_low": -0.0002717391304347828,
+      "delta": 0.0006686089944718358,
+      "effect_size": 0.5093844425231671,
+      "p_value": 0.2623688155922039,
+      "relative_delta": 0.042761586239847084
+    },
+    {
+      "adjusted_p": 0.009745127436281859,
+      "base": "static",
+      "base_mean": 0.01563573883161512,
+      "candidate": "adaptive",
+      "candidate_mean": 0.05238542354462942,
+      "ci_high": 0.04243366476429805,
+      "ci_low": 0.030511292621774568,
+      "delta": 0.0367496847130143,
+      "effect_size": 5.014970084832574,
+      "p_value": 0.006496751624187906,
+      "relative_delta": 2.350364450876299
+    },
+    {
+      "adjusted_p": 0.009745127436281859,
+      "base": "knowledge-informed",
+      "base_mean": 0.016304347826086956,
+      "candidate": "adaptive",
+      "candidate_mean": 0.05238542354462942,
+      "ci_high": 0.04209920182475312,
+      "ci_low": 0.0294537065737749,
+      "delta": 0.036081075718542466,
+      "effect_size": 4.9548613221635875,
+      "p_value": 0.006496751624187906,
+      "relative_delta": 2.2129726440706046
+    }
+  ],
+  "family": "gamma",
+  "note": "Transfer evaluation: arms evaluated on held-out family gamma, which was never included in the K0 prior.",
+  "per_condition": {
+    "adaptive": {
+      "attempts": 939,
+      "compute_credits": 11770.0,
+      "discoveries_per_credit": 0.052421,
+      "validated_discoveries": 617
+    },
+    "knowledge-informed": {
+      "attempts": 624,
+      "compute_credits": 11040.0,
+      "discoveries_per_credit": 0.016304,
+      "validated_discoveries": 180
+    },
+    "random": {
+      "attempts": 644,
+      "compute_credits": 11165.0,
+      "discoveries_per_credit": 0.015495,
+      "validated_discoveries": 173
+    },
+    "static": {
+      "attempts": 648,
+      "compute_credits": 11640.0,
+      "discoveries_per_credit": 0.015636,
+      "validated_discoveries": 182
+    }
+  }
+}

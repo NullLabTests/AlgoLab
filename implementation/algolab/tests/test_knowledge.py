@@ -4,15 +4,16 @@ and the v2 -> v3 schema migration."""
 from __future__ import annotations
 
 import os
+import sqlite3
 
 import pytest
 
 from algolab.knowledge.evidence import (
+    PROMOTE,
+    REJECT,
     Evidence,
     EvidenceIntegrityError,
     EvidenceRepo,
-    PROMOTE,
-    REJECT,
 )
 from algolab.knowledge.operators import (
     M4_OPERATOR_ROLES,
@@ -34,7 +35,6 @@ from algolab.storage.db import (
     check_append_only,
     connect,
 )
-
 
 # -- evidence -------------------------------------------------------------
 
@@ -115,11 +115,11 @@ def test_evidence_novel_replication_mismatch(conn):
 def test_evidence_append_only_triggers(conn):
     register_task(conn)
     rec = make_record(EvidenceRepo(conn))
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError):
         conn.execute(
             "UPDATE evidence SET outcome = ? WHERE evidence_id = ?",
             (REJECT, rec.evidence_id))
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError):
         conn.execute("DELETE FROM evidence WHERE evidence_id = ?",
                      (rec.evidence_id,))
 
@@ -244,7 +244,7 @@ def test_migration_v2_to_v3(tmp_path):
     c.close()
 
     c = connect(str(db), initialize=False)
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.OperationalError):
         c.execute("SELECT * FROM evidence")  # table does not exist yet
     apply_schema(c, SCHEMA_VERSION)
     assert c.execute("PRAGMA user_version").fetchone()[0] == SCHEMA_VERSION
@@ -258,7 +258,7 @@ def test_migration_v2_to_v3(tmp_path):
     repo = EvidenceRepo(c)
     rec = make_record(repo)
     assert repo.by_id(rec.evidence_id) == rec
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError):
         c.execute("DELETE FROM evidence WHERE evidence_id = ?",
                   (rec.evidence_id,))
     check_append_only(c)
@@ -267,14 +267,14 @@ def test_migration_v2_to_v3(tmp_path):
 
 def test_append_only_also_protects_new_tables(conn):
     register_task(conn)
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError):
         conn.execute("UPDATE tasks SET name = 'task-1-renamed'")
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError):
         conn.execute("DELETE FROM tasks")
     conn.execute(
         "INSERT INTO operator_uses (use_id, operator_name, task_id,"
         " experiment_id, outcome, relative_delta, credits_charged, novel,"
         " created_at, producer) VALUES ('use-1', 'tune', 'task-1', 'exp-1',"
         " 'promote', 0.2, 10.0, 1, '2026-08-13T00:00:00Z', 'test')")
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError):
         conn.execute("DELETE FROM operator_uses")
