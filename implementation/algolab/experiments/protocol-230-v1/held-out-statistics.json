@@ -1,4 +1,19 @@
 {
+  "claim_readiness": {
+    "c_beats_knowledge_informed_by_family": {
+      "alpha": true,
+      "beta": false
+    },
+    "c_beats_static_by_family": {
+      "alpha": true,
+      "beta": true
+    },
+    "claim_ready": false,
+    "held_out_persistence_vs_knowledge_informed": true,
+    "held_out_persistence_vs_static": true,
+    "training_families_analysed": 2,
+    "verdict": "promotion criterion NOT met; unmet components: C>B with adjusted p < 0.05 on >=2 families"
+  },
   "comparisons": [
     {
       "adjusted_p": 0.2623688155922039,

@@ -592,6 +592,61 @@ class PolicyComparison:
 
     # -- statistics -----------------------------------------------------------
 
+    @staticmethod
+    def _family_efficiencies(
+        results: dict[str, list[dict[str, Any]]],
+    ) -> dict[str, dict[str, list[float]]]:
+        """Per-(trial, family) efficiency series per arm (protocol 230 §5).
+
+        Pairs are matched on (family, seed): each trial contributes one
+        efficiency observation per family, computed over that family's
+        episodes in the trial. All arms share the rotation and seed plan,
+        so index i of every series corresponds to the same (trial, family).
+        """
+        fam_effs: dict[str, dict[str, list[float]]] = {}
+        for arm, trials in results.items():
+            per_family: dict[str, list[float]] = {}
+            for trial in trials:
+                agg: dict[str, list[float]] = {}
+                for ep in trial.get("episodes", []):
+                    cell = agg.setdefault(ep["family"], [0.0, 0.0])
+                    cell[0] += ep["discoveries"]
+                    cell[1] += ep["credits"]
+                for family, (disc, cred) in sorted(agg.items()):
+                    denom = cred if cred > 0 else 1.0
+                    per_family.setdefault(family, []).append(disc / denom)
+            for family, series in per_family.items():
+                fam_effs.setdefault(family, {})[arm] = series
+        return fam_effs
+
+    @staticmethod
+    def _comparison_matrix(
+        effs: dict[str, list[float]],
+        pairs: tuple[tuple[str, str], ...],
+        metric: str,
+        seed: int,
+    ) -> tuple[list[dict[str, Any]], list[float]]:
+        """Run *pairs* over efficiency series; return rows + raw p-values."""
+        comparisons: list[dict[str, Any]] = []
+        p_values: list[float] = []
+        for base, cand in pairs:
+            if base not in effs or cand not in effs:
+                continue
+            analysis = analyze(
+                effs[base], effs[cand], metric=metric, seed=seed)
+            p_values.append(analysis.p_value)
+            comparisons.append({
+                "base": base, "candidate": cand,
+                "delta": analysis.delta,
+                "relative_delta": analysis.relative_delta,
+                "ci_low": analysis.ci_low, "ci_high": analysis.ci_high,
+                "p_value": analysis.p_value,
+                "effect_size": analysis.effect_size,
+                "base_mean": analysis.baseline.mean,
+                "candidate_mean": analysis.candidate.mean,
+            })
+        return comparisons, p_values
+
     def analyze(self, results: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
         effs: dict[str, list[float]] = {}
         per_arm: dict[str, dict[str, Any]] = {}
@@ -603,28 +658,35 @@ class PolicyComparison:
                 "attempts": sum(t["attempts"] for t in trials),
                 "efficiencies": effs[arm],
             }
-        comparisons: list[dict[str, Any]] = []
-        p_values: list[float] = []
-        for base, cand in PRIMARY_COMPARISONS:
-            if base in effs and cand in effs:
-                analysis = analyze(
-                    effs[base], effs[cand],
-                    metric="discoveries_per_credit",
-                    seed=self.cfg.analysis_seed)
-                p_values.append(analysis.p_value)
-                comparisons.append({
-                    "base": base, "candidate": cand,
-                    "delta": analysis.delta,
-                    "relative_delta": analysis.relative_delta,
-                    "ci_low": analysis.ci_low, "ci_high": analysis.ci_high,
-                    "p_value": analysis.p_value,
-                    "effect_size": analysis.effect_size,
-                    "base_mean": analysis.baseline.mean,
-                    "candidate_mean": analysis.candidate.mean,
-                })
+        comparisons, p_values = self._comparison_matrix(
+            effs, PRIMARY_COMPARISONS,
+            metric="discoveries_per_credit", seed=self.cfg.analysis_seed)
         adjusted = list(benjamini_hochberg(p_values))
         for row, q in zip(comparisons, adjusted, strict=True):
             row["adjusted_p"] = q
+        # Per-family analysis (protocol 230 §5: pairs matched on
+        # (family, seed); promotion requires the effect on >= 2 families).
+        fam_effs = self._family_efficiencies(results)
+        per_family: dict[str, dict[str, Any]] = {}
+        for family in sorted(fam_effs):
+            rows, fam_p = self._comparison_matrix(
+                fam_effs[family], PRIMARY_COMPARISONS,
+                metric=f"discoveries_per_credit ({family})",
+                seed=self.cfg.analysis_seed)
+            fam_adj = list(benjamini_hochberg(fam_p))
+            for row, q in zip(rows, fam_adj, strict=True):
+                row["adjusted_p"] = q
+            per_family[family] = {
+                "comparisons": rows,
+                "per_condition": {
+                    arm: {
+                        "efficiency_mean": (
+                            sum(series) / len(series) if series else 0.0),
+                        "trials": len(series),
+                    }
+                    for arm, series in sorted(fam_effs[family].items())
+                },
+            }
         ablations: list[dict[str, Any]] = []
         for base, cand, note in ABLATION_COMPARISONS:
             if base in effs and cand in effs:
@@ -657,12 +719,83 @@ class PolicyComparison:
                 for arm in per_arm
             },
             "comparisons": comparisons,
+            "per_family": per_family,
             "ablations": ablations,
             "interpretation": interpretation,
         }
         (self.artifact_dir / "statistics.json").write_text(
             json.dumps(stats, indent=2, sort_keys=True) + "\n")
         return stats
+
+    @staticmethod
+    def evaluate_claim(
+        per_family: dict[str, dict[str, Any]],
+        held_out_stats: dict[str, Any] | None,
+    ) -> dict[str, Any]:
+        """Assess protocol 230 §5 promotion criterion (pre-registered).
+
+        Claim-ready requires: C beats A and C beats B with adjusted
+        p < 0.05 and CI excluding 0 on >= 2 training task families, and the
+        gap persists on the held-out family (same direction, CI excluding 0).
+        """
+        def adaptive_row(family: str, base: str) -> dict[str, Any] | None:
+            return next(
+                (c for c in per_family.get(family, {}).get("comparisons", [])
+                 if c["base"] == base and c["candidate"] == "adaptive"),
+                None)
+
+        def significant(row: dict[str, Any] | None) -> bool:
+            return (row is not None and row["delta"] > 0
+                    and row["adjusted_p"] < 0.05 and row["ci_low"] > 0)
+
+        def persists(base: str) -> bool:
+            if held_out_stats is None:
+                return False
+            row = next(
+                (c for c in held_out_stats.get("comparisons", [])
+                 if c["base"] == base and c["candidate"] == "adaptive"),
+                None)
+            return row is not None and row["delta"] > 0 and row["ci_low"] > 0
+
+        families = sorted(per_family)
+        by_family_vs_static = {f: significant(adaptive_row(f, "static"))
+                               for f in families}
+        by_family_vs_informed = {
+            f: significant(adaptive_row(f, "knowledge-informed"))
+            for f in families}
+        two_families_static = (len(families) >= 2
+                               and all(by_family_vs_static.values()))
+        two_families_informed = (len(families) >= 2
+                                 and all(by_family_vs_informed.values()))
+        held_out_static = persists("static")
+        held_out_informed = persists("knowledge-informed")
+        claim_ready = (two_families_static and two_families_informed
+                       and held_out_static and held_out_informed)
+        if claim_ready:
+            verdict = (
+                "promotion criterion MET: C > A and C > B (adjusted p < 0.05,"
+                " CI excluding 0) on all "
+                f"{len(families)} training families, and the gap persists on"
+                f" held-out {HELD_OUT_FAMILY}")
+        else:
+            unmet: list[str] = []
+            if not two_families_static:
+                unmet.append("C>A with adjusted p < 0.05 on >=2 families")
+            if not two_families_informed:
+                unmet.append("C>B with adjusted p < 0.05 on >=2 families")
+            if not held_out_static or not held_out_informed:
+                unmet.append(f"gap persistence on held-out {HELD_OUT_FAMILY}")
+            verdict = ("promotion criterion NOT met; unmet components: "
+                       + "; ".join(unmet))
+        return {
+            "c_beats_static_by_family": by_family_vs_static,
+            "c_beats_knowledge_informed_by_family": by_family_vs_informed,
+            "held_out_persistence_vs_static": held_out_static,
+            "held_out_persistence_vs_knowledge_informed": held_out_informed,
+            "training_families_analysed": len(families),
+            "claim_ready": claim_ready,
+            "verdict": verdict,
+        }
 
     @staticmethod
     def _interpret(comparisons: list[dict[str, Any]]) -> dict[str, Any]:
@@ -745,6 +878,8 @@ class PolicyComparison:
                 f"| {c['ci_low']:.6f} | {c['ci_high']:.6f} "
                 f"| {c['p_value']:.6f} | {c['adjusted_p']:.6f} "
                 f"| {c['effect_size']:.3f} |")
+        lines += self._per_family_section(stats.get("per_family", {}))
+        lines += self._calibration_floor_section(stats["per_condition"])
         lines += [
             "",
             "## Ablations (exploratory; p-values unadjusted)",
@@ -795,6 +930,23 @@ class PolicyComparison:
                         f"| {c['ci_low']:.6f} | {c['ci_high']:.6f} "
                         f"| {c['p_value']:.6f} | {c['adjusted_p']:.6f} "
                         f"| {c['effect_size']:.3f} |")
+            claim = held_out_stats.get("claim_readiness")
+            if claim is not None:
+                lines += [
+                    "",
+                    "### Promotion-criterion status (protocol 230 §5)",
+                    "",
+                    f"- C > A per training family: "
+                    f"{claim['c_beats_static_by_family']}",
+                    f"- C > B per training family: "
+                    f"{claim['c_beats_knowledge_informed_by_family']}",
+                    f"- gap persists on held-out vs A: "
+                    f"{claim['held_out_persistence_vs_static']}",
+                    f"- gap persists on held-out vs B: "
+                    f"{claim['held_out_persistence_vs_knowledge_informed']}",
+                    "",
+                    f"**{claim['verdict']}**",
+                ]
 
         lines += [
             "",
@@ -823,6 +975,9 @@ class PolicyComparison:
             "disrupted by permutation).",
             "- Statistical inference is based on 8 independent seeds; "
             "wider replication would strengthen confidence.",
+            "- The training set comprises exactly 2 task families, the "
+            "minimum required by the promotion criterion; additional "
+            "families would materially strengthen the >=2-family claim.",
             "- The comparison measures discovery efficiency, not absolute "
             "capability; a policy with lower efficiency might still be "
             "preferable under different cost models.",
@@ -838,6 +993,66 @@ class PolicyComparison:
         report_path = self.artifact_dir / "report.md"
         report_path.write_text("\n".join(lines) + "\n")
         return report_path
+
+    def _per_family_section(
+        self, per_family: dict[str, dict[str, Any]],
+    ) -> list[str]:
+        lines: list[str] = [
+            "",
+            "## Per-family comparisons (protocol §5 pairing: family × seed)",
+            "",
+        ]
+        for family in sorted(per_family):
+            block = per_family[family]
+            lines += [
+                f"### family {family}",
+                "",
+                ("| base | candidate | delta | CI low | CI high "
+                 "| p | adjusted p | d |"),
+                "|---|---|---|---|---|---|---|---|",
+            ]
+            for c in block["comparisons"]:
+                lines.append(
+                    f"| {c['base']} | {c['candidate']} | {c['delta']:.6f} "
+                    f"| {c['ci_low']:.6f} | {c['ci_high']:.6f} "
+                    f"| {c['p_value']:.6f} | {c['adjusted_p']:.6f} "
+                    f"| {c['effect_size']:.3f} |")
+            means = ", ".join(
+                f"{arm} {s['efficiency_mean']:.6f}"
+                for arm, s in block["per_condition"].items())
+            lines += ["", f"Mean efficiency per condition: {means}", ""]
+        return lines
+
+    @staticmethod
+    def _calibration_floor_section(
+        per_condition: dict[str, dict[str, Any]],
+    ) -> list[str]:
+        rnd = per_condition.get("random")
+        if rnd is None:
+            return []
+        eff = rnd["discoveries_per_credit"]
+
+        def ratio(other: str) -> str:
+            base = per_condition.get(other)
+            if base is None or base["discoveries_per_credit"] <= 0:
+                return "n/a"
+            return (f"{eff / base['discoveries_per_credit']:.3f}x"
+                    if eff > 0 else "n/a")
+
+        return [
+            "",
+            "## Calibration floor (condition D — uniform random)",
+            "",
+            (f"Random selection achieves {rnd['validated_discoveries']} "
+             f"discoveries over {rnd['compute_credits']} credits "
+             f"({eff:.6f} discoveries/credit, "
+             f"{ratio('static')} of static, "
+             f"{ratio('knowledge-informed')} of knowledge-informed, "
+             f"{ratio('adaptive')} of adaptive). This is the floor any "
+             "informed policy must clear to justify its knowledge channel; "
+             "arms at or below this level would indicate the task or budget "
+             "carries no exploitable signal."),
+        ]
 
     def _adaptation_summary(
         self, results: dict[str, list[dict[str, Any]]]) -> list[str]:
@@ -995,6 +1210,7 @@ class PolicyComparison:
                      "family": family, "phase": "held-out",
                      "manifest_id": self.cfg.experiment_id,
                      "knowledge_snapshot_id": self.snapshot.snapshot_id,
+                     "policy_version": getattr(policy, "version", ""),
                  }, sort_keys=True)),
             )
         credits = total_credits if total_credits > 0 else 1.0
@@ -1178,7 +1394,6 @@ class PolicyComparison:
         # plan.json (alias of manifest)
         (ad / "plan.json").write_text(
             json.dumps(self.manifest, indent=2, sort_keys=True) + "\n")
-
         # protocol.json
         protocol = {
             "protocol_version": PROTOCOL_VERSION,
@@ -1233,11 +1448,19 @@ class PolicyComparison:
             (ad / "held-out-statistics.json").write_text(
                 json.dumps(held_out_stats, indent=2, sort_keys=True) + "\n")
 
-        # checksums.json (SHA-256 of all .json and .md files in artifact dir)
+        # manifest.json last content change before checksumming
+        (ad / "manifest.json").write_text(
+            json.dumps(self.manifest, indent=2, sort_keys=True) + "\n")
+
+        # checksums.json (SHA-256 of all deterministic artifact files;
+        # the checksum file itself and the reproducibility verdict derived
+        # from it are excluded — they cannot cover themselves)
         import hashlib
         checksums: dict[str, str] = {}
         for p in sorted(ad.rglob("*")):
-            if p.is_file() and p.suffix in (".json", ".md", ".jsonl"):
+            if (p.is_file() and p.suffix in (".json", ".md", ".jsonl")
+                    and p.name not in ("checksums.json",
+                                       "reproducibility.json")):
                 h = hashlib.sha256(p.read_bytes()).hexdigest()
                 checksums[str(p.relative_to(ad))] = h
         (ad / "checksums.json").write_text(
@@ -1247,10 +1470,6 @@ class PolicyComparison:
         repro = self.verify_reproducibility(ad, self.cfg)
         (ad / "reproducibility.json").write_text(
             json.dumps(repro, indent=2, sort_keys=True) + "\n")
-
-        # manifest.json (already has bundle metadata from the top)
-        (ad / "manifest.json").write_text(
-            json.dumps(self.manifest, indent=2, sort_keys=True) + "\n")
 
         return ad
 
@@ -1268,6 +1487,8 @@ def main(cfg: ExperimentConfig, conn: sqlite3.Connection,
     stats = comp.analyze(results)
     held_out_results = comp.run_held_out()
     held_out_stats = comp.analyze_held_out(held_out_results)
+    held_out_stats["claim_readiness"] = PolicyComparison.evaluate_claim(
+        stats.get("per_family", {}), held_out_stats)
     report = comp.write_report(results, stats, held_out_stats)
     comp.write_artifact_bundle(stats, held_out_stats)
     out.write(f"experiment {cfg.experiment_id} complete; report: {report}\n")
@@ -1283,6 +1504,9 @@ def main(cfg: ExperimentConfig, conn: sqlite3.Connection,
             f"credits={s['compute_credits']:>8.1f} "
             f"eff={s['discoveries_per_credit']:.6f}\n")
     out.write(f"interpretation: {stats['interpretation']['verdict']}\n")
+    out.write(
+        "claim: "
+        f"{held_out_stats['claim_readiness']['verdict']}\n")
     return 0
 
 

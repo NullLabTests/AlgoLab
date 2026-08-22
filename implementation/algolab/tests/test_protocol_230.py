@@ -22,6 +22,7 @@ from algolab.search import (
 from algolab.search.harness import (
     ARMS_PROCEDURAL,
     HELD_OUT_FAMILY,
+    PRIMARY_COMPARISONS,
     PRIOR_POLICY_LABEL,
     PROTOCOL_VERSION,
     ExperimentConfig,
@@ -30,6 +31,7 @@ from algolab.search.harness import (
 from algolab.search.toy import (
     DEFAULT_OPERATORS,
     TOY_ENVIRONMENT_VERSION,
+    operator_cost,
 )
 from algolab.storage.db import connect
 
@@ -310,6 +312,24 @@ class TestArtifactBundle:
         for fname in ("manifest.json", "statistics.json", "report.md"):
             assert fname in checksums
 
+    def test_checksums_are_consistent_and_complete(self, tmp_path) -> None:
+        """Every deterministic artifact is covered; hashes verify."""
+        import hashlib
+        cfg = _tiny_cfg("bundle-csum-full")
+        d = tmp_path / "art"
+        _run_full(cfg, d)
+        checksums = json.loads((d / "checksums.json").read_text())
+        covered = set(checksums)
+        # All non-meta .json/.md/.jsonl files must be covered.
+        expected = {
+            str(p.relative_to(d)) for p in sorted(d.rglob("*"))
+            if p.is_file() and p.suffix in (".json", ".md", ".jsonl")
+            and p.name not in ("checksums.json", "reproducibility.json")
+        }
+        assert covered == expected
+        for rel, digest in checksums.items():
+            assert hashlib.sha256((d / rel).read_bytes()).hexdigest() == digest
+
     def test_environment_includes_gamma(self, tmp_path) -> None:
         cfg = _tiny_cfg("bundle-env")
         d = tmp_path / "art"
@@ -440,3 +460,325 @@ class TestPolicyIsolation:
         op, record = p.select("gamma", 0)
         assert op == "tune"
         assert record.family == "gamma"
+
+
+# ---------------------------------------------------------------------------
+# Metric arithmetic (primary metric: validated_discoveries / credits)
+# ---------------------------------------------------------------------------
+
+class TestMetricArithmetic:
+    """statistics.json must be recomputable from the raw event stream."""
+
+    def _run_with_events(self, tmp_path) -> tuple[dict, dict]:
+        cfg = _tiny_cfg("metric-arith")
+        d = tmp_path / "art"
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, d)
+        results = comp.run()
+        stats = comp.analyze(results)
+        return stats, comp._events
+
+    def test_per_condition_matches_raw_events(self, tmp_path) -> None:
+        stats, events = self._run_with_events(tmp_path)
+        for arm in ARMS_PROCEDURAL:
+            raw = events[arm]
+            discoveries = sum(1 for e in raw if e["discovery"])
+            credits = sum(e["cost"] for e in raw)
+            pc = stats["per_condition"][arm]
+            assert pc["validated_discoveries"] == discoveries
+            assert pc["compute_credits"] == round(credits, 2)
+            expected = round(discoveries / max(credits, 1.0), 6)
+            assert pc["discoveries_per_credit"] == expected
+
+    def test_per_trial_efficiency_is_discoveries_over_credits(
+            self, tmp_path) -> None:
+        cfg = _tiny_cfg("metric-trial")
+        d = tmp_path / "art"
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, d)
+        results = comp.run()
+        for _arm, trials in results.items():
+            for t in trials:
+                assert t["efficiency"] == t["discoveries"] / max(
+                    t["credits"], 1.0)
+
+    def test_per_family_series_recomputable_from_episodes(self, tmp_path) -> None:
+        cfg = _tiny_cfg("metric-family")
+        d = tmp_path / "art"
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, d)
+        results = comp.run()
+        stats = comp.analyze(results)
+        for family in ("alpha", "beta"):
+            block = stats["per_family"][family]
+            assert len(block["comparisons"]) == len(PRIMARY_COMPARISONS)
+            assert all("adjusted_p" in c for c in block["comparisons"])
+            # Recompute the adaptive series from raw episode records.
+            adaptive = []
+            for t in results["adaptive"]:
+                disc = sum(ep["discoveries"] for ep in t["episodes"]
+                           if ep["family"] == family)
+                cred = sum(ep["credits"] for ep in t["episodes"]
+                           if ep["family"] == family)
+                adaptive.append(disc / max(cred, 1.0))
+            stored = block["per_condition"]["adaptive"]["efficiency_mean"]
+            assert abs(stored - sum(adaptive) / len(adaptive)) < 1e-9
+
+
+# ---------------------------------------------------------------------------
+# Knowledge-leak regression guards
+# ---------------------------------------------------------------------------
+
+def _run_arms(comp: PolicyComparison) -> None:
+    """Run every arm against the frozen snapshot without re-running K0."""
+    cfg = comp.cfg
+    arms = list(cfg.arms)
+    if "permuted" in cfg.ablations:
+        arms.append("c-permuted")
+    if "shuffled" in cfg.ablations:
+        arms.append("b-shuffled")
+    for arm in arms:
+        comp._events[arm] = []
+        comp._events[f"selections-{arm}"] = []
+        rng_seed = cfg.analysis_seed + PolicyComparison._arm_seed(arm)
+        for trial in range(cfg.trials):
+            policy = comp._policy_factory(arm, rng_seed + trial)
+            if hasattr(policy, "reset"):
+                policy.reset()
+            comp._run_trial(arm, policy, trial)
+
+
+class TestKnowledgeLeakGuards:
+    """Prior knowledge must stay frozen; evaluation must not feed history."""
+
+    def test_k0_snapshot_unchanged_after_full_run(self, tmp_path) -> None:
+        cfg = _tiny_cfg("leak-snapshot")
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, tmp_path / "art")
+        comp.ensure_manifest()
+        comp.run_prior()
+        before = json.dumps(comp.snapshot.to_dict(), sort_keys=True)  # type: ignore[union-attr]
+        _run_arms(comp)
+        after = json.dumps(comp.snapshot.to_dict(), sort_keys=True)  # type: ignore[union-attr]
+        assert before == after
+
+    def test_b_selections_are_pure_function_of_k0_and_step(
+            self, tmp_path) -> None:
+        """Replay B's selection stream from the committed snapshot alone."""
+        cfg = _tiny_cfg("leak-b-pure")
+        d = tmp_path / "art"
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, d)
+        comp.ensure_manifest()
+        comp.run_prior()
+        snap = comp.snapshot
+        assert snap is not None
+        top = snap.ranking()[:cfg.top_k]
+        b1 = KnowledgeInformedPolicy(snap, top_k=cfg.top_k)
+        b2 = KnowledgeInformedPolicy(snap, top_k=cfg.top_k)
+        seq_a = [b1.select(f, i)[0] for f in ("alpha", "beta")
+                 for i in range(20)]
+        # Interleave arbitrary outcomes into a *different* policy object:
+        # B has no update channel at all, so its stream is unaffected.
+        seq_b = [b2.select(f, i)[0] for f in ("alpha", "beta")
+                 for i in range(20)]
+        assert seq_a == seq_b
+        assert set(seq_a) <= set(top)
+
+    def test_held_out_isolation_from_main_phase(self, tmp_path) -> None:
+        """Held-out runs use fresh policies and disjoint record namespaces."""
+        cfg = _tiny_cfg("leak-ho-seeds")
+        d = tmp_path / "art"
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, d)
+        comp.run()
+        comp.run_held_out()
+        # Episode namespaces are disjoint between phases.
+        main_eps = {r[0] for r in conn.execute(
+            "SELECT episode_id FROM search_episodes"
+            " WHERE payload NOT LIKE '%held-out%'").fetchall()}
+        ho_eps = {r[0] for r in conn.execute(
+            "SELECT episode_id FROM search_episodes"
+            " WHERE payload LIKE '%held-out%'").fetchall()}
+        assert main_eps and ho_eps
+        assert main_eps.isdisjoint(ho_eps)
+        # Phase markers partition the evidence table cleanly.
+        leaked = conn.execute(
+            "SELECT COUNT(*) FROM evidence WHERE policy = ?"
+            " AND json_extract(payload, '$.family') = ?",
+            (PRIOR_POLICY_LABEL, HELD_OUT_FAMILY)).fetchone()[0]
+        assert leaked == 0
+        ho_evidence = conn.execute(
+            "SELECT COUNT(*) FROM evidence"
+            " WHERE episode_id LIKE '%heldout%'").fetchone()[0]
+        assert ho_evidence > 0
+
+    def test_held_out_adaptive_starts_from_k0_not_run_state(
+            self, tmp_path) -> None:
+        """First held-out C selection must reflect pure K0 priors."""
+        cfg = _tiny_cfg("leak-ho-fresh")
+        d = tmp_path / "art"
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, d)
+        comp.run()
+        comp.run_held_out()
+        snap_dict = json.loads((d / "knowledge-snapshot.json").read_text())
+        snap = KnowledgeSnapshot.from_dict(snap_dict)
+        fresh = AdaptivePolicy(snap, DEFAULT_OPERATORS, rng_seed=0)
+        sel_file = (d / "conditions" / "adaptive"
+                    / "held-out-operator-selections.jsonl")
+        first = json.loads(sel_file.read_text().splitlines()[0])
+        expected = fresh.posterior_stats(first["family"], first["operator"])
+        assert first["posterior_stats"]["mean"] == round(expected["mean"], 6)
+        assert first["prior_stats"] is not None
+
+    def test_held_out_episode_payload_carries_policy_version(
+            self, tmp_path) -> None:
+        cfg = _tiny_cfg("leak-ho-prov")
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, tmp_path / "art")
+        comp.run()
+        comp.run_held_out()
+        rows = conn.execute(
+            "SELECT policy, payload FROM search_episodes"
+            " WHERE payload LIKE '%held-out%'").fetchall()
+        assert rows
+        for policy, payload in rows:
+            data = json.loads(payload)
+            assert data["phase"] == "held-out"
+            assert data["policy_version"], policy
+
+    def test_evaluation_outcomes_never_enter_prior_tables(
+            self, tmp_path) -> None:
+        """After every arm has run, prior-phase evidence is still exactly K0."""
+        cfg = _tiny_cfg("leak-eval")
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, tmp_path / "art")
+        comp.ensure_manifest()
+        comp.run_prior()
+        n_before = conn.execute(
+            "SELECT COUNT(*) FROM evidence WHERE policy = ?",
+            (PRIOR_POLICY_LABEL,)).fetchone()[0]
+        _run_arms(comp)
+        n_after = conn.execute(
+            "SELECT COUNT(*) FROM evidence WHERE policy = ?",
+            (PRIOR_POLICY_LABEL,)).fetchone()[0]
+        assert n_after == n_before
+
+
+# ---------------------------------------------------------------------------
+# Arm assignment reconstructability
+# ---------------------------------------------------------------------------
+
+class TestArmAssignment:
+    """Arm RNG streams must be reconstructable from manifest integers."""
+
+    def test_arm_seed_offsets_are_stable_and_distinct(self) -> None:
+        seeds = {arm: PolicyComparison._arm_seed(arm)
+                 for arm in (*ARMS_PROCEDURAL, "c-permuted", "b-shuffled")}
+        assert len(set(seeds.values())) == len(seeds)
+        for arm, s in seeds.items():
+            assert (s == sum((i + 1) * ord(c)
+                             for i, c in enumerate(arm))), arm
+
+    def test_manifest_records_all_seed_integers(self, tmp_path) -> None:
+        cfg = _tiny_cfg("arm-manifest")
+        d = tmp_path / "art"
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, d)
+        comp.ensure_manifest()
+        manifest = json.loads((d / "manifest.json").read_text())
+        for key in ("prior_seed", "analysis_seed", "seed_base"):
+            assert manifest[key] == getattr(cfg, key)
+
+    def test_random_arm_stream_rebuildable_from_manifest(
+            self, tmp_path) -> None:
+        """Random arm selections replay exactly from manifest integers.
+
+        The replay mirrors the harness loop exactly: select() is called
+        before the budget check, so a draw that triggers the break still
+        consumes RNG and must be reproduced.
+        """
+        cfg = _tiny_cfg("arm-replay")
+        d = tmp_path / "art"
+        conn = connect(":memory:", initialize=True)
+        comp = PolicyComparison(cfg, conn, d)
+        comp.run()
+        recorded = [json.loads(line) for line in
+                    (d / "conditions" / "random"
+                     / "operator-selections.jsonl").read_text().splitlines()]
+        by_trial: dict[int, list[str]] = {}
+        for sel, evt in zip(recorded, comp._events["random"], strict=True):
+            by_trial.setdefault(evt["trial"], []).append(sel["operator"])
+        assert by_trial
+        for trial, ops in by_trial.items():
+            rng_seed = (cfg.analysis_seed
+                        + PolicyComparison._arm_seed("random") + trial)
+            replay = RandomPolicy(DEFAULT_OPERATORS, seed=rng_seed)
+            expected: list[str] = []
+            for _episode in range(cfg.episodes_per_trial):
+                spent = 0.0
+                while spent < cfg.budget_credits:
+                    op, _rec = replay.select("alpha", len(expected))
+                    cost = operator_cost(op)
+                    if spent + cost > cfg.budget_credits:
+                        break
+                    spent += cost
+                    expected.append(op)
+            assert ops == expected, trial
+
+
+# ---------------------------------------------------------------------------
+# Promotion-criterion evaluation (protocol 230 §5)
+# ---------------------------------------------------------------------------
+
+def _family_block(base_mean: float, delta: float, ci_low: float,
+                  adjusted_p: float) -> dict:
+    return {"comparisons": [
+        {"base": base, "candidate": "adaptive", "delta": delta,
+         "ci_low": ci_low, "ci_high": ci_low + 0.01,
+         "adjusted_p": adjusted_p}
+        for base in ("static", "knowledge-informed")
+    ]}
+
+
+class TestEvaluateClaim:
+
+    def _held_out(self, *, persists: bool) -> dict:
+        delta = 0.03 if persists else -0.001
+        return {"comparisons": [
+            {"base": base, "candidate": "adaptive", "delta": delta,
+             "ci_low": delta - 0.005, "ci_high": delta + 0.005,
+             "adjusted_p": 0.01 if persists else 0.5}
+            for base in ("static", "knowledge-informed")]}
+
+    def test_claim_ready_when_all_components_hold(self) -> None:
+        per_family = {f: _family_block(0.02, 0.02, 0.005, 0.01)
+                      for f in ("alpha", "beta")}
+        claim = PolicyComparison.evaluate_claim(per_family, self._held_out(
+            persists=True))
+        assert claim["claim_ready"]
+        assert claim["training_families_analysed"] == 2
+
+    def test_claim_refused_without_family_significance(self) -> None:
+        per_family = {
+            "alpha": _family_block(0.02, 0.02, 0.005, 0.01),
+            "beta": _family_block(0.02, 0.02, -0.001, 0.4),  # CI covers 0
+        }
+        claim = PolicyComparison.evaluate_claim(per_family, self._held_out(
+            persists=True))
+        assert not claim["claim_ready"]
+
+    def test_claim_refused_without_held_out_persistence(self) -> None:
+        per_family = {f: _family_block(0.02, 0.02, 0.005, 0.01)
+                      for f in ("alpha", "beta")}
+        claim = PolicyComparison.evaluate_claim(per_family, self._held_out(
+            persists=False))
+        assert not claim["claim_ready"]
+        assert not claim["held_out_persistence_vs_static"]
+
+    def test_claim_refused_with_single_family(self) -> None:
+        per_family = {"alpha": _family_block(0.02, 0.02, 0.005, 0.01)}
+        claim = PolicyComparison.evaluate_claim(per_family, self._held_out(
+            persists=True))
+        assert not claim["claim_ready"]

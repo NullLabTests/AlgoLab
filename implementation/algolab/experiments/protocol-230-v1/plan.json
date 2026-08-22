@@ -13,7 +13,7 @@
   "artifact_bundle_version": "1.0.0",
   "baseline_version": "1.0.0",
   "budget_credits": 150.0,
-  "created_at": "2026-08-18T21:57:10+00:00",
+  "created_at": "2026-08-22T19:06:03+00:00",
   "discovery_gate": "valid implementation AND effect_1 >= threshold AND effect_2 >= threshold (2-seed replication gate)",
   "discovery_gate_version": "1.0.0",
   "environment_version": "1.1.0",

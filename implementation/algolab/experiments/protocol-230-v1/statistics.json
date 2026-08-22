@@ -122,5 +122,145 @@
       "discoveries_per_credit": 0.016753,
       "validated_discoveries": 195
     }
+  },
+  "per_family": {
+    "alpha": {
+      "comparisons": [
+        {
+          "adjusted_p": 0.5492253873063468,
+          "base": "static",
+          "base_mean": 0.017241379310344827,
+          "candidate": "knowledge-informed",
+          "candidate_mean": 0.016727941176470588,
+          "ci_high": 0.0007961460446247459,
+          "ci_low": -0.0019726166328600404,
+          "delta": -0.0005134381338742396,
+          "effect_size": -0.2873215941420607,
+          "p_value": 0.5492253873063468,
+          "relative_delta": -0.029779411764705895
+        },
+        {
+          "adjusted_p": 0.009745127436281859,
+          "base": "static",
+          "base_mean": 0.017241379310344827,
+          "candidate": "adaptive",
+          "candidate_mean": 0.02797288820564504,
+          "ci_high": 0.01735976859064523,
+          "ci_low": 0.005625703390028948,
+          "delta": 0.010731508895300213,
+          "effect_size": 1.7152190436795713,
+          "p_value": 0.006496751624187906,
+          "relative_delta": 0.6224275159274124
+        },
+        {
+          "adjusted_p": 0.009745127436281859,
+          "base": "knowledge-informed",
+          "base_mean": 0.016727941176470588,
+          "candidate": "adaptive",
+          "candidate_mean": 0.02797288820564504,
+          "ci_high": 0.017039810162221097,
+          "ci_low": 0.006650289437157705,
+          "delta": 0.011244947029174453,
+          "effect_size": 1.7864658299443592,
+          "p_value": 0.006496751624187906,
+          "relative_delta": 0.6722254048209783
+        }
+      ],
+      "per_condition": {
+        "adaptive": {
+          "efficiency_mean": 0.02797288820564504,
+          "trials": 8
+        },
+        "b-shuffled": {
+          "efficiency_mean": 0.025619322441432727,
+          "trials": 8
+        },
+        "c-permuted": {
+          "efficiency_mean": 0.007493806537924185,
+          "trials": 8
+        },
+        "knowledge-informed": {
+          "efficiency_mean": 0.016727941176470588,
+          "trials": 8
+        },
+        "random": {
+          "efficiency_mean": 0.015277202709370852,
+          "trials": 8
+        },
+        "static": {
+          "efficiency_mean": 0.017241379310344827,
+          "trials": 8
+        }
+      }
+    },
+    "beta": {
+      "comparisons": [
+        {
+          "adjusted_p": 0.009745127436281859,
+          "base": "static",
+          "base_mean": 0.016267123287671232,
+          "candidate": "knowledge-informed",
+          "candidate_mean": 0.02642857142857143,
+          "ci_high": 0.011819960861056753,
+          "ci_low": 0.00825587084148728,
+          "delta": 0.010161448140900198,
+          "effect_size": 4.216635272827529,
+          "p_value": 0.006496751624187906,
+          "relative_delta": 0.6246616541353385
+        },
+        {
+          "adjusted_p": 0.009745127436281859,
+          "base": "static",
+          "base_mean": 0.016267123287671232,
+          "candidate": "adaptive",
+          "candidate_mean": 0.027678728276554362,
+          "ci_high": 0.017776717442441088,
+          "ci_low": 0.0060538916777749426,
+          "delta": 0.01141160498888313,
+          "effect_size": 1.836920335788916,
+          "p_value": 0.006496751624187906,
+          "relative_delta": 0.7015134014218682
+        },
+        {
+          "adjusted_p": 0.7861069465267366,
+          "base": "knowledge-informed",
+          "base_mean": 0.02642857142857143,
+          "candidate": "adaptive",
+          "candidate_mean": 0.027678728276554362,
+          "ci_high": 0.006688233264320221,
+          "ci_low": -0.0028739255913168955,
+          "delta": 0.0012501568479829327,
+          "effect_size": 0.1953625737388626,
+          "p_value": 0.7861069465267366,
+          "relative_delta": 0.047303232085840696
+        }
+      ],
+      "per_condition": {
+        "adaptive": {
+          "efficiency_mean": 0.027678728276554362,
+          "trials": 8
+        },
+        "b-shuffled": {
+          "efficiency_mean": 0.020295238095238095,
+          "trials": 8
+        },
+        "c-permuted": {
+          "efficiency_mean": 0.02656730990518273,
+          "trials": 8
+        },
+        "knowledge-informed": {
+          "efficiency_mean": 0.02642857142857143,
+          "trials": 8
+        },
+        "random": {
+          "efficiency_mean": 0.017888196152826833,
+          "trials": 8
+        },
+        "static": {
+          "efficiency_mean": 0.016267123287671232,
+          "trials": 8
+        }
+      }
+    }
   }
 }

@@ -59,8 +59,8 @@ implementation/algolab/         the executable core (see its README)
 |---|---|---|
 | M0 | Contracts: IDs, models, state machines, append-only event store, budget ledger, manifest validation, CLI | Delivered |
 | M1 | Deterministic execution core: expansion, persistent queue, isolated workers, hash-sealed artifacts, recovery, aggregation | Delivered |
-| M4 | Knowledge layer: schema v3, deterministic statistics, evidence records, operator catalog, skill registry | In progress |
-| M5 | Causal loop evaluation: A/B/C search-policy protocol (discoveries/compute), staged autonomy ladder | Planned |
+| M4 | Knowledge layer: schema v3, deterministic statistics, evidence records, operator catalog, skill registry | Delivered |
+| M5 | Causal loop evaluation: A/B/C/D search-policy protocol executed against the deterministic toy environment (`experiments/protocol-230-v1/`); adaptive policy beats static on all families incl. held-out, but the pre-registered ≥2-family promotion criterion is not yet met | In progress |
 
 ## Non-negotiable constraints
 

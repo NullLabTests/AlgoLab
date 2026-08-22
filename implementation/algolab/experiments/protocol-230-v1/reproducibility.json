@@ -61,7 +61,7 @@
       "pass": true
     }
   ],
-  "manifest_path": "/tmp/full-artifacts/manifest.json",
+  "manifest_path": "experiments/protocol-230-v1/manifest.json",
   "reproducible": true,
-  "statistics_path": "/tmp/full-artifacts/statistics.json"
+  "statistics_path": "experiments/protocol-230-v1/statistics.json"
 }

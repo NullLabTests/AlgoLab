@@ -18,7 +18,7 @@ the executable core of the platform, delivered in three milestones:
   gates which agent role may invoke which operator
   (`algolab.knowledge.registry`). The database schema is at **v3**.
 
-The test suite currently has **275 passing tests** covering unit, integration,
+The test suite currently has **296 passing tests** covering unit, integration,
 ontology-invariant, and protocol-230 compliance behavior. `ruff` and `mypy`
 (strict) are clean.
 
@@ -28,7 +28,7 @@ ontology-invariant, and protocol-230 compliance behavior. `ruff` and `mypy`
 bash scripts/setup.sh          # venv + editable install
 make lint                      # ruff
 make type                      # mypy (strict)
-make test                      # pytest (279 tests)
+make test                      # pytest (296 tests)
 ```
 
 ## End-to-end run
@@ -76,14 +76,21 @@ algolab search-run EXP_ID [--dir DIR] [--budget N] [--trials N] [--episodes N]
 
 Runs the pre-registered A/B/C cumulative-search policy comparison against the
 deterministic toy environment: Statistic (A) vs Knowledge-informed (B) vs
-Adaptive (C), plus a Random reference and two ablations (`c-permuted`,
-`b-shuffled`), under identical budgets, task rotation, and seeds. Artifacts
-(manifest, knowledge snapshot, per-condition raw events and operator
-selections, statistics, report) are written to `--dir`, and every attempt is
+Adaptive (C), plus a Random calibration floor (D) and two ablations
+(`c-permuted`, `b-shuffled`), under identical budgets, task rotation, and
+seeds. Artifacts (manifest, knowledge snapshot, per-condition raw events and
+operator selections, statistics incl. per-family comparisons, report,
+promotion-criterion status) are written to `--dir`, and every attempt is
 persisted to schema-v3 tables (`tasks`, `evidence`, `operator_uses`,
 `search_episodes`) with the `operator_stats` aggregate refreshed. The manifest
 freezes before any episode runs; an existing artifact directory is refused
 unless `--force` is passed.
+
+First executed run: `experiments/protocol-230-v1/` — pooled C > B > A
+(adjusted p < 0.05) with transfer to the held-out family; per-family analysis
+shows the adaptive advantage over B on one of two training families only, so
+the pre-registered promotion criterion is **not** met and the loop claim
+remains under experimental validation (see that directory's `report.md`).
 
 ## Package layout
 
@@ -128,13 +135,15 @@ docs/decisions/  architecture decision records (ADR-0001..0008)
   status; promotion claims require the statistical analysis stored with them.
 - Operators are invoked only by registered agent roles (`knowledge.registry`),
   and each invocation draws from a per-operator credit budget.
-- The causal knowledge loop (research-loop step 10) is supported by
-  evidence from the pre-registered A/B/C protocol
-  (`../../spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md`): the adaptive
-  policy (C) outperforms both static (A) and knowledge-informed (B) with
-  adjusted p < 0.05 and the advantage transfers to the held-out family.
-  This evidence is specific to the toy environment; generalisation to real
-  workloads remains unproven.
+- The causal knowledge loop (research-loop step 10) is **under
+  experimental validation** per the pre-registered A/B/C protocol
+  (`../../spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md`). First executed
+  run (toy environment): pooled C > B > A with adjusted p < 0.05 and
+  held-out transfer; however, the protocol's promotion criterion — C > B
+  with adjusted p < 0.05 on >= 2 training task families plus held-out
+  persistence — is not yet met, because C ≈ B on one family where frozen
+  historical knowledge already sufficed. Until it is met, no autonomy is
+  granted by this evidence.
 
 ## Documentation
 

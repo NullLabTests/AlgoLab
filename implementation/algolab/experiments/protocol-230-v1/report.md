@@ -24,6 +24,33 @@ Discovery gate: valid implementation AND effect_1 >= threshold AND effect_2 >= t
 | static | adaptive | 0.011161 | 0.007090 | 0.015430 | 0.006497 | 0.006497 | 2.478 |
 | knowledge-informed | adaptive | 0.006265 | 0.003625 | 0.009127 | 0.006497 | 0.006497 | 1.361 |
 
+## Per-family comparisons (protocol §5 pairing: family × seed)
+
+### family alpha
+
+| base | candidate | delta | CI low | CI high | p | adjusted p | d |
+|---|---|---|---|---|---|---|---|
+| static | knowledge-informed | -0.000513 | -0.001973 | 0.000796 | 0.549225 | 0.549225 | -0.287 |
+| static | adaptive | 0.010732 | 0.005626 | 0.017360 | 0.006497 | 0.009745 | 1.715 |
+| knowledge-informed | adaptive | 0.011245 | 0.006650 | 0.017040 | 0.006497 | 0.009745 | 1.786 |
+
+Mean efficiency per condition: adaptive 0.027973, b-shuffled 0.025619, c-permuted 0.007494, knowledge-informed 0.016728, random 0.015277, static 0.017241
+
+### family beta
+
+| base | candidate | delta | CI low | CI high | p | adjusted p | d |
+|---|---|---|---|---|---|---|---|
+| static | knowledge-informed | 0.010161 | 0.008256 | 0.011820 | 0.006497 | 0.009745 | 4.217 |
+| static | adaptive | 0.011412 | 0.006054 | 0.017777 | 0.006497 | 0.009745 | 1.837 |
+| knowledge-informed | adaptive | 0.001250 | -0.002874 | 0.006688 | 0.786107 | 0.786107 | 0.195 |
+
+Mean efficiency per condition: adaptive 0.027679, b-shuffled 0.020295, c-permuted 0.026567, knowledge-informed 0.026429, random 0.017888, static 0.016267
+
+
+## Calibration floor (condition D — uniform random)
+
+Random selection achieves 184 discoveries over 11060.0 credits (0.016637 discoveries/credit, 0.993x of static, 0.768x of knowledge-informed, 0.593x of adaptive). This is the floor any informed policy must clear to justify its knowledge channel; arms at or below this level would indicate the task or budget carries no exploitable signal.
+
 ## Ablations (exploratory; p-values unadjusted)
 
 | base | candidate | delta | p | d | note |
@@ -51,6 +78,15 @@ Transfer evaluation on held-out family **gamma**, which was never included in th
 | static | adaptive | 0.036750 | 0.030511 | 0.042434 | 0.006497 | 0.009745 | 5.015 |
 | knowledge-informed | adaptive | 0.036081 | 0.029454 | 0.042099 | 0.006497 | 0.009745 | 4.955 |
 
+### Promotion-criterion status (protocol 230 §5)
+
+- C > A per training family: {'alpha': True, 'beta': True}
+- C > B per training family: {'alpha': True, 'beta': False}
+- gap persists on held-out vs A: True
+- gap persists on held-out vs B: True
+
+**promotion criterion NOT met; unmet components: C>B with adjusted p < 0.05 on >=2 families**
+
 ## Adaptive-policy adaptation evidence (condition C)
 
 ### family alpha
@@ -71,6 +107,7 @@ Transfer evaluation on held-out family **gamma**, which was never included in th
 - The held-out family provides evidence that the adaptive advantage transfers beyond the training families; it does not by itself rule out all benchmark-specific adaptation or memorisation.
 - The permuted-outcome ablation is consistent with the interpretation that the adaptive feedback loop contributes to the advantage, but it does not constitute definitive causal proof (other mechanisms correlated with feedback are also disrupted by permutation).
 - Statistical inference is based on 8 independent seeds; wider replication would strengthen confidence.
+- The training set comprises exactly 2 task families, the minimum required by the promotion criterion; additional families would materially strengthen the >=2-family claim.
 - The comparison measures discovery efficiency, not absolute capability; a policy with lower efficiency might still be preferable under different cost models.
 
 Manifest: `manifest.json` · knowledge snapshot: `knowledge-snapshot.json` · raw events: `conditions/<arm>/raw-results.jsonl` · selections: `conditions/<arm>/operator-selections.jsonl` · held-out: `conditions/<arm>/held-out-raw-results.jsonl` · checksums: `checksums.json` · reproducibility: `reproducibility.json`
