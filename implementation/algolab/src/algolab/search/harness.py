@@ -31,11 +31,15 @@ from typing import Any, TextIO
 from algolab.knowledge.evidence import PROMOTE, EvidenceRepo
 from algolab.knowledge.operators import OPERATOR_CATALOG
 from algolab.search.policies import (
+    ADAPTIVE_COST_AWARE_POLICY_VERSION,
     ADAPTIVE_POLICY_VERSION,
+    COST_RANKED_KNOWLEDGE_POLICY_VERSION,
     KNOWLEDGE_INFORMED_POLICY_VERSION,
     RANDOM_POLICY_VERSION,
     STATIC_POLICY_VERSION,
+    AdaptiveCostAwarePolicy,
     AdaptivePolicy,
+    CostRankedKnowledgePolicy,
     KnowledgeInformedPolicy,
     KnowledgeSnapshot,
     RandomPolicy,
@@ -65,6 +69,15 @@ OPERATOR_REGISTRY_VERSION = "1.0.0"
 PRIOR_POLICY_VERSION = "1.0.0"
 
 ARMS_PROCEDURAL = ("static", "knowledge-informed", "adaptive", "random")
+# Protocol 231 (experiment protocol-230-v2): adds the cost-aware adaptive
+# arm C+ and the frozen cost-ranked knowledge arm B+.
+ARMS_PROTOCOL_231 = (
+    "static",
+    "knowledge-informed",
+    "adaptive",
+    "adaptive-cost-aware",
+    "random",
+)
 PRIMARY_COMPARISONS: tuple[tuple[str, str], ...] = (
     ("static", "knowledge-informed"),
     ("static", "adaptive"),
@@ -76,6 +89,39 @@ ABLATION_COMPARISONS: tuple[tuple[str, str, str], ...] = (
      "shuffled-K0 knowledge (association destroyed)"),
     ("b-shuffled", "static", "shuffled knowledge vs no knowledge"),
 )
+
+
+def primary_comparisons_for(
+    arms: tuple[str, ...],
+) -> tuple[tuple[str, str], ...]:
+    """Pre-registered comparison matrix for the given arm set.
+
+    Protocol 230 arms yield exactly PRIMARY_COMPARISONS; adding the
+    protocol-231 arms extends the matrix with their pre-registered pairs
+    (spec/research/231_COST_AWARE_SELECTION.md §6).
+    """
+    pairs = list(PRIMARY_COMPARISONS)
+    if "adaptive-cost-aware" in arms:
+        pairs += [
+            ("static", "adaptive-cost-aware"),
+            ("knowledge-informed", "adaptive-cost-aware"),
+            ("adaptive", "adaptive-cost-aware"),
+            ("knowledge-informed-cost-rank", "adaptive-cost-aware"),
+        ]
+    return tuple(pairs)
+
+
+def ablation_comparisons_for(
+    arms: tuple[str, ...],
+) -> tuple[tuple[str, str, str], ...]:
+    """Ablation comparison rows for the given arm set."""
+    rows = list(ABLATION_COMPARISONS)
+    if "adaptive-cost-aware" in arms:
+        rows.append((
+            "adaptive-cost-aware", "c-plus-permuted",
+            "permuted-outcome feedback on cost-aware machinery",
+        ))
+    return tuple(rows)
 
 DEFAULT_BUDGET_CREDITS = 150.0
 DEFAULT_EPISODES_PER_TRIAL = 10
@@ -138,6 +184,11 @@ def freeze_manifest(cfg: ExperimentConfig) -> dict[str, Any]:
             "knowledge-informed": KNOWLEDGE_INFORMED_POLICY_VERSION,
             "adaptive": ADAPTIVE_POLICY_VERSION,
             "random": RANDOM_POLICY_VERSION,
+            **({"adaptive-cost-aware": ADAPTIVE_COST_AWARE_POLICY_VERSION}
+               if "adaptive-cost-aware" in cfg.arms else {}),
+            **({"knowledge-informed-cost-rank":
+                COST_RANKED_KNOWLEDGE_POLICY_VERSION}
+               if "knowledge-informed-cost-rank" in cfg.arms else {}),
         },
         "budget_credits": cfg.budget_credits,
         "episodes_per_trial": cfg.episodes_per_trial,
@@ -517,10 +568,19 @@ class PolicyComparison:
             return KnowledgeInformedPolicy(snapshot, top_k=self.cfg.top_k)
         if arm == "adaptive":
             return AdaptivePolicy(snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed)
+        if arm == "adaptive-cost-aware":
+            return AdaptiveCostAwarePolicy(
+                snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed)
+        if arm == "knowledge-informed-cost-rank":
+            return CostRankedKnowledgePolicy(snapshot, top_k=self.cfg.top_k)
         if arm == "random":
             return RandomPolicy(DEFAULT_OPERATORS, seed=rng_seed)
         if arm == "c-permuted":
             return AdaptivePolicy(
+                snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed,
+                feedback_shuffle_seed=rng_seed + 999)
+        if arm == "c-plus-permuted":
+            return AdaptiveCostAwarePolicy(
                 snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed,
                 feedback_shuffle_seed=rng_seed + 999)
         if arm == "b-shuffled":
@@ -557,6 +617,8 @@ class PolicyComparison:
         arms = list(self.cfg.arms)
         if "permuted" in self.cfg.ablations:
             arms.append("c-permuted")
+            if "adaptive-cost-aware" in self.cfg.arms:
+                arms.append("c-plus-permuted")
         if "shuffled" in self.cfg.ablations:
             arms.append("b-shuffled")
         results: dict[str, list[dict[str, Any]]] = {}
@@ -659,7 +721,7 @@ class PolicyComparison:
                 "efficiencies": effs[arm],
             }
         comparisons, p_values = self._comparison_matrix(
-            effs, PRIMARY_COMPARISONS,
+            effs, primary_comparisons_for(self.cfg.arms),
             metric="discoveries_per_credit", seed=self.cfg.analysis_seed)
         adjusted = list(benjamini_hochberg(p_values))
         for row, q in zip(comparisons, adjusted, strict=True):
@@ -670,7 +732,7 @@ class PolicyComparison:
         per_family: dict[str, dict[str, Any]] = {}
         for family in sorted(fam_effs):
             rows, fam_p = self._comparison_matrix(
-                fam_effs[family], PRIMARY_COMPARISONS,
+                fam_effs[family], primary_comparisons_for(self.cfg.arms),
                 metric=f"discoveries_per_credit ({family})",
                 seed=self.cfg.analysis_seed)
             fam_adj = list(benjamini_hochberg(fam_p))
@@ -688,7 +750,7 @@ class PolicyComparison:
                 },
             }
         ablations: list[dict[str, Any]] = []
-        for base, cand, note in ABLATION_COMPARISONS:
+        for base, cand, note in ablation_comparisons_for(self.cfg.arms):
             if base in effs and cand in effs:
                 analysis = analyze(
                     effs[base], effs[cand],
@@ -731,17 +793,21 @@ class PolicyComparison:
     def evaluate_claim(
         per_family: dict[str, dict[str, Any]],
         held_out_stats: dict[str, Any] | None,
+        *,
+        candidate: str = "adaptive",
     ) -> dict[str, Any]:
         """Assess protocol 230 §5 promotion criterion (pre-registered).
 
-        Claim-ready requires: C beats A and C beats B with adjusted
+        Claim-ready requires: the *candidate* arm beats A and B with adjusted
         p < 0.05 and CI excluding 0 on >= 2 training task families, and the
         gap persists on the held-out family (same direction, CI excluding 0).
+        Protocol 231 evaluates the same criterion with
+        ``candidate="adaptive-cost-aware"``.
         """
         def adaptive_row(family: str, base: str) -> dict[str, Any] | None:
             return next(
                 (c for c in per_family.get(family, {}).get("comparisons", [])
-                 if c["base"] == base and c["candidate"] == "adaptive"),
+                 if c["base"] == base and c["candidate"] == candidate),
                 None)
 
         def significant(row: dict[str, Any] | None) -> bool:
@@ -753,11 +819,14 @@ class PolicyComparison:
                 return False
             row = next(
                 (c for c in held_out_stats.get("comparisons", [])
-                 if c["base"] == base and c["candidate"] == "adaptive"),
+                 if c["base"] == base and c["candidate"] == candidate),
                 None)
             return row is not None and row["delta"] > 0 and row["ci_low"] > 0
 
         families = sorted(per_family)
+        # "C" is the protocol-230 display name of the adaptive candidate;
+        # other candidates (protocol 231) are shown under their arm label.
+        name = "C" if candidate == "adaptive" else candidate
         by_family_vs_static = {f: significant(adaptive_row(f, "static"))
                                for f in families}
         by_family_vs_informed = {
@@ -773,16 +842,17 @@ class PolicyComparison:
                        and held_out_static and held_out_informed)
         if claim_ready:
             verdict = (
-                "promotion criterion MET: C > A and C > B (adjusted p < 0.05,"
+                f"promotion criterion MET: {name} > A and {name} > B "
+                "(adjusted p < 0.05,"
                 " CI excluding 0) on all "
                 f"{len(families)} training families, and the gap persists on"
                 f" held-out {HELD_OUT_FAMILY}")
         else:
             unmet: list[str] = []
             if not two_families_static:
-                unmet.append("C>A with adjusted p < 0.05 on >=2 families")
+                unmet.append(f"{name}>A with adjusted p < 0.05 on >=2 families")
             if not two_families_informed:
-                unmet.append("C>B with adjusted p < 0.05 on >=2 families")
+                unmet.append(f"{name}>B with adjusted p < 0.05 on >=2 families")
             if not held_out_static or not held_out_informed:
                 unmet.append(f"gap persistence on held-out {HELD_OUT_FAMILY}")
             verdict = ("promotion criterion NOT met; unmet components: "
@@ -857,7 +927,8 @@ class PolicyComparison:
         ]
         pc = stats["per_condition"]
         arm_order = ("static", "knowledge-informed", "adaptive", "random",
-                     "c-permuted", "b-shuffled")
+                     "adaptive-cost-aware", "knowledge-informed-cost-rank",
+                     "c-permuted", "b-shuffled", "c-plus-permuted")
         for arm in arm_order:
             if arm not in pc:
                 continue
@@ -1056,36 +1127,44 @@ class PolicyComparison:
 
     def _adaptation_summary(
         self, results: dict[str, list[dict[str, Any]]]) -> list[str]:
-        events = self._events.get("adaptive", [])
-        by_family: dict[str, dict[str, list[float]]] = {}
-        for e in events:
-            fam = e["family"]
-            op = e["operator"]
-            entry = by_family.setdefault(fam, {"useful_share": []})
-            entry.setdefault(op, []).append(e["discovery"])
-            entry["useful_share"].append(1.0 if is_useful(fam, op) else 0.0)
+        labels = [label for label in ("adaptive", "adaptive-cost-aware")
+                  if self._events.get(label)]
+        multi = len(labels) > 1
         lines: list[str] = []
-        all_families = list(TASK_FAMILIES) + [HELD_OUT_FAMILY]
-        for fam in all_families:
-            fam_entry = by_family.get(fam)
-            if not fam_entry:
-                continue
-            share = fam_entry["useful_share"]
-            half = max(1, len(share) // 2)
-            early = sum(share[:half]) / len(share[:half])
-            late = sum(share[half:]) / len(share[half:]) if share[half:] else 0.0
-            per_op = {
-                op: (sum(v), len(v)) for op, v in fam_entry.items()
-                if op != "useful_share"
-            }
-            lines.append(f"### family {fam}")
-            shift = ("shifted toward useful operators" if late > early
-                     else "no upward shift")
-            lines.append(
-                f"- fraction of selections on useful operators: "
-                f"early {early:.3f} -> late {late:.3f} ({shift})")
-            lines.append(f"- operator attempt counts: {dict(per_op)}")
-            lines.append("")
+        for label in labels:
+            events = self._events.get(label, [])
+            by_family: dict[str, dict[str, list[float]]] = {}
+            for e in events:
+                fam = e["family"]
+                op = e["operator"]
+                entry = by_family.setdefault(fam, {"useful_share": []})
+                entry.setdefault(op, []).append(e["discovery"])
+                entry["useful_share"].append(1.0 if is_useful(fam, op) else 0.0)
+            all_families = list(TASK_FAMILIES) + [HELD_OUT_FAMILY]
+            for fam in all_families:
+                fam_entry = by_family.get(fam)
+                if not fam_entry:
+                    continue
+                share = fam_entry["useful_share"]
+                half = max(1, len(share) // 2)
+                early = sum(share[:half]) / len(share[:half])
+                late = (sum(share[half:]) / len(share[half:])
+                        if share[half:] else 0.0)
+                per_op = {
+                    op: (sum(v), len(v)) for op, v in fam_entry.items()
+                    if op != "useful_share"
+                }
+                if multi:
+                    lines.append(f"### {label} · family {fam}")
+                else:
+                    lines.append(f"### family {fam}")
+                shift = ("shifted toward useful operators" if late > early
+                         else "no upward shift")
+                lines.append(
+                    f"- fraction of selections on useful operators: "
+                    f"early {early:.3f} -> late {late:.3f} ({shift})")
+                lines.append(f"- operator attempt counts: {dict(per_op)}")
+                lines.append("")
         return lines
 
     # -- held-out transfer evaluation --------------------------------------
@@ -1253,7 +1332,7 @@ class PolicyComparison:
             }
         comparisons: list[dict[str, Any]] = []
         p_values: list[float] = []
-        for base, cand in PRIMARY_COMPARISONS:
+        for base, cand in primary_comparisons_for(self.cfg.arms):
             if base in effs and cand in effs:
                 analysis = analyze(
                     effs[base], effs[cand],
@@ -1341,7 +1420,13 @@ class PolicyComparison:
             "pass": manifest.get("budget_credits") == cfg.budget_credits,
         })
         # 2. Stats contain expected arms
-        expected_arms = set(cfg.arms) | {"c-permuted", "b-shuffled"}
+        expected_arms = set(cfg.arms)
+        if "permuted" in cfg.ablations:
+            expected_arms.add("c-permuted")
+            if "adaptive-cost-aware" in cfg.arms:
+                expected_arms.add("c-plus-permuted")
+        if "shuffled" in cfg.ablations:
+            expected_arms.add("b-shuffled")
         actual_arms = set(stats.get("per_condition", {}).keys())
         checks.append({
             "check": "stats_arms_present",
@@ -1399,11 +1484,11 @@ class PolicyComparison:
             "protocol_version": PROTOCOL_VERSION,
             "primary_comparisons": [
                 {"base": b, "candidate": c}
-                for b, c in PRIMARY_COMPARISONS
+                for b, c in primary_comparisons_for(self.cfg.arms)
             ],
             "ablation_comparisons": [
                 {"base": b, "candidate": c, "note": n}
-                for b, c, n in ABLATION_COMPARISONS
+                for b, c, n in ablation_comparisons_for(self.cfg.arms)
             ],
             "promotion_criterion": (
                 "C beats both A and B (adjusted p < 0.05, CI excluding 0) "
@@ -1487,8 +1572,14 @@ def main(cfg: ExperimentConfig, conn: sqlite3.Connection,
     stats = comp.analyze(results)
     held_out_results = comp.run_held_out()
     held_out_stats = comp.analyze_held_out(held_out_results)
+    # Protocol 230 evaluates C; protocol 231 evaluates its cost-aware
+    # successor when present.
+    claim_candidate = (
+        "adaptive-cost-aware"
+        if "adaptive-cost-aware" in cfg.arms else "adaptive")
     held_out_stats["claim_readiness"] = PolicyComparison.evaluate_claim(
-        stats.get("per_family", {}), held_out_stats)
+        stats.get("per_family", {}), held_out_stats,
+        candidate=claim_candidate)
     report = comp.write_report(results, stats, held_out_stats)
     comp.write_artifact_bundle(stats, held_out_stats)
     out.write(f"experiment {cfg.experiment_id} complete; report: {report}\n")

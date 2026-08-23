@@ -26,10 +26,14 @@ import random
 from dataclasses import dataclass, field
 from typing import Any
 
+from algolab.knowledge.operators import OPERATOR_BUDGETS
+
 STATIC_POLICY_VERSION = "1.0.0"
 KNOWLEDGE_INFORMED_POLICY_VERSION = "1.0.0"
 ADAPTIVE_POLICY_VERSION = "1.0.0"
 RANDOM_POLICY_VERSION = "1.0.0"
+ADAPTIVE_COST_AWARE_POLICY_VERSION = "1.0.0"
+COST_RANKED_KNOWLEDGE_POLICY_VERSION = "1.0.0"
 
 
 class PolicyError(RuntimeError):
@@ -66,6 +70,26 @@ class KnowledgeSnapshot:
             key=lambda op: (
                 round(self.success_rate(op), 12),
                 round(self.sum_effect.get(op, 0.0), 12),
+                op,
+            ),
+            reverse=True,
+        )
+
+    def ranking_by_cost(self) -> list[str]:
+        """Operators ranked by K0 success rate *per credit cost*; ties by
+        total effect per credit then catalog order (deterministic).
+
+        Protocol 231: the frozen cost-ranked reading of history (arm B+).
+        """
+        def rate_per_credit(op: str) -> float:
+            return self.success_rate(op) / OPERATOR_BUDGETS.get(op, 1.0)
+
+        return sorted(
+            self.attempts,
+            key=lambda op: (
+                round(rate_per_credit(op), 12),
+                round(self.sum_effect.get(op, 0.0)
+                      / OPERATOR_BUDGETS.get(op, 1.0), 12),
                 op,
             ),
             reverse=True,
@@ -200,14 +224,22 @@ class KnowledgeInformedPolicy:
     label = "knowledge-informed"
     version = KNOWLEDGE_INFORMED_POLICY_VERSION
 
-    def __init__(self, snapshot: KnowledgeSnapshot, top_k: int = 3):
+    def __init__(
+        self,
+        snapshot: KnowledgeSnapshot,
+        top_k: int = 3,
+        *,
+        rank_by_cost: bool = False,
+    ):
         if not snapshot.attempts:
             raise PolicyError("knowledge-informed policy requires a non-empty snapshot")
         self._snapshot = snapshot
-        self._ranked = snapshot.ranking()
+        self._ranked = (
+            snapshot.ranking_by_cost() if rank_by_cost else snapshot.ranking())
         self._top = self._ranked[: max(1, top_k)]
         self._pointer = 0
         self.snapshot_id = snapshot.snapshot_id
+        self._basis = "cost-rank" if rank_by_cost else "rank"
 
     def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
         operator = self._top[self._pointer % len(self._top)]
@@ -228,11 +260,25 @@ class KnowledgeInformedPolicy:
                 self._snapshot.success_rate(operator), 6),
             selection_probability=1.0 / len(self._top),
             reason=(
-                f"frozen K0 rank {self._ranked.index(operator) + 1}"
+                f"frozen K0 {self._basis} "
+                f"{self._ranked.index(operator) + 1}"
                 f" of {len(self._ranked)} (top-{len(self._top)} cycle)"
             ),
         )
         return operator, record
+
+
+class CostRankedKnowledgePolicy(KnowledgeInformedPolicy):
+    """Protocol-231 arm B+: frozen K0 ranked by success rate per credit.
+
+    Same no-update contract as B; only the frozen ordering basis differs.
+    """
+
+    label = "knowledge-informed-cost-rank"
+    version = COST_RANKED_KNOWLEDGE_POLICY_VERSION
+
+    def __init__(self, snapshot: KnowledgeSnapshot, top_k: int = 3):
+        super().__init__(snapshot, top_k, rank_by_cost=True)
 
 
 class AdaptivePolicy:
@@ -364,6 +410,54 @@ class AdaptivePolicy:
             self._beta[family][operator] += 1.0
 
 
+class AdaptiveCostAwarePolicy(AdaptivePolicy):
+    """Protocol-231 arm C+: Thompson sampling normalized by credit cost.
+
+    Posteriors and updates are identical to :class:`AdaptivePolicy` (same
+    K0 initialization, same binary-discovery feedback). The only mechanism
+    difference is the selection score: ``theta / credit_cost`` where
+    ``theta ~ Beta(alpha, beta)``, making the argmax track discoveries per
+    credit rather than raw success probability. Everything else — including
+    the absence of any other change — is the pre-registered single-mechanism
+    test of the v1 beta-family diagnosis (protocol 231 §3).
+    """
+
+    label = "adaptive-cost-aware"
+    version = ADAPTIVE_COST_AWARE_POLICY_VERSION
+
+    def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
+        if family not in self._known_families:
+            self._init_family(family, self._snapshot_snapshot)
+        scores: dict[str, float] = {}
+        for op in self._operators:
+            a = self._alpha[family][op]
+            b = self._beta[family][op]
+            scores[op] = self._rng.betavariate(a, b) / OPERATOR_BUDGETS[op]
+        operator = max(scores, key=lambda op: scores[op])
+        stats = self.posterior_stats(family, operator)
+        record = SelectionRecord(
+            step=step,
+            operator=operator,
+            policy=self.label,
+            policy_version=self.version,
+            family=family,
+            prior_stats={
+                op: round(self.posterior_stats(family, op)["mean"], 6)
+                for op in self._operators
+            },
+            posterior_stats=stats,
+            selection_score=round(scores[operator], 6),
+            selection_probability=round(stats["mean"] / OPERATOR_BUDGETS[operator], 6),
+            reason=(
+                f"cost-normalized thompson argmax (theta/cost; "
+                f"{int(self._alpha[family][operator] - 1)} successes, "
+                f"{int(self._beta[family][operator] - 1)} failures seen; "
+                f"cost {OPERATOR_BUDGETS[operator]:g})"
+            ),
+        )
+        return operator, record
+
+
 def build_prior_snapshot(
     aggregates: dict[str, dict[str, float]],
     *,
@@ -404,12 +498,16 @@ __all__ = [
     "KNOWLEDGE_INFORMED_POLICY_VERSION",
     "ADAPTIVE_POLICY_VERSION",
     "RANDOM_POLICY_VERSION",
+    "ADAPTIVE_COST_AWARE_POLICY_VERSION",
+    "COST_RANKED_KNOWLEDGE_POLICY_VERSION",
     "PolicyError",
     "KnowledgeSnapshot",
     "SelectionRecord",
     "StaticPolicy",
     "RandomPolicy",
     "KnowledgeInformedPolicy",
+    "CostRankedKnowledgePolicy",
     "AdaptivePolicy",
+    "AdaptiveCostAwarePolicy",
     "build_prior_snapshot",
 ]

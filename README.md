@@ -22,9 +22,12 @@ statistical gates no claim may bypass.
 8. Perform statistical analysis and ablation.
 9. Accept, reject, revise, or archive.
 10. Update the knowledge base and search policy — the causal loop at the
-    heart of the platform; under experimental validation per
-    `spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md` (A/B/C protocol), not
-    yet demonstrated.
+    heart of the platform; demonstrated in the toy environment by
+    `spec/research/231_COST_AWARE_SELECTION.md` (cost-aware C+, experiment
+    `experiments/protocol-230-v2/`, promotion criterion met); real-workload
+    transfer remains unproven. Plain adaptive C per
+    `spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md` did not meet its
+    pre-registered ≥2-family criterion and remains as recorded.
 11. Publish reproducible reports.
 
 Every step in this loop has a versioned contract in this repository; no step
@@ -60,7 +63,7 @@ implementation/algolab/         the executable core (see its README)
 | M0 | Contracts: IDs, models, state machines, append-only event store, budget ledger, manifest validation, CLI | Delivered |
 | M1 | Deterministic execution core: expansion, persistent queue, isolated workers, hash-sealed artifacts, recovery, aggregation | Delivered |
 | M4 | Knowledge layer: schema v3, deterministic statistics, evidence records, operator catalog, skill registry | Delivered |
-| M5 | Causal loop evaluation: A/B/C/D search-policy protocol executed against the deterministic toy environment (`experiments/protocol-230-v1/`); adaptive policy beats static on all families incl. held-out, but the pre-registered ≥2-family promotion criterion is not yet met | In progress |
+| M5 | Causal loop evaluation: A/B/C/D search-policy protocol (`experiments/protocol-230-v1/`) — plain adaptive C beats static everywhere but misses the ≥2-family promotion bar (C ≈ B on beta). Protocol 231 cost-aware successor C+ (`experiments/protocol-230-v2/`) **meets the pre-registered promotion criterion** (C+ > A, C+ > B on both training families and held-out) in the toy environment | Demonstrated in toy environment; real-workload transfer unproven |
 
 ## Non-negotiable constraints
 
