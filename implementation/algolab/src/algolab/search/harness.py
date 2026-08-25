@@ -32,14 +32,20 @@ from algolab.knowledge.evidence import PROMOTE, EvidenceRepo
 from algolab.knowledge.operators import OPERATOR_CATALOG
 from algolab.search.policies import (
     ADAPTIVE_COST_AWARE_POLICY_VERSION,
+    ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION,
     ADAPTIVE_POLICY_VERSION,
     COST_RANKED_KNOWLEDGE_POLICY_VERSION,
+    FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION,
+    FAMILY_KNOWLEDGE_POLICY_VERSION,
     KNOWLEDGE_INFORMED_POLICY_VERSION,
     RANDOM_POLICY_VERSION,
     STATIC_POLICY_VERSION,
+    AdaptiveCostAwareFamilyPolicy,
     AdaptiveCostAwarePolicy,
     AdaptivePolicy,
+    CostRankedFamilyKnowledgePolicy,
     CostRankedKnowledgePolicy,
+    FamilyConditionedKnowledgePolicy,
     KnowledgeInformedPolicy,
     KnowledgeSnapshot,
     RandomPolicy,
@@ -78,6 +84,12 @@ ARMS_PROTOCOL_231 = (
     "adaptive-cost-aware",
     "random",
 )
+# Protocol 232 (experiment protocol-232-v1): family-conditioned knowledge.
+ARMS_PROTOCOL_232 = ARMS_PROTOCOL_231 + (
+    "adaptive-cost-aware-family",
+    "knowledge-informed-family",
+    "knowledge-informed-family-cost-rank",
+)
 PRIMARY_COMPARISONS: tuple[tuple[str, str], ...] = (
     ("static", "knowledge-informed"),
     ("static", "adaptive"),
@@ -108,6 +120,18 @@ def primary_comparisons_for(
             ("adaptive", "adaptive-cost-aware"),
             ("knowledge-informed-cost-rank", "adaptive-cost-aware"),
         ]
+    if "knowledge-informed-family" in arms:
+        pairs += [
+            ("knowledge-informed", "knowledge-informed-family"),
+            ("knowledge-informed-family",
+             "knowledge-informed-family-cost-rank"),
+        ]
+    if ("adaptive-cost-aware-family" in arms
+            and "adaptive-cost-aware" in arms):
+        pairs += [
+            ("knowledge-informed-family-cost-rank", "adaptive-cost-aware"),
+            ("adaptive-cost-aware", "adaptive-cost-aware-family"),
+        ]
     return tuple(pairs)
 
 
@@ -130,7 +154,10 @@ DEFAULT_PRIOR_ATTEMPTS_PER_FAMILY = 60
 
 PRIOR_POLICY_LABEL = "prior-uniform"
 
-Policy = StaticPolicy | KnowledgeInformedPolicy | AdaptivePolicy | RandomPolicy
+Policy = (StaticPolicy | KnowledgeInformedPolicy | AdaptivePolicy
+          | RandomPolicy | AdaptiveCostAwarePolicy | CostRankedKnowledgePolicy
+          | AdaptiveCostAwareFamilyPolicy | FamilyConditionedKnowledgePolicy
+          | CostRankedFamilyKnowledgePolicy)
 
 
 class HarnessError(RuntimeError):
@@ -189,6 +216,15 @@ def freeze_manifest(cfg: ExperimentConfig) -> dict[str, Any]:
             **({"knowledge-informed-cost-rank":
                 COST_RANKED_KNOWLEDGE_POLICY_VERSION}
                if "knowledge-informed-cost-rank" in cfg.arms else {}),
+            **({"adaptive-cost-aware-family":
+                ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION}
+               if "adaptive-cost-aware-family" in cfg.arms else {}),
+            **({"knowledge-informed-family":
+                FAMILY_KNOWLEDGE_POLICY_VERSION}
+               if "knowledge-informed-family" in cfg.arms else {}),
+            **({"knowledge-informed-family-cost-rank":
+                FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION}
+               if "knowledge-informed-family-cost-rank" in cfg.arms else {}),
         },
         "budget_credits": cfg.budget_credits,
         "episodes_per_trial": cfg.episodes_per_trial,
@@ -229,6 +265,7 @@ class PolicyComparison:
         self.evidence = EvidenceRepo(conn, producer=cfg.producer)
         self.manifest = freeze_manifest(cfg)
         self.snapshot: KnowledgeSnapshot | None = None
+        self.snapshots_by_family: dict[str, KnowledgeSnapshot] = {}
         self._seen: dict[tuple[str, int, str, str], str] = {}
         self._events: dict[str, list[dict[str, Any]]] = {}
 
@@ -388,6 +425,14 @@ class PolicyComparison:
                  "sum_effect_sq": 0.0, "credits": 0.0}
             for op in OPERATOR_CATALOG
         }
+        family_aggregates: dict[str, dict[str, dict[str, float]]] = {
+            family: {
+                op: {"attempts": 0.0, "successes": 0.0, "sum_effect": 0.0,
+                     "sum_effect_sq": 0.0, "credits": 0.0}
+                for op in OPERATOR_CATALOG
+            }
+            for family in TASK_FAMILIES
+        }
         event_range: list[str] = []
         rng = random.Random(self.cfg.prior_seed)
         episode_idx = 0
@@ -401,13 +446,16 @@ class PolicyComparison:
                     trial=self.cfg.prior_seed, episode=episode_idx, attempt=i)
                 self._record_prior_attempt(family, task_id, i, attempt)
                 agg = aggregates[op]
-                agg["attempts"] += 1.0
-                agg["sum_effect"] += attempt.mean_effect if attempt.valid else 0.0
-                agg["sum_effect_sq"] += (
-                    (attempt.mean_effect ** 2) if attempt.valid else 0.0)
-                agg["credits"] += attempt.cost_credits
-                if attempt.discovery:
-                    agg["successes"] += 1.0
+                fam_agg = family_aggregates[family][op]
+                for target in (agg, fam_agg):
+                    target["attempts"] += 1.0
+                    target["sum_effect"] += (
+                        attempt.mean_effect if attempt.valid else 0.0)
+                    target["sum_effect_sq"] += (
+                        (attempt.mean_effect ** 2) if attempt.valid else 0.0)
+                    target["credits"] += attempt.cost_credits
+                    if attempt.discovery:
+                        target["successes"] += 1.0
                 event_range.append(f"prior-{family}-{i}")
             episode_idx += 1
         snapshot = build_prior_snapshot(
@@ -416,11 +464,24 @@ class PolicyComparison:
             version=PRIOR_POLICY_VERSION,
             event_range=event_range,
         )
+        self.snapshots_by_family = {
+            family: build_prior_snapshot(
+                fam_aggs,
+                snapshot_id=f"K0-{self.cfg.experiment_id}-{family}",
+                version=PRIOR_POLICY_VERSION,
+                event_range=[e for e in event_range if f"-{family}-" in e],
+            )
+            for family, fam_aggs in sorted(family_aggregates.items())
+        }
         self.snapshot = snapshot
         with self.conn:
             self._refresh_operator_stats()
         (self.artifact_dir / "knowledge-snapshot.json").write_text(
             json.dumps(snapshot.to_dict(), indent=2, sort_keys=True) + "\n")
+        (self.artifact_dir / "knowledge-snapshot-by-family.json").write_text(
+            json.dumps({family: snap.to_dict() for family, snap
+                        in sorted(self.snapshots_by_family.items())},
+                       indent=2, sort_keys=True) + "\n")
         return snapshot
 
     def _register_prior_task(self, family: str) -> str:
@@ -573,6 +634,16 @@ class PolicyComparison:
                 snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed)
         if arm == "knowledge-informed-cost-rank":
             return CostRankedKnowledgePolicy(snapshot, top_k=self.cfg.top_k)
+        if arm == "knowledge-informed-family":
+            return FamilyConditionedKnowledgePolicy(
+                self.snapshots_by_family, snapshot, top_k=self.cfg.top_k)
+        if arm == "knowledge-informed-family-cost-rank":
+            return CostRankedFamilyKnowledgePolicy(
+                self.snapshots_by_family, snapshot, top_k=self.cfg.top_k)
+        if arm == "adaptive-cost-aware-family":
+            return AdaptiveCostAwareFamilyPolicy(
+                snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed,
+                snapshots_by_family=self.snapshots_by_family)
         if arm == "random":
             return RandomPolicy(DEFAULT_OPERATORS, seed=rng_seed)
         if arm == "c-permuted":
@@ -928,6 +999,8 @@ class PolicyComparison:
         pc = stats["per_condition"]
         arm_order = ("static", "knowledge-informed", "adaptive", "random",
                      "adaptive-cost-aware", "knowledge-informed-cost-rank",
+                     "adaptive-cost-aware-family", "knowledge-informed-family",
+                     "knowledge-informed-family-cost-rank",
                      "c-permuted", "b-shuffled", "c-plus-permuted")
         for arm in arm_order:
             if arm not in pc:
@@ -1127,7 +1200,8 @@ class PolicyComparison:
 
     def _adaptation_summary(
         self, results: dict[str, list[dict[str, Any]]]) -> list[str]:
-        labels = [label for label in ("adaptive", "adaptive-cost-aware")
+        labels = [label for label in ("adaptive", "adaptive-cost-aware",
+                                      "adaptive-cost-aware-family")
                   if self._events.get(label)]
         multi = len(labels) > 1
         lines: list[str] = []

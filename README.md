@@ -63,7 +63,7 @@ implementation/algolab/         the executable core (see its README)
 | M0 | Contracts: IDs, models, state machines, append-only event store, budget ledger, manifest validation, CLI | Delivered |
 | M1 | Deterministic execution core: expansion, persistent queue, isolated workers, hash-sealed artifacts, recovery, aggregation | Delivered |
 | M4 | Knowledge layer: schema v3, deterministic statistics, evidence records, operator catalog, skill registry | Delivered |
-| M5 | Causal loop evaluation: A/B/C/D search-policy protocol (`experiments/protocol-230-v1/`) — plain adaptive C beats static everywhere but misses the ≥2-family promotion bar (C ≈ B on beta). Protocol 231 cost-aware successor C+ (`experiments/protocol-230-v2/`) **meets the pre-registered promotion criterion** (C+ > A, C+ > B on both training families and held-out) in the toy environment | Demonstrated in toy environment; real-workload transfer unproven |
+| M5 | Causal loop evaluation: protocol 230 (plain C) missed its promotion bar (C ≈ B on beta); protocol 231 cost-aware C+ **met the criterion** (`experiments/protocol-230-v2/`); protocol 232 family-conditioned knowledge (`experiments/protocol-232-v1/`) shows pooling masked most frozen-knowledge value while adaptation retains a real margin — best system = conditioned priors × online updates × cost-aware selection (99.5% of oracle) | Demonstrated in toy environment; real-workload transfer unproven |
 
 ## Non-negotiable constraints
 

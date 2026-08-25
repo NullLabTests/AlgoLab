@@ -1,0 +1,56 @@
+{
+  "discovery_gate_version": "1.0.0",
+  "effect_sigma": 0.12,
+  "environment_version": "1.1.0",
+  "families": [
+    "alpha",
+    "beta",
+    "gamma"
+  ],
+  "ground_truth": {
+    "alpha": {
+      "decompose": 0.35,
+      "polyglot": -0.35,
+      "refresh": 0.02,
+      "reparameterize": 0.02,
+      "rollback": -0.35,
+      "synthesize": 0.02,
+      "tune": 0.35,
+      "validate": 0.35
+    },
+    "beta": {
+      "decompose": 0.02,
+      "polyglot": -0.35,
+      "refresh": 0.35,
+      "reparameterize": 0.35,
+      "rollback": -0.35,
+      "synthesize": 0.35,
+      "tune": 0.02,
+      "validate": 0.02
+    },
+    "gamma": {
+      "decompose": 0.35,
+      "polyglot": -0.35,
+      "refresh": 0.35,
+      "reparameterize": 0.35,
+      "rollback": -0.35,
+      "synthesize": 0.02,
+      "tune": 0.02,
+      "validate": 0.02
+    }
+  },
+  "held_out_family": "gamma",
+  "operators": [
+    "tune",
+    "reparameterize",
+    "decompose",
+    "polyglot",
+    "synthesize",
+    "validate",
+    "refresh",
+    "rollback"
+  ],
+  "promotion_threshold": 0.15,
+  "task_suite_version": "1.1.0",
+  "validation_probability": 0.9
+}

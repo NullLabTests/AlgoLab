@@ -1,0 +1,220 @@
+{
+  "claim_readiness": {
+    "c_beats_knowledge_informed_by_family": {
+      "alpha": true,
+      "beta": true
+    },
+    "c_beats_static_by_family": {
+      "alpha": true,
+      "beta": true
+    },
+    "claim_ready": true,
+    "held_out_persistence_vs_knowledge_informed": true,
+    "held_out_persistence_vs_static": true,
+    "training_families_analysed": 2,
+    "verdict": "promotion criterion MET: adaptive-cost-aware > A and adaptive-cost-aware > B (adjusted p < 0.05, CI excluding 0) on all 2 training families, and the gap persists on held-out gamma"
+  },
+  "comparisons": [
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "static",
+      "base_mean": 0.01561963058419244,
+      "candidate": "knowledge-informed",
+      "candidate_mean": 0.01635529891304348,
+      "ci_high": 0.0010532809465112803,
+      "ci_low": 0.00039587768937696083,
+      "delta": 0.0007356683288510385,
+      "effect_size": 0.44524524489130934,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.04709895825548897
+    },
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "static",
+      "base_mean": 0.01561963058419244,
+      "candidate": "adaptive",
+      "candidate_mean": 0.057015900717747876,
+      "ci_high": 0.04299568162316425,
+      "ci_low": 0.03990344878373079,
+      "delta": 0.041396270133555436,
+      "effect_size": 6.137983222654344,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 2.6502720349513114
+    },
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "knowledge-informed",
+      "base_mean": 0.01635529891304348,
+      "candidate": "adaptive",
+      "candidate_mean": 0.057015900717747876,
+      "ci_high": 0.042260675288091215,
+      "ci_low": 0.03911425595789948,
+      "delta": 0.0406606018047044,
+      "effect_size": 6.015496762539467,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 2.486081240146412
+    },
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "static",
+      "base_mean": 0.01561963058419244,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.07205091706341434,
+      "ci_high": 0.05708721892080484,
+      "ci_low": 0.05582552074489509,
+      "delta": 0.056431286479221895,
+      "effect_size": 17.786220442487984,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 3.612843861770466
+    },
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "knowledge-informed",
+      "base_mean": 0.01635529891304348,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.07205091706341434,
+      "ci_high": 0.056400211742347724,
+      "ci_low": 0.055038918521679504,
+      "delta": 0.05569561815037086,
+      "effect_size": 17.38001238544949,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 3.405356175175323
+    },
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "adaptive",
+      "base_mean": 0.057015900717747876,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.07205091706341434,
+      "ci_high": 0.016430016111713578,
+      "ci_low": 0.01372486039950038,
+      "delta": 0.015035016345666459,
+      "effect_size": 2.064739141033954,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.2636986552241973
+    },
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "knowledge-informed-cost-rank",
+      "base_mean": 0.025942708333333335,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.07205091706341434,
+      "ci_high": 0.04674725407979256,
+      "ci_low": 0.04548084941849076,
+      "delta": 0.046108208730081,
+      "effect_size": 13.818461241186546,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 1.7773089893948106
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "knowledge-informed",
+      "base_mean": 0.01635529891304348,
+      "candidate": "knowledge-informed-family",
+      "candidate_mean": 0.01635529891304348,
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "delta": 0.0,
+      "effect_size": 0.0,
+      "p_value": 1.0,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "knowledge-informed-family",
+      "base_mean": 0.01635529891304348,
+      "candidate": "knowledge-informed-family-cost-rank",
+      "candidate_mean": 0.025942708333333335,
+      "ci_high": 0.009864130434782608,
+      "ci_low": 0.00932903079710145,
+      "delta": 0.009587409420289857,
+      "effect_size": 4.919988897602762,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.58619591554171
+    },
+    {
+      "adjusted_p": 0.0006108057082569826,
+      "base": "knowledge-informed-family-cost-rank",
+      "base_mean": 0.025942708333333335,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.07205091706341434,
+      "ci_high": 0.04674725407979256,
+      "ci_low": 0.04548084941849076,
+      "delta": 0.046108208730081,
+      "effect_size": 13.818461241186546,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 1.7773089893948106
+    },
+    {
+      "adjusted_p": 0.10279860069965016,
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.07205091706341434,
+      "candidate": "adaptive-cost-aware-family",
+      "candidate_mean": 0.07180946099694732,
+      "ci_high": 1.988417074042198e-05,
+      "ci_low": -0.0005212740699910605,
+      "delta": -0.00024145606646701345,
+      "effect_size": -0.05701954932132411,
+      "p_value": 0.09345327336331834,
+      "relative_delta": -0.003351186581768282
+    }
+  ],
+  "family": "gamma",
+  "note": "Transfer evaluation: arms evaluated on held-out family gamma, which was never included in the K0 prior.",
+  "per_condition": {
+    "adaptive": {
+      "attempts": 15685,
+      "compute_credits": 188510.0,
+      "discoveries_per_credit": 0.057085,
+      "validated_discoveries": 10761
+    },
+    "adaptive-cost-aware": {
+      "attempts": 19200,
+      "compute_credits": 191805.0,
+      "discoveries_per_credit": 0.072052,
+      "validated_discoveries": 13820
+    },
+    "adaptive-cost-aware-family": {
+      "attempts": 19202,
+      "compute_credits": 191795.0,
+      "discoveries_per_credit": 0.071811,
+      "validated_discoveries": 13773
+    },
+    "knowledge-informed": {
+      "attempts": 9984,
+      "compute_credits": 176640.0,
+      "discoveries_per_credit": 0.016355,
+      "validated_discoveries": 2889
+    },
+    "knowledge-informed-cost-rank": {
+      "attempts": 19200,
+      "compute_credits": 192000.0,
+      "discoveries_per_credit": 0.025943,
+      "validated_discoveries": 4981
+    },
+    "knowledge-informed-family": {
+      "attempts": 9984,
+      "compute_credits": 176640.0,
+      "discoveries_per_credit": 0.016355,
+      "validated_discoveries": 2889
+    },
+    "knowledge-informed-family-cost-rank": {
+      "attempts": 19200,
+      "compute_credits": 192000.0,
+      "discoveries_per_credit": 0.025943,
+      "validated_discoveries": 4981
+    },
+    "random": {
+      "attempts": 10575,
+      "compute_credits": 178195.0,
+      "discoveries_per_credit": 0.017492,
+      "validated_discoveries": 3117
+    },
+    "static": {
+      "attempts": 10368,
+      "compute_credits": 186240.0,
+      "discoveries_per_credit": 0.01562,
+      "validated_discoveries": 2909
+    }
+  }
+}

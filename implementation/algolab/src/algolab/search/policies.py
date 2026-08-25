@@ -34,6 +34,9 @@ ADAPTIVE_POLICY_VERSION = "1.0.0"
 RANDOM_POLICY_VERSION = "1.0.0"
 ADAPTIVE_COST_AWARE_POLICY_VERSION = "1.0.0"
 COST_RANKED_KNOWLEDGE_POLICY_VERSION = "1.0.0"
+FAMILY_KNOWLEDGE_POLICY_VERSION = "1.0.0"
+FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION = "1.0.0"
+ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION = "1.0.0"
 
 
 class PolicyError(RuntimeError):
@@ -281,6 +284,95 @@ class CostRankedKnowledgePolicy(KnowledgeInformedPolicy):
         super().__init__(snapshot, top_k, rank_by_cost=True)
 
 
+class _FrozenFamilyRanking:
+    """Per-family frozen top-K cycle state (protocol 232)."""
+
+    def __init__(self, snapshot: KnowledgeSnapshot, top_k: int,
+                 rank_by_cost: bool):
+        self.snapshot = snapshot
+        self.ranked = (
+            snapshot.ranking_by_cost() if rank_by_cost else snapshot.ranking())
+        self.top = self.ranked[: max(1, top_k)]
+        self.pointer = 0
+
+
+class FamilyConditionedKnowledgePolicy:
+    """Protocol-232 arm B-fam: frozen rankings from family-tagged history.
+
+    Reads the same prior episodes as B but ranks operators using only the
+    slice of K0 generated on the *current* task family (pooled K0 as
+    fallback for families with no history — e.g. a held-out family).
+    Never receives or records outcomes; each family's top-K cycle has its
+    own pointer. Zero-attempt cells are smoothed to the neutral 0.5 rate.
+    """
+
+    label = "knowledge-informed-family"
+    version = FAMILY_KNOWLEDGE_POLICY_VERSION
+
+    def __init__(
+        self,
+        snapshots_by_family: dict[str, KnowledgeSnapshot],
+        fallback_snapshot: KnowledgeSnapshot,
+        top_k: int = 3,
+        *,
+        rank_by_cost: bool = False,
+    ):
+        self._basis = "family cost-rank" if rank_by_cost else "family rank"
+        self._ranks: dict[str, _FrozenFamilyRanking] = {}
+        for fam, snap in snapshots_by_family.items():
+            self._ranks[fam] = _FrozenFamilyRanking(snap, top_k, rank_by_cost)
+        self._fallback = _FrozenFamilyRanking(
+            fallback_snapshot, top_k, rank_by_cost)
+        self.snapshot_id = fallback_snapshot.snapshot_id
+
+    def _ranking_for(self, family: str) -> _FrozenFamilyRanking:
+        return self._ranks.get(family, self._fallback)
+
+    def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
+        ranking = self._ranking_for(family)
+        operator = ranking.top[ranking.pointer % len(ranking.top)]
+        ranking.pointer += 1
+        record = SelectionRecord(
+            step=step,
+            operator=operator,
+            policy=self.label,
+            policy_version=self.version,
+            family=family,
+            prior_stats={
+                "success_rate": round(
+                    ranking.snapshot.success_rate(operator), 6),
+                "attempts": ranking.snapshot.attempts.get(operator, 0),
+            },
+            posterior_stats=None,
+            selection_score=round(
+                ranking.snapshot.success_rate(operator), 6),
+            selection_probability=1.0 / len(ranking.top),
+            reason=(
+                f"frozen {self._basis} "
+                f"{ranking.ranked.index(operator) + 1}"
+                f" of {len(ranking.ranked)} (top-{len(ranking.top)} cycle;"
+                f" {'family slice' if family in self._ranks else 'pooled fallback'})"
+            ),
+        )
+        return operator, record
+
+
+class CostRankedFamilyKnowledgePolicy(FamilyConditionedKnowledgePolicy):
+    """Protocol-232 arm B-fam+: family-conditioned and cost-ranked."""
+
+    label = "knowledge-informed-family-cost-rank"
+    version = FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION
+
+    def __init__(
+        self,
+        snapshots_by_family: dict[str, KnowledgeSnapshot],
+        fallback_snapshot: KnowledgeSnapshot,
+        top_k: int = 3,
+    ):
+        super().__init__(
+            snapshots_by_family, fallback_snapshot, top_k, rank_by_cost=True)
+
+
 class AdaptivePolicy:
     """Condition C: per-family Thompson sampling over a Beta posterior.
 
@@ -458,6 +550,50 @@ class AdaptiveCostAwarePolicy(AdaptivePolicy):
         return operator, record
 
 
+class AdaptiveCostAwareFamilyPolicy(AdaptiveCostAwarePolicy):
+    """Protocol-232 arm C+fam: cost-aware Thompson with family-split init.
+
+    Identical machinery and selection objective to
+    :class:`AdaptiveCostAwarePolicy`; only the posterior *initialization*
+    differs: where a family-tagged K0 slice exists it is used instead of
+    the pooled snapshot. Families without history (held-out) fall back to
+    pooled initialization, exactly as in protocol 231.
+    """
+
+    label = "adaptive-cost-aware-family"
+    version = ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION
+
+    def __init__(
+        self,
+        snapshot: KnowledgeSnapshot,
+        operators: tuple[str, ...],
+        *,
+        rng_seed: int,
+        feedback_shuffle_seed: int | None = None,
+        snapshots_by_family: dict[str, KnowledgeSnapshot] | None = None,
+    ):
+        self._family_init: dict[str, KnowledgeSnapshot] = dict(
+            snapshots_by_family or {})
+        super().__init__(
+            snapshot, operators, rng_seed=rng_seed,
+            feedback_shuffle_seed=feedback_shuffle_seed)
+
+    def _init_family(self, family: str, snapshot: KnowledgeSnapshot) -> None:
+        if family in self._known_families:
+            return
+        init_snapshot = self._family_init.get(family, snapshot)
+        self._known_families.add(family)
+        self._alpha[family] = {
+            op: 1.0 + init_snapshot.successes.get(op, 0)
+            for op in self._operators
+        }
+        self._beta[family] = {
+            op: 1.0 + (init_snapshot.attempts.get(op, 0)
+                       - init_snapshot.successes.get(op, 0))
+            for op in self._operators
+        }
+
+
 def build_prior_snapshot(
     aggregates: dict[str, dict[str, float]],
     *,
@@ -500,6 +636,9 @@ __all__ = [
     "RANDOM_POLICY_VERSION",
     "ADAPTIVE_COST_AWARE_POLICY_VERSION",
     "COST_RANKED_KNOWLEDGE_POLICY_VERSION",
+    "FAMILY_KNOWLEDGE_POLICY_VERSION",
+    "FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION",
+    "ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION",
     "PolicyError",
     "KnowledgeSnapshot",
     "SelectionRecord",
@@ -507,7 +646,10 @@ __all__ = [
     "RandomPolicy",
     "KnowledgeInformedPolicy",
     "CostRankedKnowledgePolicy",
+    "FamilyConditionedKnowledgePolicy",
+    "CostRankedFamilyKnowledgePolicy",
     "AdaptivePolicy",
     "AdaptiveCostAwarePolicy",
+    "AdaptiveCostAwareFamilyPolicy",
     "build_prior_snapshot",
 ]
