@@ -1,0 +1,81 @@
+{
+  "ablation_comparisons": [
+    {
+      "base": "adaptive",
+      "candidate": "c-permuted",
+      "note": "permuted-outcome feedback (machinery kept)"
+    },
+    {
+      "base": "knowledge-informed",
+      "candidate": "b-shuffled",
+      "note": "shuffled-K0 knowledge (association destroyed)"
+    },
+    {
+      "base": "b-shuffled",
+      "candidate": "static",
+      "note": "shuffled knowledge vs no knowledge"
+    },
+    {
+      "base": "adaptive-cost-aware",
+      "candidate": "c-plus-permuted",
+      "note": "permuted-outcome feedback on cost-aware machinery"
+    }
+  ],
+  "discovery_gate": "valid implementation AND effect_1 >= threshold AND effect_2 >= threshold (2-seed replication gate)",
+  "held_out_family": "gamma",
+  "primary_comparisons": [
+    {
+      "base": "static",
+      "candidate": "knowledge-informed"
+    },
+    {
+      "base": "static",
+      "candidate": "adaptive"
+    },
+    {
+      "base": "knowledge-informed",
+      "candidate": "adaptive"
+    },
+    {
+      "base": "static",
+      "candidate": "adaptive-cost-aware"
+    },
+    {
+      "base": "knowledge-informed",
+      "candidate": "adaptive-cost-aware"
+    },
+    {
+      "base": "adaptive",
+      "candidate": "adaptive-cost-aware"
+    },
+    {
+      "base": "knowledge-informed-cost-rank",
+      "candidate": "adaptive-cost-aware"
+    },
+    {
+      "base": "knowledge-informed",
+      "candidate": "knowledge-informed-family"
+    },
+    {
+      "base": "knowledge-informed-family",
+      "candidate": "knowledge-informed-family-cost-rank"
+    },
+    {
+      "base": "knowledge-informed-family-cost-rank",
+      "candidate": "adaptive-cost-aware"
+    },
+    {
+      "base": "adaptive-cost-aware",
+      "candidate": "adaptive-cost-aware-family"
+    }
+  ],
+  "primary_metric": "validated_discoveries / credits_consumed",
+  "promotion_criterion": "C beats both A and B (adjusted p < 0.05, CI excluding 0) on >= 2 independent task families at full seed plan, and the gap persists on the held-out family.",
+  "protocol_version": "1.1.0",
+  "statistical_methods": [
+    "paired bootstrap CI (2000 iterations, seeded)",
+    "Welch's t-test (unpaired fallback)",
+    "Cohen's d (pooled SD)",
+    "Benjamini-Hochberg FDR correction"
+  ]
+}

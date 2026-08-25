@@ -1,0 +1,89 @@
+{
+  "checks": [
+    {
+      "actual": "1.1.0",
+      "check": "protocol_version",
+      "expected": "1.1.0",
+      "pass": true
+    },
+    {
+      "actual": "1.1.0",
+      "check": "environment_version",
+      "expected": "1.1.0",
+      "pass": true
+    },
+    {
+      "actual": [
+        "static",
+        "knowledge-informed",
+        "adaptive",
+        "adaptive-cost-aware",
+        "knowledge-informed-cost-rank",
+        "random",
+        "adaptive-cost-aware-family",
+        "knowledge-informed-family",
+        "knowledge-informed-family-cost-rank"
+      ],
+      "check": "arms_match",
+      "expected": [
+        "static",
+        "knowledge-informed",
+        "adaptive",
+        "adaptive-cost-aware",
+        "knowledge-informed-cost-rank",
+        "random",
+        "adaptive-cost-aware-family",
+        "knowledge-informed-family",
+        "knowledge-informed-family-cost-rank"
+      ],
+      "pass": true
+    },
+    {
+      "actual": 150.0,
+      "check": "budget_match",
+      "expected": 150.0,
+      "pass": true
+    },
+    {
+      "actual": [
+        "adaptive",
+        "adaptive-cost-aware",
+        "adaptive-cost-aware-family",
+        "b-shuffled",
+        "c-permuted",
+        "c-plus-permuted",
+        "knowledge-informed",
+        "knowledge-informed-cost-rank",
+        "knowledge-informed-family",
+        "knowledge-informed-family-cost-rank",
+        "random",
+        "static"
+      ],
+      "check": "stats_arms_present",
+      "expected": [
+        "adaptive",
+        "adaptive-cost-aware",
+        "adaptive-cost-aware-family",
+        "b-shuffled",
+        "c-permuted",
+        "c-plus-permuted",
+        "knowledge-informed",
+        "knowledge-informed-cost-rank",
+        "knowledge-informed-family",
+        "knowledge-informed-family-cost-rank",
+        "random",
+        "static"
+      ],
+      "pass": true
+    },
+    {
+      "actual": true,
+      "check": "held_out_family_in_manifest",
+      "expected": true,
+      "pass": true
+    }
+  ],
+  "manifest_path": "experiments/protocol-233-p30/manifest.json",
+  "reproducible": true,
+  "statistics_path": "experiments/protocol-233-p30/statistics.json"
+}

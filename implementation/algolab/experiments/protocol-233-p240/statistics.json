@@ -1,0 +1,675 @@
+{
+  "ablations": [
+    {
+      "base": "adaptive",
+      "base_mean": 0.04742715185807429,
+      "candidate": "c-permuted",
+      "candidate_mean": 0.026485572051935136,
+      "ci_high": -0.019378607247749147,
+      "ci_low": -0.02239248492485328,
+      "delta": -0.020941579806139157,
+      "effect_size": -3.0179095236307902,
+      "note": "permuted-outcome feedback (machinery kept)",
+      "p_value": 0.0004997501249375312,
+      "relative_delta": -0.441552549240292
+    },
+    {
+      "base": "knowledge-informed",
+      "base_mean": 0.021411830357142857,
+      "candidate": "b-shuffled",
+      "candidate_mean": 0.018810300835598627,
+      "ci_high": -0.000949015522949791,
+      "ci_low": -0.004236710459938812,
+      "delta": -0.0026015295215442297,
+      "effect_size": -0.39389334197569575,
+      "note": "shuffled-K0 knowledge (association destroyed)",
+      "p_value": 0.0014992503748125937,
+      "relative_delta": -0.12149963259336095
+    },
+    {
+      "base": "b-shuffled",
+      "base_mean": 0.018810300835598627,
+      "candidate": "static",
+      "candidate_mean": 0.01568406357388316,
+      "ci_high": -0.0015347279466746975,
+      "ci_low": -0.004714640523898525,
+      "delta": -0.0031262372617154657,
+      "effect_size": -0.47879716784997445,
+      "note": "shuffled knowledge vs no knowledge",
+      "p_value": 0.0009995002498750624,
+      "relative_delta": -0.16619815329051196
+    },
+    {
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.06396354166666667,
+      "candidate": "c-plus-permuted",
+      "candidate_mean": 0.03822266709314419,
+      "ci_high": -0.024667162470165278,
+      "ci_low": -0.02681342017668889,
+      "delta": -0.025740874573522476,
+      "effect_size": -5.143553135032939,
+      "note": "permuted-outcome feedback on cost-aware machinery",
+      "p_value": 0.0004997501249375312,
+      "relative_delta": -0.4024304143079811
+    }
+  ],
+  "comparisons": [
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "static",
+      "base_mean": 0.01568406357388316,
+      "candidate": "knowledge-informed",
+      "candidate_mean": 0.021411830357142857,
+      "ci_high": 0.006075532339224349,
+      "ci_low": 0.005378735579283259,
+      "delta": 0.005727766783259695,
+      "effect_size": 2.933852024394876,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.3651966058590502
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "static",
+      "base_mean": 0.01568406357388316,
+      "candidate": "adaptive",
+      "candidate_mean": 0.04742715185807429,
+      "ci_high": 0.03315694178568099,
+      "ci_low": 0.03024200178073499,
+      "delta": 0.03174308828419113,
+      "effect_size": 5.0980006735404055,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 2.023907142090981
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "knowledge-informed",
+      "base_mean": 0.021411830357142857,
+      "candidate": "adaptive",
+      "candidate_mean": 0.04742715185807429,
+      "ci_high": 0.027430029632117655,
+      "ci_low": 0.02451731611532625,
+      "delta": 0.026015321500931436,
+      "effect_size": 4.125819966941213,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 1.2149975535488438
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "static",
+      "base_mean": 0.01568406357388316,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.06396354166666667,
+      "ci_high": 0.04897675042955326,
+      "ci_low": 0.04754188144329897,
+      "delta": 0.048279478092783504,
+      "effect_size": 14.563007880717873,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 3.078250599109894
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "knowledge-informed",
+      "base_mean": 0.021411830357142857,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.06396354166666667,
+      "ci_high": 0.04319642857142857,
+      "ci_low": 0.04188392857142857,
+      "delta": 0.04255171130952381,
+      "effect_size": 12.294069745614797,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 1.987299105203718
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "adaptive",
+      "base_mean": 0.04742715185807429,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.06396354166666667,
+      "ci_high": 0.018038141625381757,
+      "ci_low": 0.015157340280801061,
+      "delta": 0.016536389808592372,
+      "effect_size": 2.4136632758585064,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.34866925718157193
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "knowledge-informed-cost-rank",
+      "base_mean": 0.03741666666666667,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.06396354166666667,
+      "ci_high": 0.027166666666666665,
+      "ci_low": 0.025927083333333333,
+      "delta": 0.026546874999999998,
+      "effect_size": 7.11650048874514,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.7094933184855233
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "knowledge-informed",
+      "base_mean": 0.021411830357142857,
+      "candidate": "knowledge-informed-family",
+      "candidate_mean": 0.04908120598591549,
+      "ci_high": 0.028064009054325954,
+      "ci_low": 0.02724086707746479,
+      "delta": 0.027669375628772634,
+      "effect_size": 10.3414817303363,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 1.292247097387557
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "knowledge-informed-family",
+      "base_mean": 0.04908120598591549,
+      "candidate": "knowledge-informed-family-cost-rank",
+      "candidate_mean": 0.04978236607142857,
+      "ci_high": 0.00070839097082495,
+      "ci_low": 0.0006933004275653922,
+      "delta": 0.000701160085513082,
+      "effect_size": 0.22566654762917543,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.014285714285714358
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "knowledge-informed-family-cost-rank",
+      "base_mean": 0.04978236607142857,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.06396354166666667,
+      "ci_high": 0.014767857142857143,
+      "ci_low": 0.013552083333333333,
+      "delta": 0.014181175595238092,
+      "effect_size": 3.72740404834123,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.2848634308560325
+    },
+    {
+      "adjusted_p": 0.0004997501249375312,
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.06396354166666667,
+      "candidate": "adaptive-cost-aware-family",
+      "candidate_mean": 0.07338541666666666,
+      "ci_high": 0.009890625000000002,
+      "ci_low": 0.008968750000000001,
+      "delta": 0.009421874999999996,
+      "effect_size": 2.3128818032931013,
+      "p_value": 0.0004997501249375312,
+      "relative_delta": 0.1473007084113671
+    }
+  ],
+  "interpretation": {
+    "outcome": 1,
+    "verdict": "H1 supported in this environment: C > B > A"
+  },
+  "per_condition": {
+    "adaptive": {
+      "attempts": 14848,
+      "compute_credits": 186740.0,
+      "discoveries_per_credit": 0.047499,
+      "validated_discoveries": 8870
+    },
+    "adaptive-cost-aware": {
+      "attempts": 19200,
+      "compute_credits": 192000.0,
+      "discoveries_per_credit": 0.063964,
+      "validated_discoveries": 12281
+    },
+    "adaptive-cost-aware-family": {
+      "attempts": 19200,
+      "compute_credits": 192000.0,
+      "discoveries_per_credit": 0.073385,
+      "validated_discoveries": 14090
+    },
+    "b-shuffled": {
+      "attempts": 11963,
+      "compute_credits": 177370.0,
+      "discoveries_per_credit": 0.019141,
+      "validated_discoveries": 3395
+    },
+    "c-permuted": {
+      "attempts": 12796,
+      "compute_credits": 183500.0,
+      "discoveries_per_credit": 0.026496,
+      "validated_discoveries": 4862
+    },
+    "c-plus-permuted": {
+      "attempts": 19201,
+      "compute_credits": 191930.0,
+      "discoveries_per_credit": 0.038222,
+      "validated_discoveries": 7336
+    },
+    "knowledge-informed": {
+      "attempts": 10240,
+      "compute_credits": 179200.0,
+      "discoveries_per_credit": 0.021412,
+      "validated_discoveries": 3837
+    },
+    "knowledge-informed-cost-rank": {
+      "attempts": 19200,
+      "compute_credits": 192000.0,
+      "discoveries_per_credit": 0.037417,
+      "validated_discoveries": 7184
+    },
+    "knowledge-informed-family": {
+      "attempts": 12160,
+      "compute_credits": 181760.0,
+      "discoveries_per_credit": 0.049081,
+      "validated_discoveries": 8921
+    },
+    "knowledge-informed-family-cost-rank": {
+      "attempts": 12160,
+      "compute_credits": 179200.0,
+      "discoveries_per_credit": 0.049782,
+      "validated_discoveries": 8921
+    },
+    "random": {
+      "attempts": 10487,
+      "compute_credits": 177835.0,
+      "discoveries_per_credit": 0.016583,
+      "validated_discoveries": 2949
+    },
+    "static": {
+      "attempts": 10368,
+      "compute_credits": 186240.0,
+      "discoveries_per_credit": 0.015684,
+      "validated_discoveries": 2921
+    }
+  },
+  "per_family": {
+    "alpha": {
+      "comparisons": [
+        {
+          "adjusted_p": 0.029985007496251877,
+          "base": "static",
+          "base_mean": 0.01588362068965517,
+          "candidate": "knowledge-informed",
+          "candidate_mean": 0.016428571428571428,
+          "ci_high": 0.0010398706896551728,
+          "ci_low": 5.5033866995074244e-05,
+          "delta": 0.000544950738916257,
+          "effect_size": 0.213710688514899,
+          "p_value": 0.029985007496251874,
+          "relative_delta": 0.034308974607482126
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "static",
+          "base_mean": 0.01588362068965517,
+          "candidate": "adaptive",
+          "candidate_mean": 0.044022685500179515,
+          "ci_high": 0.02998846459067684,
+          "ci_low": 0.026246249344458773,
+          "delta": 0.028139064810524344,
+          "effect_size": 3.618150583594199,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 1.7715774860357254
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed",
+          "base_mean": 0.016428571428571428,
+          "candidate": "adaptive",
+          "candidate_mean": 0.044022685500179515,
+          "ci_high": 0.029450112404329147,
+          "ci_low": 0.025716558613841155,
+          "delta": 0.027594114071608087,
+          "effect_size": 3.530598635358239,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 1.6796417260978835
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "static",
+          "base_mean": 0.01588362068965517,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06095833333333333,
+          "ci_high": 0.046191451149425286,
+          "ci_low": 0.04395725574712644,
+          "delta": 0.045074712643678155,
+          "effect_size": 9.251588352304456,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 2.837810945273632
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed",
+          "base_mean": 0.016428571428571428,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06095833333333333,
+          "ci_high": 0.04561383928571428,
+          "ci_low": 0.043430059523809524,
+          "delta": 0.044529761904761905,
+          "effect_size": 9.026286269066766,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 2.7105072463768116
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "adaptive",
+          "base_mean": 0.044022685500179515,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06095833333333333,
+          "ci_high": 0.01857481337977448,
+          "ci_low": 0.015329143594936858,
+          "delta": 0.016935647833153815,
+          "effect_size": 1.9136579980104387,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.38470274225057793
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed-cost-rank",
+          "base_mean": 0.04936458333333334,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06095833333333333,
+          "ci_high": 0.012489583333333332,
+          "ci_low": 0.010729166666666665,
+          "delta": 0.011593749999999993,
+          "effect_size": 2.142221907162454,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.23485967503692745
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed",
+          "base_mean": 0.016428571428571428,
+          "candidate": "knowledge-informed-family",
+          "candidate_mean": 0.056315104166666664,
+          "ci_high": 0.04051308283730159,
+          "ci_low": 0.03921750992063492,
+          "delta": 0.03988653273809524,
+          "effect_size": 11.089842728472007,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 2.4278759057971016
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed-family",
+          "base_mean": 0.056315104166666664,
+          "candidate": "knowledge-informed-family-cost-rank",
+          "candidate_mean": 0.057924107142857145,
+          "ci_high": 0.0016297743055555553,
+          "ci_low": 0.0015876116071428573,
+          "delta": 0.0016090029761904809,
+          "effect_size": 0.36612383726186765,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.028571428571428657
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed-family-cost-rank",
+          "base_mean": 0.057924107142857145,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06095833333333333,
+          "ci_high": 0.003933779761904761,
+          "ci_low": 0.002130952380952381,
+          "delta": 0.0030342261904761844,
+          "effect_size": 0.5474840890287468,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.05238278741168904
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "adaptive-cost-aware",
+          "base_mean": 0.06095833333333333,
+          "candidate": "adaptive-cost-aware-family",
+          "candidate_mean": 0.07348958333333333,
+          "ci_high": 0.01321875,
+          "ci_low": 0.01184375,
+          "delta": 0.01253125,
+          "effect_size": 2.1523357889002757,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.2055707450444293
+        }
+      ],
+      "per_condition": {
+        "adaptive": {
+          "efficiency_mean": 0.044022685500179515,
+          "trials": 128
+        },
+        "adaptive-cost-aware": {
+          "efficiency_mean": 0.06095833333333333,
+          "trials": 128
+        },
+        "adaptive-cost-aware-family": {
+          "efficiency_mean": 0.07348958333333333,
+          "trials": 128
+        },
+        "b-shuffled": {
+          "efficiency_mean": 0.020940765037750234,
+          "trials": 128
+        },
+        "c-permuted": {
+          "efficiency_mean": 0.019405449411997493,
+          "trials": 128
+        },
+        "c-plus-permuted": {
+          "efficiency_mean": 0.031114583333333334,
+          "trials": 128
+        },
+        "knowledge-informed": {
+          "efficiency_mean": 0.016428571428571428,
+          "trials": 128
+        },
+        "knowledge-informed-cost-rank": {
+          "efficiency_mean": 0.04936458333333334,
+          "trials": 128
+        },
+        "knowledge-informed-family": {
+          "efficiency_mean": 0.056315104166666664,
+          "trials": 128
+        },
+        "knowledge-informed-family-cost-rank": {
+          "efficiency_mean": 0.057924107142857145,
+          "trials": 128
+        },
+        "random": {
+          "efficiency_mean": 0.017021701541258864,
+          "trials": 128
+        },
+        "static": {
+          "efficiency_mean": 0.01588362068965517,
+          "trials": 128
+        }
+      }
+    },
+    "beta": {
+      "comparisons": [
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "static",
+          "base_mean": 0.015485873287671233,
+          "candidate": "knowledge-informed",
+          "candidate_mean": 0.026395089285714286,
+          "ci_high": 0.011381788160469667,
+          "ci_low": 0.010428235078277887,
+          "delta": 0.010909215998043053,
+          "effect_size": 3.903091787542629,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.7044624345937407
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "static",
+          "base_mean": 0.015485873287671233,
+          "candidate": "adaptive",
+          "candidate_mean": 0.050674067348787044,
+          "ci_high": 0.03733303358636342,
+          "ci_low": 0.03288855470611372,
+          "delta": 0.03518819406111581,
+          "effect_size": 3.717526910713062,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 2.272277023545723
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed",
+          "base_mean": 0.026395089285714286,
+          "candidate": "adaptive",
+          "candidate_mean": 0.050674067348787044,
+          "ci_high": 0.026305643347782282,
+          "ci_low": 0.022061401947963206,
+          "delta": 0.02427897806307276,
+          "effect_size": 2.529460341897701,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.9198293591760335
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "static",
+          "base_mean": 0.015485873287671233,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06696875,
+          "ci_high": 0.05266110159817351,
+          "ci_low": 0.050303510273972604,
+          "delta": 0.05148287671232876,
+          "effect_size": 9.821999536439904,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 3.324505874222529
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed",
+          "base_mean": 0.026395089285714286,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06696875,
+          "ci_high": 0.041578125,
+          "ci_low": 0.03953645833333334,
+          "delta": 0.04057366071428571,
+          "effect_size": 7.40650682075329,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 1.537167019027484
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "adaptive",
+          "base_mean": 0.050674067348787044,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06696875,
+          "ci_high": 0.01848447551135057,
+          "ci_low": 0.014234209278497424,
+          "delta": 0.01629468265121295,
+          "effect_size": 1.541127883971353,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.3215586098320759
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed-cost-rank",
+          "base_mean": 0.025468750000000002,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06696875,
+          "ci_high": 0.04255208333333333,
+          "ci_low": 0.04041666666666666,
+          "delta": 0.041499999999999995,
+          "effect_size": 7.373330416386316,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 1.629447852760736
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed",
+          "base_mean": 0.026395089285714286,
+          "candidate": "knowledge-informed-family",
+          "candidate_mean": 0.041640625,
+          "ci_high": 0.01572544642857143,
+          "ci_low": 0.014743303571428572,
+          "delta": 0.015245535714285715,
+          "effect_size": 4.044855623275175,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.5775898520084567
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "knowledge-informed-family",
+          "base_mean": 0.041640625,
+          "candidate": "knowledge-informed-family-cost-rank",
+          "candidate_mean": 0.041640625,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "knowledge-informed-family-cost-rank",
+          "base_mean": 0.041640625,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.06696875,
+          "ci_high": 0.026217261904761906,
+          "ci_low": 0.02445610119047619,
+          "delta": 0.025328124999999993,
+          "effect_size": 4.3521709970394715,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.6082551594746715
+        },
+        {
+          "adjusted_p": 0.0005497251374312844,
+          "base": "adaptive-cost-aware",
+          "base_mean": 0.06696875,
+          "candidate": "adaptive-cost-aware-family",
+          "candidate_mean": 0.07328125,
+          "ci_high": 0.006927083333333334,
+          "ci_low": 0.005729166666666667,
+          "delta": 0.0063125000000000125,
+          "effect_size": 1.0056685003229922,
+          "p_value": 0.0004997501249375312,
+          "relative_delta": 0.09426038264115745
+        }
+      ],
+      "per_condition": {
+        "adaptive": {
+          "efficiency_mean": 0.050674067348787044,
+          "trials": 128
+        },
+        "adaptive-cost-aware": {
+          "efficiency_mean": 0.06696875,
+          "trials": 128
+        },
+        "adaptive-cost-aware-family": {
+          "efficiency_mean": 0.07328125,
+          "trials": 128
+        },
+        "b-shuffled": {
+          "efficiency_mean": 0.01668348921180123,
+          "trials": 128
+        },
+        "c-permuted": {
+          "efficiency_mean": 0.03357427631869666,
+          "trials": 128
+        },
+        "c-plus-permuted": {
+          "efficiency_mean": 0.04533980289013846,
+          "trials": 128
+        },
+        "knowledge-informed": {
+          "efficiency_mean": 0.026395089285714286,
+          "trials": 128
+        },
+        "knowledge-informed-cost-rank": {
+          "efficiency_mean": 0.025468750000000002,
+          "trials": 128
+        },
+        "knowledge-informed-family": {
+          "efficiency_mean": 0.041640625,
+          "trials": 128
+        },
+        "knowledge-informed-family-cost-rank": {
+          "efficiency_mean": 0.041640625,
+          "trials": 128
+        },
+        "random": {
+          "efficiency_mean": 0.016120243019261078,
+          "trials": 128
+        },
+        "static": {
+          "efficiency_mean": 0.015485873287671233,
+          "trials": 128
+        }
+      }
+    }
+  }
+}
