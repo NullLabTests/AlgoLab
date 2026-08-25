@@ -1,8 +1,8 @@
-# AlgoLab — deterministic execution core & knowledge layer
+# AlgoLab — execution core, knowledge layer & cumulative-search loop
 
 AlgoLab is an autonomous AI algorithm discovery laboratory (see
 `../../planning/MILESTONES.md` and `../../MASTER_SPEC.md`). This package is
-the executable core of the platform, delivered in three milestones:
+the executable core of the platform, delivered across five milestones:
 
 - **M0 — Contracts.** IDs, domain models, state machines, an append-only
   audit/event store, the budget ledger, canonical JSON-Schema manifest
@@ -17,10 +17,17 @@ the executable core of the platform, delivered in three milestones:
   (`algolab.knowledge.operators`), and the append-only skill registry that
   gates which agent role may invoke which operator
   (`algolab.knowledge.registry`). The database schema is at **v3**.
+- **M5 — Cumulative search (`algolab.search`).** A deterministic
+  toy-discovery environment with hidden ground truth and a two-seed
+  replication gate; pre-registered A/B/C/D policy arms plus cost-aware and
+  family-conditioned variants (protocols 230–234); a manifest-frozen,
+  byte-reproducible experiment harness with checksummed evidence bundles in
+  `experiments/`. Research specs: `../../spec/research/23{0..4}_*.md`;
+  findings summarized in the root README ("What we learned").
 
-The test suite currently has **296 passing tests** covering unit, integration,
-ontology-invariant, and protocol-230 compliance behavior. `ruff` and `mypy`
-(strict) are clean.
+The test suite currently has **332 passing tests** covering unit,
+integration, ontology-invariant, protocol-compliance (230–234), and golden
+byte-reproducibility behavior. `ruff` and `mypy` (strict) are clean.
 
 ## Quickstart
 
@@ -28,7 +35,7 @@ ontology-invariant, and protocol-230 compliance behavior. `ruff` and `mypy`
 bash scripts/setup.sh          # venv + editable install
 make lint                      # ruff
 make type                      # mypy (strict)
-make test                      # pytest (296 tests)
+make test                      # pytest (332 tests)
 ```
 
 ## End-to-end run
@@ -72,25 +79,29 @@ algolab search-run EXP_ID [--dir DIR] [--budget N] [--trials N] [--episodes N]
                 [--prior-attempts N] [--top-k K] [--force] [--json]
 ```
 
-### `search-run` (protocol 230)
+### `search-run` (protocols 230–234)
 
-Runs the pre-registered A/B/C cumulative-search policy comparison against the
-deterministic toy environment: Statistic (A) vs Knowledge-informed (B) vs
+Runs the pre-registered cumulative-search policy comparison against the
+deterministic toy environment: Static (A) vs Knowledge-informed (B) vs
 Adaptive (C), plus a Random calibration floor (D) and two ablations
 (`c-permuted`, `b-shuffled`), under identical budgets, task rotation, and
-seeds. Artifacts (manifest, knowledge snapshot, per-condition raw events and
-operator selections, statistics incl. per-family comparisons, report,
-promotion-criterion status) are written to `--dir`, and every attempt is
-persisted to schema-v3 tables (`tasks`, `evidence`, `operator_uses`,
-`search_episodes`) with the `operator_stats` aggregate refreshed. The manifest
-freezes before any episode runs; an existing artifact directory is refused
-unless `--force` is passed.
+seeds. When the protocol-231/232/234 arms are configured, the comparison
+extends to the cost-aware adaptive C+, the frozen cost-ranked /
+family-conditioned / commitment / allocation variants, and the
+`c-plus-permuted` ablation. Artifacts (manifest, knowledge snapshots,
+per-condition raw events and operator selections, statistics incl.
+per-family comparisons, report, promotion-criterion status) are written to
+`--dir`, and every attempt is persisted to schema-v3 tables (`tasks`,
+`evidence`, `operator_uses`, `search_episodes`) with the `operator_stats`
+aggregate refreshed. The manifest freezes before any episode runs; an
+existing artifact directory is refused unless `--force` is passed.
 
-First executed run: `experiments/protocol-230-v1/` — pooled C > B > A
-(adjusted p < 0.05) with transfer to the held-out family; per-family analysis
-shows the adaptive advantage over B on one of two training families only, so
-the pre-registered promotion criterion is **not** met and the loop claim
-remains under experimental validation (see that directory's `report.md`).
+Executed series (all checksummed under `experiments/`):
+`protocol-230-v1` (plain C misses the promotion bar on beta),
+`protocol-230-v2` (cost-aware C+ meets it), `protocol-232-v1`
+(family-conditioned knowledge), and the `protocol-233-*`/`protocol-234-*`
+sweeps isolating history quantity from decision-rule format. Findings are
+summarized in the repository root README.
 
 ## Package layout
 
@@ -135,20 +146,22 @@ docs/decisions/  architecture decision records (ADR-0001..0008)
   status; promotion claims require the statistical analysis stored with them.
 - Operators are invoked only by registered agent roles (`knowledge.registry`),
   and each invocation draws from a per-operator credit budget.
-- The causal knowledge loop (research-loop step 10) is **under
-  experimental validation** per the pre-registered A/B/C protocol
-  (`../../spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md`). First executed
-  run (toy environment): pooled C > B > A with adjusted p < 0.05 and
-  held-out transfer; however, the protocol's promotion criterion — C > B
-  with adjusted p < 0.05 on >= 2 training task families plus held-out
-  persistence — is not yet met, because C ≈ B on one family where frozen
-  historical knowledge already sufficed. Until it is met, no autonomy is
-  granted by this evidence.
+- The causal knowledge loop (research-loop step 10) is **demonstrated in
+  the toy environment** by the pre-registered protocol series
+  230–234 (`../../spec/research/23{0..4}_*.md`): plain adaptive C missed
+  its ≥2-family promotion bar; the cost-aware successor C+ met it
+  (`experiments/protocol-230-v2/`); follow-up protocols isolated
+  representation, data-quantity, and decision-rule effects. Scope caveat:
+  toy substrate only — real-workload transfer is unproven, so autonomy
+  beyond Level 1 remains ungranted.
 
 ## Documentation
 
 - `../../MASTER_SPEC.md` — canonical specification (§8 evidence, §11 statistics)
 - `../../spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md` — the A/B/C protocol gating the knowledge-loop claim
+- `../../spec/research/231_COST_AWARE_SELECTION.md` … `234_DECISION_RULE_FORMAT.md` — pre-registered follow-up protocols
+- `../../README.md` — "What we learned" summary of the 230–234 findings
+- `experiments/` — checksummed evidence bundles (protocol-230-v1/v2, protocol-232-v1, protocol-233-*/protocol-234-* sweeps) with per-series analysis reports
 - `M1_PLAN.md` / `M1_COMPLETION_REPORT.md` — execution-core plan and verification
 - `docs/M1_EXECUTION_MODEL.md` — pipeline: approve → expand → claim → run → seal → recover
 - `docs/WORKLOAD_ADAPTERS.md` — adapter interface + `quadratic_optimizer` workload
