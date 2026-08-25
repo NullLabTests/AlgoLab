@@ -35,6 +35,8 @@ from algolab.search.policies import (
     ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION,
     ADAPTIVE_POLICY_VERSION,
     COST_RANKED_KNOWLEDGE_POLICY_VERSION,
+    FAMILY_ALLOC_POLICY_VERSION,
+    FAMILY_COMMIT_POLICY_VERSION,
     FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION,
     FAMILY_KNOWLEDGE_POLICY_VERSION,
     KNOWLEDGE_INFORMED_POLICY_VERSION,
@@ -45,6 +47,8 @@ from algolab.search.policies import (
     AdaptivePolicy,
     CostRankedFamilyKnowledgePolicy,
     CostRankedKnowledgePolicy,
+    FamilyAllocPolicy,
+    FamilyCommitPolicy,
     FamilyConditionedKnowledgePolicy,
     KnowledgeInformedPolicy,
     KnowledgeSnapshot,
@@ -90,6 +94,11 @@ ARMS_PROTOCOL_232 = ARMS_PROTOCOL_231 + (
     "knowledge-informed-family",
     "knowledge-informed-family-cost-rank",
 )
+# Protocol 234: decision-rule format isolation (commit / alloc).
+ARMS_PROTOCOL_234 = ARMS_PROTOCOL_232 + (
+    "knowledge-informed-family-commit",
+    "knowledge-informed-family-alloc",
+)
 PRIMARY_COMPARISONS: tuple[tuple[str, str], ...] = (
     ("static", "knowledge-informed"),
     ("static", "adaptive"),
@@ -132,6 +141,20 @@ def primary_comparisons_for(
             ("knowledge-informed-family-cost-rank", "adaptive-cost-aware"),
             ("adaptive-cost-aware", "adaptive-cost-aware-family"),
         ]
+    if "knowledge-informed-family-commit" in arms:
+        pairs += [
+            ("knowledge-informed-family-cost-rank",
+             "knowledge-informed-family-commit"),
+            ("knowledge-informed-family-commit",
+             "adaptive-cost-aware-family"),
+        ]
+    if "knowledge-informed-family-alloc" in arms:
+        pairs += [
+            ("knowledge-informed-family-cost-rank",
+             "knowledge-informed-family-alloc"),
+            ("knowledge-informed-family-alloc",
+             "adaptive-cost-aware-family"),
+        ]
     return tuple(pairs)
 
 
@@ -157,7 +180,8 @@ PRIOR_POLICY_LABEL = "prior-uniform"
 Policy = (StaticPolicy | KnowledgeInformedPolicy | AdaptivePolicy
           | RandomPolicy | AdaptiveCostAwarePolicy | CostRankedKnowledgePolicy
           | AdaptiveCostAwareFamilyPolicy | FamilyConditionedKnowledgePolicy
-          | CostRankedFamilyKnowledgePolicy)
+          | CostRankedFamilyKnowledgePolicy | FamilyCommitPolicy
+          | FamilyAllocPolicy)
 
 
 class HarnessError(RuntimeError):
@@ -225,6 +249,12 @@ def freeze_manifest(cfg: ExperimentConfig) -> dict[str, Any]:
             **({"knowledge-informed-family-cost-rank":
                 FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION}
                if "knowledge-informed-family-cost-rank" in cfg.arms else {}),
+            **({"knowledge-informed-family-commit":
+                FAMILY_COMMIT_POLICY_VERSION}
+               if "knowledge-informed-family-commit" in cfg.arms else {}),
+            **({"knowledge-informed-family-alloc":
+                FAMILY_ALLOC_POLICY_VERSION}
+               if "knowledge-informed-family-alloc" in cfg.arms else {}),
         },
         "budget_credits": cfg.budget_credits,
         "episodes_per_trial": cfg.episodes_per_trial,
@@ -640,6 +670,10 @@ class PolicyComparison:
         if arm == "knowledge-informed-family-cost-rank":
             return CostRankedFamilyKnowledgePolicy(
                 self.snapshots_by_family, snapshot, top_k=self.cfg.top_k)
+        if arm == "knowledge-informed-family-commit":
+            return FamilyCommitPolicy(self.snapshots_by_family, snapshot)
+        if arm == "knowledge-informed-family-alloc":
+            return FamilyAllocPolicy(self.snapshots_by_family, snapshot)
         if arm == "adaptive-cost-aware-family":
             return AdaptiveCostAwareFamilyPolicy(
                 snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed,
@@ -1001,6 +1035,8 @@ class PolicyComparison:
                      "adaptive-cost-aware", "knowledge-informed-cost-rank",
                      "adaptive-cost-aware-family", "knowledge-informed-family",
                      "knowledge-informed-family-cost-rank",
+                     "knowledge-informed-family-commit",
+                     "knowledge-informed-family-alloc",
                      "c-permuted", "b-shuffled", "c-plus-permuted")
         for arm in arm_order:
             if arm not in pc:

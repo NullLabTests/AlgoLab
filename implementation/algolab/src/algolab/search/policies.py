@@ -37,6 +37,8 @@ COST_RANKED_KNOWLEDGE_POLICY_VERSION = "1.0.0"
 FAMILY_KNOWLEDGE_POLICY_VERSION = "1.0.0"
 FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION = "1.0.0"
 ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION = "1.0.0"
+FAMILY_COMMIT_POLICY_VERSION = "1.0.0"
+FAMILY_ALLOC_POLICY_VERSION = "1.0.0"
 
 
 class PolicyError(RuntimeError):
@@ -373,6 +375,134 @@ class CostRankedFamilyKnowledgePolicy(FamilyConditionedKnowledgePolicy):
             snapshots_by_family, fallback_snapshot, top_k, rank_by_cost=True)
 
 
+def _rate_per_credit(snapshot: KnowledgeSnapshot, op: str) -> float:
+    return snapshot.success_rate(op) / OPERATOR_BUDGETS.get(op, 1.0)
+
+
+class FamilyCommitPolicy:
+    """Protocol-234 arm B-com: frozen monotherapy on the cost-argmax.
+
+    Reads the same family slices as B-fam+ but replaces the top-K cycle
+    with unconditional commitment: every selection is the slice's argmax of
+    smoothed success rate per credit. Isolates forced diversification from
+    knowledge quality (protocol 234 §3). Never receives or records
+    outcomes; no RNG.
+    """
+
+    label = "knowledge-informed-family-commit"
+    version = FAMILY_COMMIT_POLICY_VERSION
+
+    def __init__(
+        self,
+        snapshots_by_family: dict[str, KnowledgeSnapshot],
+        fallback_snapshot: KnowledgeSnapshot,
+    ):
+        self._choice = {
+            fam: snap.ranking_by_cost()[0]
+            for fam, snap in snapshots_by_family.items()
+        }
+        self._fallback_choice = fallback_snapshot.ranking_by_cost()[0]
+        self._fallback_snapshot = fallback_snapshot
+        self._snapshots = dict(snapshots_by_family)
+        self.snapshot_id = fallback_snapshot.snapshot_id
+
+    def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
+        operator = self._choice.get(family, self._fallback_choice)
+        snapshot = self._snapshots.get(family, self._fallback_snapshot)
+        basis = ("family slice" if family in self._snapshots
+                 else "pooled fallback")
+        record = SelectionRecord(
+            step=step,
+            operator=operator,
+            policy=self.label,
+            policy_version=self.version,
+            family=family,
+            prior_stats={
+                "success_rate": round(snapshot.success_rate(operator), 6),
+                "attempts": snapshot.attempts.get(operator, 0),
+            },
+            posterior_stats=None,
+            selection_score=round(
+                _rate_per_credit(snapshot, operator), 6),
+            selection_probability=1.0,
+            reason=(
+                f"frozen family cost-argmax commit "
+                f"({snapshot.success_rate(operator):.3f}/"
+                f"{OPERATOR_BUDGETS[operator]:g}cr; {basis})"
+            ),
+        )
+        return operator, record
+
+
+class FamilyAllocPolicy:
+    """Protocol-234 arm B-alloc: deterministic proportional allocation.
+
+    Attempt-count shares proportional to smoothed rate per credit over the
+    full catalog, executed by deficit scheduling (each step adds the
+    normalized fraction phi to every operator's quota, selects the largest
+    quota, subtracts 1). Same slices and fallback rule as B-com. Never
+    receives or records outcomes; no RNG.
+    """
+
+    label = "knowledge-informed-family-alloc"
+    version = FAMILY_ALLOC_POLICY_VERSION
+
+    def __init__(
+        self,
+        snapshots_by_family: dict[str, KnowledgeSnapshot],
+        fallback_snapshot: KnowledgeSnapshot,
+    ):
+        ops = tuple(OPERATOR_BUDGETS)
+
+        def fractions(snapshot: KnowledgeSnapshot) -> dict[str, float]:
+            weights = {op: _rate_per_credit(snapshot, op) for op in ops}
+            total = sum(weights.values())
+            return {op: w / total for op, w in weights.items()}
+
+        self._fractions = {
+            fam: fractions(snap) for fam, snap in snapshots_by_family.items()
+        }
+        self._fallback_fractions = fractions(fallback_snapshot)
+        self._quota: dict[str, dict[str, float]] = {}
+        self._fallback_snapshot = fallback_snapshot
+        self._snapshots = dict(snapshots_by_family)
+        self.snapshot_id = fallback_snapshot.snapshot_id
+
+    def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
+        if family not in self._quota:
+            base = self._fractions.get(family, self._fallback_fractions)
+            self._quota[family] = {op: 0.0 for op in base}
+        quotas = self._quota[family]
+        fracs = self._fractions.get(family, self._fallback_fractions)
+        for op, phi in fracs.items():
+            quotas[op] += phi
+        operator = max(quotas, key=lambda op: (quotas[op], op))
+        quotas[operator] -= 1.0
+        snapshot = self._snapshots.get(family, self._fallback_snapshot)
+        basis = ("family slice" if family in self._snapshots
+                 else "pooled fallback")
+        record = SelectionRecord(
+            step=step,
+            operator=operator,
+            policy=self.label,
+            policy_version=self.version,
+            family=family,
+            prior_stats={
+                "success_rate": round(snapshot.success_rate(operator), 6),
+                "attempts": snapshot.attempts.get(operator, 0),
+                "alloc_fraction": round(fracs[operator], 6),
+            },
+            posterior_stats=None,
+            selection_score=round(fracs[operator], 6),
+            selection_probability=round(fracs[operator], 6),
+            reason=(
+                f"frozen proportional allocation "
+                f"(phi={fracs[operator]:.4f}; {basis})"
+            ),
+        )
+        return operator, record
+
+
 class AdaptivePolicy:
     """Condition C: per-family Thompson sampling over a Beta posterior.
 
@@ -639,6 +769,8 @@ __all__ = [
     "FAMILY_KNOWLEDGE_POLICY_VERSION",
     "FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION",
     "ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION",
+    "FAMILY_COMMIT_POLICY_VERSION",
+    "FAMILY_ALLOC_POLICY_VERSION",
     "PolicyError",
     "KnowledgeSnapshot",
     "SelectionRecord",
@@ -648,6 +780,8 @@ __all__ = [
     "CostRankedKnowledgePolicy",
     "FamilyConditionedKnowledgePolicy",
     "CostRankedFamilyKnowledgePolicy",
+    "FamilyCommitPolicy",
+    "FamilyAllocPolicy",
     "AdaptivePolicy",
     "AdaptiveCostAwarePolicy",
     "AdaptiveCostAwareFamilyPolicy",

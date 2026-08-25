@@ -60,14 +60,14 @@ implementation/algolab/         the executable core (see its README)
 | M0 | Contracts: IDs, models, state machines, append-only event store, budget ledger, manifest validation, CLI | Delivered |
 | M1 | Deterministic execution core: expansion, persistent queue, isolated workers, hash-sealed artifacts, recovery, aggregation | Delivered |
 | M4 | Knowledge layer: schema v3, deterministic statistics, evidence records, operator catalog, skill registry | Delivered |
-| M5 | Causal loop evaluation: pre-registered protocols 230–233 executed (see findings below) | Demonstrated in toy environment; real-workload transfer unproven |
+| M5 | Causal loop evaluation: pre-registered protocols 230–234 executed (see findings below) | Demonstrated in toy environment; real-workload transfer unproven |
 
-## What we learned (M5 knowledge-loop research line, protocols 230–233)
+## What we learned (M5 knowledge-loop research line, protocols 230–234)
 
 All results come from pre-registered, checksummed experiments on the
 deterministic toy-discovery environment; every claim below is scoped to
 that substrate. Artifacts: `implementation/algolab/experiments/`, specs:
-`spec/research/23{0,1,2,3}_*.md`.
+`spec/research/23{0,1,2,3,4}_*.md`.
 
 1. **The knowledge loop is real — but only with the right selector
    objective.** Plain Thompson-sampling adaptation (C) beat static and
@@ -96,11 +96,25 @@ that substrate. Artifacts: `implementation/algolab/experiments/`, specs:
    NOT shrink with history quality
    (`spec/research/233_PRIOR_SIZE_DOSE_RESPONSE.md`,
    `experiments/protocol-233-p{30,60,120,240}/`).
+5. **The structural limit was the cycle format — and removing it erases
+   the loop's measurable edge.** A zero-learning frozen policy that simply
+   *commits* to the family-conditioned cost-argmax operator hits the
+   theoretical efficiency ceiling at every history level and matches (at
+   large priors) or slightly beats (at thin priors) the full adaptive
+   system. Proportional allocation sits between cycle and commitment and,
+   unlike the cycle, converts better data smoothly into better behavior.
+   The adaptive loop's residual value is estimation insurance — recovery
+   when knowledge mis-ranks — which this environment's realizations never
+   needed (`spec/research/234_DECISION_RULE_FORMAT.md`,
+   `experiments/protocol-234-p{30,60,120,240}/`).
 
 **Design conclusions carried forward:** store family-tagged aggregates;
-prefer adaptive cost-aware consumers of knowledge over any frozen schedule;
-treat frozen schedules as bounded-quality baselines regardless of how much
-history they read.
+the consumer's decision rule is a first-order lever — never ship a top-K
+cycle where a cost-weighted commitment or allocation is possible; the
+adaptive cost-aware loop remains justified as insurance while knowledge is
+young or mis-ranked, but is not a steady-state performance advantage once
+family-conditioned knowledge is good; quantify that insurance trade-off
+across prior draws before relying on either pole.
 
 ## Non-negotiable constraints
 

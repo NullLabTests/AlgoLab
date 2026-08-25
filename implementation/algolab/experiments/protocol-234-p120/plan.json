@@ -1,0 +1,99 @@
+{
+  "ablations": [
+    "permuted",
+    "shuffled"
+  ],
+  "analysis_seed": 11,
+  "arms": [
+    "static",
+    "knowledge-informed",
+    "adaptive",
+    "adaptive-cost-aware",
+    "knowledge-informed-cost-rank",
+    "random",
+    "adaptive-cost-aware-family",
+    "knowledge-informed-family",
+    "knowledge-informed-family-cost-rank",
+    "knowledge-informed-family-commit",
+    "knowledge-informed-family-alloc"
+  ],
+  "artifact_bundle_version": "1.0.0",
+  "baseline_version": "1.0.0",
+  "budget_credits": 150.0,
+  "created_at": "2026-08-25T14:01:38+00:00",
+  "discovery_gate": "valid implementation AND effect_1 >= threshold AND effect_2 >= threshold (2-seed replication gate)",
+  "discovery_gate_version": "1.0.0",
+  "environment_version": "1.1.0",
+  "episodes_per_trial": 10,
+  "experiment_id": "protocol-234-p120",
+  "ground_truth": {
+    "alpha": {
+      "decompose": 0.35,
+      "polyglot": -0.35,
+      "refresh": 0.02,
+      "reparameterize": 0.02,
+      "rollback": -0.35,
+      "synthesize": 0.02,
+      "tune": 0.35,
+      "validate": 0.35
+    },
+    "beta": {
+      "decompose": 0.02,
+      "polyglot": -0.35,
+      "refresh": 0.35,
+      "reparameterize": 0.35,
+      "rollback": -0.35,
+      "synthesize": 0.35,
+      "tune": 0.02,
+      "validate": 0.02
+    },
+    "gamma": {
+      "decompose": 0.35,
+      "polyglot": -0.35,
+      "refresh": 0.35,
+      "reparameterize": 0.35,
+      "rollback": -0.35,
+      "synthesize": 0.02,
+      "tune": 0.02,
+      "validate": 0.02
+    }
+  },
+  "held_out_family": "gamma",
+  "notes": "protocol 234 decision-rule isolation, prior size 120",
+  "operator_registry_version": "1.0.0",
+  "policy_versions": {
+    "adaptive": "1.0.0",
+    "adaptive-cost-aware": "1.0.0",
+    "adaptive-cost-aware-family": "1.0.0",
+    "knowledge-informed": "1.0.0",
+    "knowledge-informed-cost-rank": "1.0.0",
+    "knowledge-informed-family": "1.0.0",
+    "knowledge-informed-family-alloc": "1.0.0",
+    "knowledge-informed-family-commit": "1.0.0",
+    "knowledge-informed-family-cost-rank": "1.0.0",
+    "random": "1.0.0",
+    "static": "1.0.0"
+  },
+  "primary_metric": "validated_discoveries / credits_consumed",
+  "prior_attempts_per_family": 120,
+  "prior_seed": 101,
+  "producer": "research",
+  "promotion_threshold": 0.15,
+  "protocol_version": "1.1.0",
+  "seed_base": 7,
+  "task_rotation": [
+    "alpha",
+    "beta",
+    "alpha",
+    "beta",
+    "alpha",
+    "beta",
+    "alpha",
+    "beta",
+    "alpha",
+    "beta"
+  ],
+  "task_suite_version": "1.1.0",
+  "top_k": 3,
+  "trials": 128
+}
