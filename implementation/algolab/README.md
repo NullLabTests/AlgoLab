@@ -17,16 +17,18 @@ the executable core of the platform, delivered across five milestones:
   (`algolab.knowledge.operators`), and the append-only skill registry that
   gates which agent role may invoke which operator
   (`algolab.knowledge.registry`). The database schema is at **v3**.
-- **M5 — Cumulative search (`algolab.search`).** A deterministic
-  toy-discovery environment with hidden ground truth and a two-seed
-  replication gate; pre-registered A/B/C/D policy arms plus cost-aware and
-  family-conditioned variants (protocols 230–234); a manifest-frozen,
-  byte-reproducible experiment harness with checksummed evidence bundles in
-  `experiments/`. Research specs: `../../spec/research/23{0..4}_*.md`;
-  findings summarized in the root README ("What we learned").
+- **M5 — Cumulative search (`algolab.search`).** Pluggable search
+  workloads — the deterministic toy-discovery environment (planted ground
+  truth, two-seed replication gate) and a real KNN micro-HPO bridge on
+  scikit-learn datasets; pre-registered policy arms A/B/C/D plus
+  cost-aware, family-conditioned, commitment, and allocation variants
+  (protocols 230–235); a manifest-frozen, byte-reproducible experiment
+  harness with checksummed evidence bundles in `experiments/`. Research
+  specs: `../../spec/research/23{0..5}_*.md`; findings summarized in the
+  root README ("What we learned").
 
 The test suite currently has **332 passing tests** covering unit,
-integration, ontology-invariant, protocol-compliance (230–234), and golden
+integration, ontology-invariant, protocol-compliance (230–235), and golden
 byte-reproducibility behavior. `ruff` and `mypy` (strict) are clean.
 
 ## Quickstart
@@ -99,8 +101,9 @@ existing artifact directory is refused unless `--force` is passed.
 Executed series (all checksummed under `experiments/`):
 `protocol-230-v1` (plain C misses the promotion bar on beta),
 `protocol-230-v2` (cost-aware C+ meets it), `protocol-232-v1`
-(family-conditioned knowledge), and the `protocol-233-*`/`protocol-234-*`
-sweeps isolating history quantity from decision-rule format. Findings are
+(family-conditioned knowledge), the `protocol-233-*`/`protocol-234-*`
+sweeps isolating history quantity from decision-rule format, and
+`protocol-235-v1`, the first real-workload bridge. Findings are
 summarized in the repository root README.
 
 ## Package layout

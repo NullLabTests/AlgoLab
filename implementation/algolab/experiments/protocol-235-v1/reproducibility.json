@@ -1,0 +1,87 @@
+{
+  "checks": [
+    {
+      "actual": "1.1.0",
+      "check": "protocol_version",
+      "expected": "1.1.0",
+      "pass": true
+    },
+    {
+      "actual": "1.1.0",
+      "check": "environment_version",
+      "expected": "1.1.0",
+      "pass": true
+    },
+    {
+      "actual": [
+        "static",
+        "knowledge-informed",
+        "adaptive",
+        "adaptive-cost-aware",
+        "random",
+        "adaptive-cost-aware-family",
+        "knowledge-informed-family",
+        "knowledge-informed-family-cost-rank",
+        "knowledge-informed-family-commit",
+        "knowledge-informed-family-alloc"
+      ],
+      "check": "arms_match",
+      "expected": [
+        "static",
+        "knowledge-informed",
+        "adaptive",
+        "adaptive-cost-aware",
+        "random",
+        "adaptive-cost-aware-family",
+        "knowledge-informed-family",
+        "knowledge-informed-family-cost-rank",
+        "knowledge-informed-family-commit",
+        "knowledge-informed-family-alloc"
+      ],
+      "pass": true
+    },
+    {
+      "actual": 150.0,
+      "check": "budget_match",
+      "expected": 150.0,
+      "pass": true
+    },
+    {
+      "actual": [
+        "adaptive",
+        "adaptive-cost-aware",
+        "adaptive-cost-aware-family",
+        "knowledge-informed",
+        "knowledge-informed-family",
+        "knowledge-informed-family-alloc",
+        "knowledge-informed-family-commit",
+        "knowledge-informed-family-cost-rank",
+        "random",
+        "static"
+      ],
+      "check": "stats_arms_present",
+      "expected": [
+        "adaptive",
+        "adaptive-cost-aware",
+        "adaptive-cost-aware-family",
+        "knowledge-informed",
+        "knowledge-informed-family",
+        "knowledge-informed-family-alloc",
+        "knowledge-informed-family-commit",
+        "knowledge-informed-family-cost-rank",
+        "random",
+        "static"
+      ],
+      "pass": true
+    },
+    {
+      "actual": true,
+      "check": "held_out_family_in_manifest",
+      "expected": true,
+      "pass": true
+    }
+  ],
+  "manifest_path": "experiments/protocol-235-v1/manifest.json",
+  "reproducible": true,
+  "statistics_path": "experiments/protocol-235-v1/statistics.json"
+}

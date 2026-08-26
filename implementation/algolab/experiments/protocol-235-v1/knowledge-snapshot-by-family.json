@@ -1,0 +1,144 @@
+{
+  "alpha": {
+    "attempts": {
+      "chebyshev": 2,
+      "dist-weight": 4,
+      "k1": 2,
+      "k11": 3,
+      "k21": 3,
+      "k3": 4,
+      "manhattan": 2
+    },
+    "credits": {
+      "chebyshev": 20.0,
+      "dist-weight": 40.0,
+      "k1": 20.0,
+      "k11": 30.0,
+      "k21": 30.0,
+      "k3": 40.0,
+      "manhattan": 20.0
+    },
+    "event_range": [
+      "prior-alpha-0",
+      "prior-alpha-1",
+      "prior-alpha-2",
+      "prior-alpha-3",
+      "prior-alpha-4",
+      "prior-alpha-5",
+      "prior-alpha-6",
+      "prior-alpha-7",
+      "prior-alpha-8",
+      "prior-alpha-9",
+      "prior-alpha-10",
+      "prior-alpha-11",
+      "prior-alpha-12",
+      "prior-alpha-13",
+      "prior-alpha-14",
+      "prior-alpha-15",
+      "prior-alpha-16",
+      "prior-alpha-17",
+      "prior-alpha-18",
+      "prior-alpha-19"
+    ],
+    "snapshot_id": "K0-protocol-235-v1-alpha",
+    "successes": {
+      "chebyshev": 0,
+      "dist-weight": 0,
+      "k1": 0,
+      "k11": 0,
+      "k21": 0,
+      "k3": 0,
+      "manhattan": 0
+    },
+    "sum_effect": {
+      "chebyshev": -0.054464,
+      "dist-weight": 0.0,
+      "k1": -0.02464,
+      "k11": -0.015813,
+      "k21": -0.028995,
+      "k3": -0.00708,
+      "manhattan": -0.00534
+    },
+    "sum_effect_sq": {
+      "chebyshev": 0.0014831636479999998,
+      "dist-weight": 0.0,
+      "k1": 0.0003035648,
+      "k11": 8.335032299999999e-05,
+      "k21": 0.000280236675,
+      "k3": 1.25316e-05,
+      "manhattan": 1.4257800000000001e-05
+    },
+    "version": "1.0.0"
+  },
+  "beta": {
+    "attempts": {
+      "chebyshev": 3,
+      "dist-weight": 1,
+      "k1": 2,
+      "k11": 3,
+      "k21": 5,
+      "k3": 5,
+      "manhattan": 1
+    },
+    "credits": {
+      "chebyshev": 30.0,
+      "dist-weight": 10.0,
+      "k1": 20.0,
+      "k11": 30.0,
+      "k21": 50.0,
+      "k3": 50.0,
+      "manhattan": 10.0
+    },
+    "event_range": [
+      "prior-beta-0",
+      "prior-beta-1",
+      "prior-beta-2",
+      "prior-beta-3",
+      "prior-beta-4",
+      "prior-beta-5",
+      "prior-beta-6",
+      "prior-beta-7",
+      "prior-beta-8",
+      "prior-beta-9",
+      "prior-beta-10",
+      "prior-beta-11",
+      "prior-beta-12",
+      "prior-beta-13",
+      "prior-beta-14",
+      "prior-beta-15",
+      "prior-beta-16",
+      "prior-beta-17",
+      "prior-beta-18",
+      "prior-beta-19"
+    ],
+    "snapshot_id": "K0-protocol-235-v1-beta",
+    "successes": {
+      "chebyshev": 0,
+      "dist-weight": 0,
+      "k1": 0,
+      "k11": 0,
+      "k21": 5,
+      "k3": 0,
+      "manhattan": 0
+    },
+    "sum_effect": {
+      "chebyshev": -0.109524,
+      "dist-weight": 0.0,
+      "k1": -0.027936,
+      "k11": 0.000714,
+      "k21": 0.070635,
+      "k3": -0.041665,
+      "manhattan": 0.002778
+    },
+    "sum_effect_sq": {
+      "chebyshev": 0.003998502192,
+      "dist-weight": 0.0,
+      "k1": 0.00039021004799999996,
+      "k11": 1.6993200000000002e-07,
+      "k21": 0.0009978606450000002,
+      "k3": 0.00034719444500000006,
+      "manhattan": 7.717284000000001e-06
+    },
+    "version": "1.0.0"
+  }
+}

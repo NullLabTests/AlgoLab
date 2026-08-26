@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -80,21 +81,27 @@ class KnowledgeSnapshot:
             reverse=True,
         )
 
-    def ranking_by_cost(self) -> list[str]:
+    def ranking_by_cost(self, costs: Mapping[str, float] | None = None,
+                        ) -> list[str]:
         """Operators ranked by K0 success rate *per credit cost*; ties by
         total effect per credit then catalog order (deterministic).
 
         Protocol 231: the frozen cost-ranked reading of history (arm B+).
+        ``costs`` defaults to the M4 operator budgets when omitted.
         """
+        table = OPERATOR_BUDGETS if costs is None else costs
+
+        def cost_of(op: str) -> float:
+            return table.get(op, 1.0)
+
         def rate_per_credit(op: str) -> float:
-            return self.success_rate(op) / OPERATOR_BUDGETS.get(op, 1.0)
+            return self.success_rate(op) / cost_of(op)
 
         return sorted(
             self.attempts,
             key=lambda op: (
                 round(rate_per_credit(op), 12),
-                round(self.sum_effect.get(op, 0.0)
-                      / OPERATOR_BUDGETS.get(op, 1.0), 12),
+                round(self.sum_effect.get(op, 0.0) / cost_of(op), 12),
                 op,
             ),
             reverse=True,
@@ -235,12 +242,15 @@ class KnowledgeInformedPolicy:
         top_k: int = 3,
         *,
         rank_by_cost: bool = False,
+        costs: Mapping[str, float] | None = None,
     ):
         if not snapshot.attempts:
             raise PolicyError("knowledge-informed policy requires a non-empty snapshot")
         self._snapshot = snapshot
+        self._costs = costs
         self._ranked = (
-            snapshot.ranking_by_cost() if rank_by_cost else snapshot.ranking())
+            snapshot.ranking_by_cost(costs) if rank_by_cost
+            else snapshot.ranking())
         self._top = self._ranked[: max(1, top_k)]
         self._pointer = 0
         self.snapshot_id = snapshot.snapshot_id
@@ -282,18 +292,21 @@ class CostRankedKnowledgePolicy(KnowledgeInformedPolicy):
     label = "knowledge-informed-cost-rank"
     version = COST_RANKED_KNOWLEDGE_POLICY_VERSION
 
-    def __init__(self, snapshot: KnowledgeSnapshot, top_k: int = 3):
-        super().__init__(snapshot, top_k, rank_by_cost=True)
+    def __init__(self, snapshot: KnowledgeSnapshot, top_k: int = 3,
+                 costs: Mapping[str, float] | None = None):
+        super().__init__(snapshot, top_k, rank_by_cost=True, costs=costs)
 
 
 class _FrozenFamilyRanking:
     """Per-family frozen top-K cycle state (protocol 232)."""
 
     def __init__(self, snapshot: KnowledgeSnapshot, top_k: int,
-                 rank_by_cost: bool):
+                 rank_by_cost: bool,
+                 costs: Mapping[str, float] | None = None):
         self.snapshot = snapshot
         self.ranked = (
-            snapshot.ranking_by_cost() if rank_by_cost else snapshot.ranking())
+            snapshot.ranking_by_cost(costs) if rank_by_cost
+            else snapshot.ranking())
         self.top = self.ranked[: max(1, top_k)]
         self.pointer = 0
 
@@ -318,13 +331,15 @@ class FamilyConditionedKnowledgePolicy:
         top_k: int = 3,
         *,
         rank_by_cost: bool = False,
+        costs: Mapping[str, float] | None = None,
     ):
         self._basis = "family cost-rank" if rank_by_cost else "family rank"
         self._ranks: dict[str, _FrozenFamilyRanking] = {}
         for fam, snap in snapshots_by_family.items():
-            self._ranks[fam] = _FrozenFamilyRanking(snap, top_k, rank_by_cost)
+            self._ranks[fam] = _FrozenFamilyRanking(
+                snap, top_k, rank_by_cost, costs)
         self._fallback = _FrozenFamilyRanking(
-            fallback_snapshot, top_k, rank_by_cost)
+            fallback_snapshot, top_k, rank_by_cost, costs)
         self.snapshot_id = fallback_snapshot.snapshot_id
 
     def _ranking_for(self, family: str) -> _FrozenFamilyRanking:
@@ -370,13 +385,16 @@ class CostRankedFamilyKnowledgePolicy(FamilyConditionedKnowledgePolicy):
         snapshots_by_family: dict[str, KnowledgeSnapshot],
         fallback_snapshot: KnowledgeSnapshot,
         top_k: int = 3,
+        costs: Mapping[str, float] | None = None,
     ):
-        super().__init__(
-            snapshots_by_family, fallback_snapshot, top_k, rank_by_cost=True)
+        super().__init__(snapshots_by_family, fallback_snapshot, top_k,
+                         rank_by_cost=True, costs=costs)
 
 
-def _rate_per_credit(snapshot: KnowledgeSnapshot, op: str) -> float:
-    return snapshot.success_rate(op) / OPERATOR_BUDGETS.get(op, 1.0)
+def _rate_per_credit(snapshot: KnowledgeSnapshot, op: str,
+                     costs: Mapping[str, float] | None = None) -> float:
+    table = OPERATOR_BUDGETS if costs is None else costs
+    return snapshot.success_rate(op) / table.get(op, 1.0)
 
 
 class FamilyCommitPolicy:
@@ -396,12 +414,14 @@ class FamilyCommitPolicy:
         self,
         snapshots_by_family: dict[str, KnowledgeSnapshot],
         fallback_snapshot: KnowledgeSnapshot,
+        costs: Mapping[str, float] | None = None,
     ):
+        self._costs = costs
         self._choice = {
-            fam: snap.ranking_by_cost()[0]
+            fam: snap.ranking_by_cost(costs)[0]
             for fam, snap in snapshots_by_family.items()
         }
-        self._fallback_choice = fallback_snapshot.ranking_by_cost()[0]
+        self._fallback_choice = fallback_snapshot.ranking_by_cost(costs)[0]
         self._fallback_snapshot = fallback_snapshot
         self._snapshots = dict(snapshots_by_family)
         self.snapshot_id = fallback_snapshot.snapshot_id
@@ -411,6 +431,8 @@ class FamilyCommitPolicy:
         snapshot = self._snapshots.get(family, self._fallback_snapshot)
         basis = ("family slice" if family in self._snapshots
                  else "pooled fallback")
+        cost_table = (OPERATOR_BUDGETS if self._costs is None
+                      else self._costs)
         record = SelectionRecord(
             step=step,
             operator=operator,
@@ -423,12 +445,12 @@ class FamilyCommitPolicy:
             },
             posterior_stats=None,
             selection_score=round(
-                _rate_per_credit(snapshot, operator), 6),
+                _rate_per_credit(snapshot, operator, self._costs), 6),
             selection_probability=1.0,
             reason=(
                 f"frozen family cost-argmax commit "
                 f"({snapshot.success_rate(operator):.3f}/"
-                f"{OPERATOR_BUDGETS[operator]:g}cr; {basis})"
+                f"{cost_table[operator]:g}cr; {basis})"
             ),
         )
         return operator, record
@@ -451,11 +473,14 @@ class FamilyAllocPolicy:
         self,
         snapshots_by_family: dict[str, KnowledgeSnapshot],
         fallback_snapshot: KnowledgeSnapshot,
+        costs: Mapping[str, float] | None = None,
     ):
-        ops = tuple(OPERATOR_BUDGETS)
+        self._costs = costs
+        ops = tuple(OPERATOR_BUDGETS if costs is None else costs)
 
         def fractions(snapshot: KnowledgeSnapshot) -> dict[str, float]:
-            weights = {op: _rate_per_credit(snapshot, op) for op in ops}
+            weights = {op: _rate_per_credit(snapshot, op, costs)
+                       for op in ops}
             total = sum(weights.values())
             return {op: w / total for op, w in weights.items()}
 
@@ -641,11 +666,29 @@ class AdaptiveCostAwarePolicy(AdaptivePolicy):
     ``theta ~ Beta(alpha, beta)``, making the argmax track discoveries per
     credit rather than raw success probability. Everything else — including
     the absence of any other change — is the pre-registered single-mechanism
-    test of the v1 beta-family diagnosis (protocol 231 §3).
+    test of the v1 beta-family diagnosis (protocol 231 §3). Costs default
+    to the M4 operator budgets; workloads may inject their own table.
     """
 
     label = "adaptive-cost-aware"
     version = ADAPTIVE_COST_AWARE_POLICY_VERSION
+
+    def __init__(
+        self,
+        snapshot: KnowledgeSnapshot,
+        operators: tuple[str, ...],
+        *,
+        rng_seed: int,
+        feedback_shuffle_seed: int | None = None,
+        costs: Mapping[str, float] | None = None,
+    ):
+        super().__init__(snapshot, operators, rng_seed=rng_seed,
+                         feedback_shuffle_seed=feedback_shuffle_seed)
+        self._cost_table = (dict(OPERATOR_BUDGETS) if costs is None
+                            else dict(costs))
+
+    def _cost_of(self, op: str) -> float:
+        return float(self._cost_table.get(op, 1.0))
 
     def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
         if family not in self._known_families:
@@ -654,9 +697,10 @@ class AdaptiveCostAwarePolicy(AdaptivePolicy):
         for op in self._operators:
             a = self._alpha[family][op]
             b = self._beta[family][op]
-            scores[op] = self._rng.betavariate(a, b) / OPERATOR_BUDGETS[op]
+            scores[op] = self._rng.betavariate(a, b) / self._cost_of(op)
         operator = max(scores, key=lambda op: scores[op])
         stats = self.posterior_stats(family, operator)
+        cost = self._cost_of(operator)
         record = SelectionRecord(
             step=step,
             operator=operator,
@@ -669,12 +713,12 @@ class AdaptiveCostAwarePolicy(AdaptivePolicy):
             },
             posterior_stats=stats,
             selection_score=round(scores[operator], 6),
-            selection_probability=round(stats["mean"] / OPERATOR_BUDGETS[operator], 6),
+            selection_probability=round(stats["mean"] / cost, 6),
             reason=(
                 f"cost-normalized thompson argmax (theta/cost; "
                 f"{int(self._alpha[family][operator] - 1)} successes, "
                 f"{int(self._beta[family][operator] - 1)} failures seen; "
-                f"cost {OPERATOR_BUDGETS[operator]:g})"
+                f"cost {cost:g})"
             ),
         )
         return operator, record
@@ -701,12 +745,13 @@ class AdaptiveCostAwareFamilyPolicy(AdaptiveCostAwarePolicy):
         rng_seed: int,
         feedback_shuffle_seed: int | None = None,
         snapshots_by_family: dict[str, KnowledgeSnapshot] | None = None,
+        costs: Mapping[str, float] | None = None,
     ):
         self._family_init: dict[str, KnowledgeSnapshot] = dict(
             snapshots_by_family or {})
         super().__init__(
             snapshot, operators, rng_seed=rng_seed,
-            feedback_shuffle_seed=feedback_shuffle_seed)
+            feedback_shuffle_seed=feedback_shuffle_seed, costs=costs)
 
     def _init_family(self, family: str, snapshot: KnowledgeSnapshot) -> None:
         if family in self._known_families:

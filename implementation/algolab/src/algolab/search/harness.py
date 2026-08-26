@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import Any, TextIO
 
 from algolab.knowledge.evidence import PROMOTE, EvidenceRepo
-from algolab.knowledge.operators import OPERATOR_CATALOG
+from algolab.knowledge.operators import OPERATOR_BUDGETS
 from algolab.search.policies import (
     ADAPTIVE_COST_AWARE_POLICY_VERSION,
     ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION,
@@ -59,11 +59,13 @@ from algolab.search.policies import (
 from algolab.search.toy import (
     DEFAULT_OPERATORS,
     DISCOVERY_GATE_VERSION,
+    EFFECT_SIGMA,
     HELD_OUT_FAMILY,
     PROMOTION_THRESHOLD,
     TASK_FAMILIES,
     TASK_SUITE_VERSION,
     TOY_ENVIRONMENT_VERSION,
+    VALIDATION_PROBABILITY,
     Attempt,
     ground_truth_effect,
     is_useful,
@@ -77,6 +79,81 @@ PROTOCOL_VERSION = "1.1.0"
 BASELINE_VERSION = "1.0.0"
 OPERATOR_REGISTRY_VERSION = "1.0.0"
 PRIOR_POLICY_VERSION = "1.0.0"
+
+
+@dataclass(frozen=True)
+class WorkloadView:
+    """Uniform adapter surface over a search-workload module.
+
+    ``toy`` exposes its hidden ground-truth oracle (used by manifests and
+    the adaptation summary); real workloads (``hpo``) have no oracle and
+    supply an environment-metadata builder instead.
+    """
+
+    key: str
+    display_name: str
+    environment_version: str
+    task_suite_version: str
+    discovery_gate_version: str
+    families: tuple[str, ...]
+    held_out_family: str
+    operators: tuple[str, ...]
+    has_oracle: bool
+    run_attempt: Any
+    operator_cost: Any
+    costs: Any = None
+    ground_truth_effect: Any = None
+    is_useful: Any = None
+    environment_metadata: Any = None
+
+
+def _toy_view() -> WorkloadView:
+    return WorkloadView(
+        key="toy",
+        display_name="toy-discovery",
+        environment_version=TOY_ENVIRONMENT_VERSION,
+        task_suite_version=TASK_SUITE_VERSION,
+        discovery_gate_version=DISCOVERY_GATE_VERSION,
+        families=tuple(TASK_FAMILIES),
+        held_out_family=HELD_OUT_FAMILY,
+        operators=tuple(DEFAULT_OPERATORS),
+        has_oracle=True,
+        run_attempt=run_attempt,
+        operator_cost=operator_cost,
+        costs=OPERATOR_BUDGETS,
+        ground_truth_effect=ground_truth_effect,
+        is_useful=is_useful,
+    )
+
+
+def _hpo_view() -> WorkloadView:
+    from algolab.search import workload_hpo
+
+    return WorkloadView(
+        key="hpo",
+        display_name="knn-micro-hpo",
+        environment_version=workload_hpo.HPO_WORKLOAD_VERSION,
+        task_suite_version=workload_hpo.HPO_TASK_SUITE_VERSION,
+        discovery_gate_version="1.0.0",
+        families=tuple(workload_hpo.TASK_FAMILIES),
+        held_out_family=workload_hpo.HELD_OUT_FAMILY,
+        operators=workload_hpo.operators(),
+        has_oracle=False,
+        run_attempt=workload_hpo.run_attempt,
+        operator_cost=workload_hpo.operator_cost,
+        costs=dict(workload_hpo.NOMINAL_COSTS),
+        environment_metadata=workload_hpo.environment_metadata,
+    )
+
+
+_WORKLOADS = {"toy": _toy_view, "hpo": _hpo_view}
+
+
+def resolve_workload(name: str) -> WorkloadView:
+    try:
+        return _WORKLOADS[name]()
+    except KeyError:
+        raise HarnessError(f"unknown workload {name!r}") from None
 
 ARMS_PROCEDURAL = ("static", "knowledge-informed", "adaptive", "random")
 # Protocol 231 (experiment protocol-230-v2): adds the cost-aware adaptive
@@ -206,30 +283,38 @@ class ExperimentConfig:
     promotion_threshold: float = PROMOTION_THRESHOLD
     producer: str = "research"
     notes: str = ""
+    workload: str = "toy"
+
+    @property
+    def workload_view(self) -> WorkloadView:
+        return resolve_workload(self.workload)
 
     @property
     def rotation(self) -> list[str]:
         """Deterministic family rotation shared by all arms and trials."""
-        return [TASK_FAMILIES[i % len(TASK_FAMILIES)]
+        families = self.workload_view.families
+        return [families[i % len(families)]
                 for i in range(self.episodes_per_trial)]
 
     @property
     def held_out_rotation(self) -> list[str]:
         """Family rotation for held-out transfer evaluation (single family)."""
-        return [HELD_OUT_FAMILY
+        return [self.workload_view.held_out_family
                 for _ in range(self.episodes_per_trial)]
 
 
 def freeze_manifest(cfg: ExperimentConfig) -> dict[str, Any]:
     """The frozen, versioned experiment manifest (written before any run)."""
+    wl = cfg.workload_view
     return {
         "experiment_id": cfg.experiment_id,
         "protocol_version": PROTOCOL_VERSION,
-        "environment_version": TOY_ENVIRONMENT_VERSION,
-        "task_suite_version": TASK_SUITE_VERSION,
+        "workload": wl.key,
+        "environment_version": wl.environment_version,
+        "task_suite_version": wl.task_suite_version,
         "operator_registry_version": OPERATOR_REGISTRY_VERSION,
         "baseline_version": BASELINE_VERSION,
-        "discovery_gate_version": DISCOVERY_GATE_VERSION,
+        "discovery_gate_version": wl.discovery_gate_version,
         "policy_versions": {
             "static": STATIC_POLICY_VERSION,
             "knowledge-informed": KNOWLEDGE_INFORMED_POLICY_VERSION,
@@ -268,10 +353,11 @@ def freeze_manifest(cfg: ExperimentConfig) -> dict[str, Any]:
         "ablations": list(cfg.ablations),
         "promotion_threshold": cfg.promotion_threshold,
         "task_rotation": list(cfg.rotation),
-        "ground_truth": {
-            f: {op: ground_truth_effect(f, op) for op in OPERATOR_CATALOG}
-            for f in list(TASK_FAMILIES) + [HELD_OUT_FAMILY]
-        },
+        "ground_truth": (
+            {f: {op: wl.ground_truth_effect(f, op) for op in wl.operators}
+             for f in list(wl.families) + [wl.held_out_family]}
+            if wl.has_oracle else None
+        ),
         "discovery_gate": (
             "valid implementation AND effect_1 >= threshold "
             "AND effect_2 >= threshold (2-seed replication gate)"
@@ -289,6 +375,7 @@ class PolicyComparison:
     def __init__(self, cfg: ExperimentConfig, conn: sqlite3.Connection,
                  artifact_dir: Path, *, force: bool = False):
         self.cfg = cfg
+        self.wl = cfg.workload_view
         self.conn = conn
         self.artifact_dir = artifact_dir
         self.force = force
@@ -453,25 +540,26 @@ class PolicyComparison:
         aggregates: dict[str, dict[str, float]] = {
             op: {"attempts": 0.0, "successes": 0.0, "sum_effect": 0.0,
                  "sum_effect_sq": 0.0, "credits": 0.0}
-            for op in OPERATOR_CATALOG
+            for op in self.wl.operators
         }
         family_aggregates: dict[str, dict[str, dict[str, float]]] = {
             family: {
                 op: {"attempts": 0.0, "successes": 0.0, "sum_effect": 0.0,
                      "sum_effect_sq": 0.0, "credits": 0.0}
-                for op in OPERATOR_CATALOG
+                for op in self.wl.operators
             }
-            for family in TASK_FAMILIES
+            for family in self.wl.families
         }
         event_range: list[str] = []
         rng = random.Random(self.cfg.prior_seed)
         episode_idx = 0
         per_family = self.cfg.prior_attempts_per_family
-        for family in TASK_FAMILIES:
+        for family in self.wl.families:
             task_id = self._register_prior_task(family)
             for i in range(per_family):
-                op = list(OPERATOR_CATALOG)[rng.randrange(len(OPERATOR_CATALOG))]
-                attempt = run_attempt(
+                ops = self.wl.operators
+                op = ops[rng.randrange(len(ops))]
+                attempt = self.wl.run_attempt(
                     family, op, seed_base=self.cfg.seed_base,
                     trial=self.cfg.prior_seed, episode=episode_idx, attempt=i)
                 self._record_prior_attempt(family, task_id, i, attempt)
@@ -594,9 +682,10 @@ class PolicyComparison:
             episode_discoveries = 0
             while spent < self.cfg.budget_credits:
                 operator, record = policy.select(family, step)
-                if spent + operator_cost(operator) > self.cfg.budget_credits:
+                if spent + self.wl.operator_cost(operator) \
+                        > self.cfg.budget_credits:
                     break
-                attempt = run_attempt(
+                attempt = self.wl.run_attempt(
                     family, operator, seed_base=self.cfg.seed_base,
                     trial=trial, episode=episode, attempt=step)
                 spent += attempt.cost_credits
@@ -654,39 +743,45 @@ class PolicyComparison:
         if snapshot is None:
             raise HarnessError("prior snapshot must be built before arms")
         if arm == "static":
-            return StaticPolicy(DEFAULT_OPERATORS)
+            return StaticPolicy(self.wl.operators)
         if arm == "knowledge-informed":
             return KnowledgeInformedPolicy(snapshot, top_k=self.cfg.top_k)
         if arm == "adaptive":
-            return AdaptivePolicy(snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed)
+            return AdaptivePolicy(snapshot, self.wl.operators, rng_seed=rng_seed)
         if arm == "adaptive-cost-aware":
             return AdaptiveCostAwarePolicy(
-                snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed)
+                snapshot, self.wl.operators, rng_seed=rng_seed,
+                costs=self.wl.costs)
         if arm == "knowledge-informed-cost-rank":
-            return CostRankedKnowledgePolicy(snapshot, top_k=self.cfg.top_k)
+            return CostRankedKnowledgePolicy(
+                snapshot, top_k=self.cfg.top_k, costs=self.wl.costs)
         if arm == "knowledge-informed-family":
             return FamilyConditionedKnowledgePolicy(
                 self.snapshots_by_family, snapshot, top_k=self.cfg.top_k)
         if arm == "knowledge-informed-family-cost-rank":
             return CostRankedFamilyKnowledgePolicy(
-                self.snapshots_by_family, snapshot, top_k=self.cfg.top_k)
+                self.snapshots_by_family, snapshot, top_k=self.cfg.top_k,
+                costs=self.wl.costs)
         if arm == "knowledge-informed-family-commit":
-            return FamilyCommitPolicy(self.snapshots_by_family, snapshot)
+            return FamilyCommitPolicy(
+                self.snapshots_by_family, snapshot, costs=self.wl.costs)
         if arm == "knowledge-informed-family-alloc":
-            return FamilyAllocPolicy(self.snapshots_by_family, snapshot)
+            return FamilyAllocPolicy(
+                self.snapshots_by_family, snapshot, costs=self.wl.costs)
         if arm == "adaptive-cost-aware-family":
             return AdaptiveCostAwareFamilyPolicy(
-                snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed,
-                snapshots_by_family=self.snapshots_by_family)
+                snapshot, self.wl.operators, rng_seed=rng_seed,
+                snapshots_by_family=self.snapshots_by_family,
+                costs=self.wl.costs)
         if arm == "random":
-            return RandomPolicy(DEFAULT_OPERATORS, seed=rng_seed)
+            return RandomPolicy(self.wl.operators, seed=rng_seed)
         if arm == "c-permuted":
             return AdaptivePolicy(
-                snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed,
+                snapshot, self.wl.operators, rng_seed=rng_seed,
                 feedback_shuffle_seed=rng_seed + 999)
         if arm == "c-plus-permuted":
             return AdaptiveCostAwarePolicy(
-                snapshot, DEFAULT_OPERATORS, rng_seed=rng_seed,
+                snapshot, self.wl.operators, rng_seed=rng_seed,
                 feedback_shuffle_seed=rng_seed + 999)
         if arm == "b-shuffled":
             shuffled = self._shuffled_snapshot(snapshot, rng_seed)
@@ -697,7 +792,7 @@ class PolicyComparison:
                            rng_seed: int) -> KnowledgeSnapshot:
         """Ablation: operator -> counts association destroyed (seeded)."""
         rng = random.Random(rng_seed)
-        ops = list(OPERATOR_CATALOG)
+        ops = list(self.wl.operators)
         permuted = list(ops)
         rng.shuffle(permuted)
         aggregates: dict[str, dict[str, float]] = {}
@@ -900,6 +995,7 @@ class PolicyComparison:
         held_out_stats: dict[str, Any] | None,
         *,
         candidate: str = "adaptive",
+        held_out_family: str = HELD_OUT_FAMILY,
     ) -> dict[str, Any]:
         """Assess protocol 230 §5 promotion criterion (pre-registered).
 
@@ -951,7 +1047,7 @@ class PolicyComparison:
                 "(adjusted p < 0.05,"
                 " CI excluding 0) on all "
                 f"{len(families)} training families, and the gap persists on"
-                f" held-out {HELD_OUT_FAMILY}")
+                f" held-out {held_out_family}")
         else:
             unmet: list[str] = []
             if not two_families_static:
@@ -959,7 +1055,8 @@ class PolicyComparison:
             if not two_families_informed:
                 unmet.append(f"{name}>B with adjusted p < 0.05 on >=2 families")
             if not held_out_static or not held_out_informed:
-                unmet.append(f"gap persistence on held-out {HELD_OUT_FAMILY}")
+                unmet.append(
+                    f"gap persistence on held-out {held_out_family}")
             verdict = ("promotion criterion NOT met; unmet components: "
                        + "; ".join(unmet))
         return {
@@ -1018,9 +1115,10 @@ class PolicyComparison:
             "",
             f"Protocol: {PROTOCOL_VERSION} "
             f"(see spec/research/230_KNOWLEDGE_LOOP_EVALUATION.md)",
-            f"Environment: toy-discovery {TOY_ENVIRONMENT_VERSION}; "
-            f"families: {', '.join(TASK_FAMILIES)}; "
-            f"held-out: {HELD_OUT_FAMILY}",
+            f"Environment: {self.wl.display_name} "
+            f"{self.wl.environment_version}; "
+            f"families: {', '.join(self.wl.families)}; "
+            f"held-out: {self.wl.held_out_family}",
             f"Budget per episode: {self.cfg.budget_credits} credits; episodes/trial: "
             f"{self.cfg.episodes_per_trial}; trials (seeds): {self.cfg.trials}",
             f"Discovery gate: {self.manifest['discovery_gate']}",
@@ -1076,9 +1174,10 @@ class PolicyComparison:
         if held_out_stats is not None:
             lines += [
                 "",
-                f"## Held-out transfer ({HELD_OUT_FAMILY} family)",
+                f"## Held-out transfer ({self.wl.held_out_family} family)",
                 "",
-                (f"Transfer evaluation on held-out family **{HELD_OUT_FAMILY}**, "
+                (f"Transfer evaluation on held-out family "
+                 f"**{self.wl.held_out_family}**, "
                  "which was never included in the K0 prior."),
                 "",
                 "| arm | discoveries | credits | discoveries/credit | attempts |",
@@ -1249,8 +1348,12 @@ class PolicyComparison:
                 op = e["operator"]
                 entry = by_family.setdefault(fam, {"useful_share": []})
                 entry.setdefault(op, []).append(e["discovery"])
-                entry["useful_share"].append(1.0 if is_useful(fam, op) else 0.0)
-            all_families = list(TASK_FAMILIES) + [HELD_OUT_FAMILY]
+                useful = (self.wl.is_useful(fam, op)
+                          if self.wl.is_useful is not None else None)
+                entry["useful_share"].append(
+                    1.0 if useful else (0.5 if useful is None else 0.0))
+            all_families = list(self.wl.families) + [
+                self.wl.held_out_family]
             for fam in all_families:
                 fam_entry = by_family.get(fam)
                 if not fam_entry:
@@ -1330,7 +1433,7 @@ class PolicyComparison:
         total_discoveries = 0
         total_credits = 0.0
         total_attempts = 0
-        family = HELD_OUT_FAMILY
+        family = self.wl.held_out_family
         for episode in range(self.cfg.episodes_per_trial):
             episode_id = (f"ep-{self.cfg.experiment_id}-heldout-{arm}"
                           f"-{trial}-{episode}")
@@ -1343,9 +1446,10 @@ class PolicyComparison:
             episode_discoveries = 0
             while spent < self.cfg.budget_credits:
                 operator, record = policy.select(family, step)
-                if spent + operator_cost(operator) > self.cfg.budget_credits:
+                if spent + self.wl.operator_cost(operator) \
+                        > self.cfg.budget_credits:
                     break
-                attempt = run_attempt(
+                attempt = self.wl.run_attempt(
                     family, operator, seed_base=self.cfg.seed_base,
                     trial=trial + 100_000,  # offset to avoid seed collision
                     episode=episode, attempt=step)
@@ -1475,7 +1579,7 @@ class PolicyComparison:
                 for arm in per_arm
             },
             "comparisons": comparisons,
-            "family": HELD_OUT_FAMILY,
+            "family": self.wl.held_out_family,
             "note": "Transfer evaluation: arms evaluated on held-out family "
                     "gamma, which was never included in the K0 prior.",
         }
@@ -1503,6 +1607,7 @@ class PolicyComparison:
             return {"reproducible": False, "error": "statistics.json missing"}
         manifest = json.loads(manifest_path.read_text())
         stats = json.loads(stats_path.read_text())
+        wl = resolve_workload(cfg.workload)
         checks: list[dict[str, Any]] = []
         # 1. Manifest versions match config
         checks.append({
@@ -1513,9 +1618,9 @@ class PolicyComparison:
         })
         checks.append({
             "check": "environment_version",
-            "expected": TOY_ENVIRONMENT_VERSION,
+            "expected": wl.environment_version,
             "actual": manifest.get("environment_version"),
-            "pass": manifest.get("environment_version") == TOY_ENVIRONMENT_VERSION,
+            "pass": manifest.get("environment_version") == wl.environment_version,
         })
         checks.append({
             "check": "arms_match",
@@ -1548,8 +1653,12 @@ class PolicyComparison:
         checks.append({
             "check": "held_out_family_in_manifest",
             "expected": True,
-            "actual": HELD_OUT_FAMILY in str(manifest.get("ground_truth", {})),
-            "pass": HELD_OUT_FAMILY in str(manifest.get("ground_truth", {})),
+            "actual": (
+                wl.held_out_family in str(manifest.get("ground_truth"))
+                or manifest.get("held_out_family") == wl.held_out_family),
+            "pass": (
+                wl.held_out_family in str(manifest.get("ground_truth"))
+                or manifest.get("held_out_family") == wl.held_out_family),
         })
         all_pass = all(c["pass"] for c in checks)
         return {
@@ -1583,7 +1692,7 @@ class PolicyComparison:
         ad = self.artifact_dir
 
         # Update manifest with bundle metadata before writing plan.json
-        self.manifest["held_out_family"] = HELD_OUT_FAMILY
+        self.manifest["held_out_family"] = self.wl.held_out_family
         self.manifest["artifact_bundle_version"] = "1.0.0"
 
         # plan.json (alias of manifest)
@@ -1605,7 +1714,7 @@ class PolicyComparison:
                 "on >= 2 independent task families at full seed plan, "
                 "and the gap persists on the held-out family."
             ),
-            "held_out_family": HELD_OUT_FAMILY,
+            "held_out_family": self.wl.held_out_family,
             "discovery_gate": self.manifest["discovery_gate"],
             "primary_metric": "validated_discoveries / credits_consumed",
             "statistical_methods": [
@@ -1619,22 +1728,27 @@ class PolicyComparison:
             json.dumps(protocol, indent=2, sort_keys=True) + "\n")
 
         # environment.json
-        all_families = list(TASK_FAMILIES) + [HELD_OUT_FAMILY]
-        environment = {
-            "environment_version": TOY_ENVIRONMENT_VERSION,
-            "task_suite_version": TASK_SUITE_VERSION,
-            "discovery_gate_version": DISCOVERY_GATE_VERSION,
-            "families": all_families,
-            "held_out_family": HELD_OUT_FAMILY,
-            "ground_truth": {
-                f: {op: ground_truth_effect(f, op) for op in OPERATOR_CATALOG}
-                for f in all_families
-            },
-            "promotion_threshold": self.cfg.promotion_threshold,
-            "effect_sigma": 0.12,
-            "validation_probability": 0.90,
-            "operators": list(OPERATOR_CATALOG),
-        }
+        if self.wl.has_oracle:
+            all_families = list(self.wl.families) + [self.wl.held_out_family]
+            environment = {
+                "environment_version": self.wl.environment_version,
+                "task_suite_version": self.wl.task_suite_version,
+                "discovery_gate_version": self.wl.discovery_gate_version,
+                "families": all_families,
+                "held_out_family": self.wl.held_out_family,
+                "ground_truth": {
+                    f: {op: self.wl.ground_truth_effect(f, op)
+                        for op in self.wl.operators}
+                    for f in all_families
+                },
+                "promotion_threshold": self.cfg.promotion_threshold,
+                "effect_sigma": EFFECT_SIGMA,
+                "validation_probability": VALIDATION_PROBABILITY,
+                "operators": list(self.wl.operators),
+            }
+        else:
+            environment = dict(self.wl.environment_metadata())
+            environment["promotion_threshold"] = self.cfg.promotion_threshold
         (ad / "environment.json").write_text(
             json.dumps(environment, indent=2, sort_keys=True) + "\n")
 
@@ -1689,7 +1803,8 @@ def main(cfg: ExperimentConfig, conn: sqlite3.Connection,
         if "adaptive-cost-aware" in cfg.arms else "adaptive")
     held_out_stats["claim_readiness"] = PolicyComparison.evaluate_claim(
         stats.get("per_family", {}), held_out_stats,
-        candidate=claim_candidate)
+        candidate=claim_candidate,
+        held_out_family=cfg.workload_view.held_out_family)
     report = comp.write_report(results, stats, held_out_stats)
     comp.write_artifact_bundle(stats, held_out_stats)
     out.write(f"experiment {cfg.experiment_id} complete; report: {report}\n")
@@ -1698,7 +1813,7 @@ def main(cfg: ExperimentConfig, conn: sqlite3.Connection,
             f"  {arm:<20} discoveries={s['validated_discoveries']:>4} "
             f"credits={s['compute_credits']:>8.1f} "
             f"eff={s['discoveries_per_credit']:.6f}\n")
-    out.write(f"held-out ({HELD_OUT_FAMILY}):\n")
+    out.write(f"held-out ({cfg.workload_view.held_out_family}):\n")
     for arm, s in held_out_stats["per_condition"].items():
         out.write(
             f"  {arm:<20} discoveries={s['validated_discoveries']:>4} "

@@ -22,9 +22,9 @@ statistical gates no claim may bypass.
 8. Perform statistical analysis and ablation.
 9. Accept, reject, revise, or archive.
 10. Update the knowledge base and search policy — the causal loop at the
-    heart of the platform; demonstrated in the toy environment
-    (protocols 230–233; see "What we learned" below); real-workload
-    transfer remains unproven.
+    heart of the platform; demonstrated in the toy environment and
+    qualitatively reproduced on a first real workload (protocols 230–235;
+    see "What we learned" below).
 11. Publish reproducible reports.
 
 Every step in this loop has a versioned contract in this repository; no step
@@ -60,14 +60,14 @@ implementation/algolab/         the executable core (see its README)
 | M0 | Contracts: IDs, models, state machines, append-only event store, budget ledger, manifest validation, CLI | Delivered |
 | M1 | Deterministic execution core: expansion, persistent queue, isolated workers, hash-sealed artifacts, recovery, aggregation | Delivered |
 | M4 | Knowledge layer: schema v3, deterministic statistics, evidence records, operator catalog, skill registry | Delivered |
-| M5 | Causal loop evaluation: pre-registered protocols 230–234 executed (see findings below) | Demonstrated in toy environment; real-workload transfer unproven |
+| M5 | Causal loop evaluation: pre-registered protocols 230–235 executed (see findings below); first real-workload bridge run (KNN micro-HPO) reproduces the qualitative ordering and demonstrates the adaptive loop's insurance value under distribution shift | Toy promotion criterion met (231); real-workload criterion pending higher n (235) |
 
-## What we learned (M5 knowledge-loop research line, protocols 230–234)
+## What we learned (M5 knowledge-loop research line, protocols 230–235)
 
 All results come from pre-registered, checksummed experiments on the
 deterministic toy-discovery environment; every claim below is scoped to
 that substrate. Artifacts: `implementation/algolab/experiments/`, specs:
-`spec/research/23{0,1,2,3,4}_*.md`.
+`spec/research/23{0..5}_*.md`.
 
 1. **The knowledge loop is real — but only with the right selector
    objective.** Plain Thompson-sampling adaptation (C) beat static and
@@ -106,15 +106,26 @@ that substrate. Artifacts: `implementation/algolab/experiments/`, specs:
    The adaptive loop's residual value is estimation insurance — recovery
    when knowledge mis-ranks — which this environment's realizations never
    needed (`spec/research/234_DECISION_RULE_FORMAT.md`,
-   `experiments/protocol-234-p{30,60,120,240}/`).
+   `experiments/protocol-233-p{30,60,120,240}/`).
+6. **First contact with a real workload confirms the insurance story —
+   and honestly withholds the crown.** On a genuine KNN hyperparameter
+   search (breast_cancer/wine; digits held out), the toy-era ordering
+   reproduced on one training family (static < B < C ≈ C+, q < 0.025);
+   frozen commitment posted the best in-domain result but collapsed to
+   exactly zero on the held-out dataset where the best knob *inverted*
+   (k21: 29% → 0.0% discovery), while the adaptive loop explored its way
+   to top held-out performance. The strict ≥2-family promotion bar was
+   not met at this sample size — reported as measured. Adaptation is now
+   empirically priced: an in-domain premium that buys survival under
+   distribution shift (`spec/research/235_REAL_WORKLOAD_BRIDGE.md`,
+   `experiments/protocol-235-v1/`).
 
 **Design conclusions carried forward:** store family-tagged aggregates;
 the consumer's decision rule is a first-order lever — never ship a top-K
-cycle where a cost-weighted commitment or allocation is possible; the
-adaptive cost-aware loop remains justified as insurance while knowledge is
-young or mis-ranked, but is not a steady-state performance advantage once
-family-conditioned knowledge is good; quantify that insurance trade-off
-across prior draws before relying on either pole.
+cycle where a cost-weighted commitment or allocation is possible; commitment
+is optimal in-domain but fragile under shift, so pair it with adaptation
+whenever transfer is on the line; family-conditioning requires informative
+slice sizes to pay off.
 
 ## Non-negotiable constraints
 

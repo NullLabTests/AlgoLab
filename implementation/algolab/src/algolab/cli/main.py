@@ -157,6 +157,8 @@ def _build_parser() -> argparse.ArgumentParser:
                           help="episodes per trial (default: manifest default)")
     p_search.add_argument("--trials", type=int, default=0,
                           help="number of trials/seeds (default: manifest default)")
+    p_search.add_argument("--workload", choices=("toy", "hpo"), default="toy",
+                          help="search workload (default: toy)")
     p_search.add_argument("--prior-attempts", type=int, default=0,
                           help="prior attempts per family (default: manifest default)")
     p_search.add_argument("--prior-seed", type=int, default=0,
@@ -496,6 +498,7 @@ def cmd_search_run(args: argparse.Namespace) -> int:
         seed_base=args.seed_base or 7,
         top_k=args.top_k or 3,
         producer=config.producer,
+        workload=args.workload,
     )
     try:
         rc = run_search(cfg, conn, artifact_dir, force=args.force)
