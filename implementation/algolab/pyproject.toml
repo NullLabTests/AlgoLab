@@ -36,6 +36,9 @@ algolab = ["schemas/*.json"]
 testpaths = ["tests"]
 addopts = "-q"
 pythonpath = ["src"]
+markers = [
+    "slow: full washed protocol runs (>~1 min each); excluded from the default CPU < 3 min `make test` budget",
+]
 
 [tool.ruff]
 target-version = "py311"

@@ -11,25 +11,27 @@ the executable core of the platform, delivered across five milestones:
   persistent queue with worker leases, isolated subprocess execution, a
   hash-sealed write-once artifact store, budget reservation on plan and
   charge on completion, crash recovery, and per-experiment aggregation.
-- **M4 — Knowledge layer.** Deterministic inferential statistics
-  (`algolab.statistics`), immutable scientific evidence records
-  (`algolab.knowledge.evidence`), the M4 operator catalog and credit budgets
-  (`algolab.knowledge.operators`), and the append-only skill registry that
-  gates which agent role may invoke which operator
-  (`algolab.knowledge.registry`). The database schema is at **v3**.
-- **M5 — Cumulative search (`algolab.search`).** Pluggable search
-  workloads — the deterministic toy-discovery environment (planted ground
-  truth, two-seed replication gate) and a real KNN micro-HPO bridge on
-  scikit-learn datasets; pre-registered policy arms A/B/C/D plus
-  cost-aware, family-conditioned, commitment, and allocation variants
-  (protocols 230–235); a manifest-frozen, byte-reproducible experiment
-  harness with checksummed evidence bundles in `experiments/`. Research
-  specs: `../../spec/research/23{0..5}_*.md`; findings summarized in the
-  root README ("What we learned").
+- **Knowledge layer (KL internal, not milestone M4).** Deterministic
+  inferential statistics (`algolab.statistics`), immutable scientific
+  evidence records (`algolab.knowledge.evidence`), the operator catalog and
+  credit budgets (`algolab.knowledge.operators`), and the append-only skill
+  registry (`algolab.knowledge.registry`). The database schema is at **v3**.
+- **Knowledge-loop research line (protocols 230–236, not milestone M5) —
+  `algolab.search`.** Pluggable search workloads — the deterministic toy
+  discovery environment (planted ground truth, two-seed replication gate),
+  the KNN micro-HPO bridge (protocol 235), and the S2 family-shift substrate
+  (protocol 236); pre-registered policy arms A/B/C/D plus cost-aware,
+  family-conditioned, commitment, and allocation variants; a
+  manifest-frozen, byte-reproducible experiment harness with checksummed
+  evidence bundles in `experiments/`. Research specs:
+  `../../spec/research/230_*` … `236_*`; findings summarized in the root
+  README ("What we learned").
 
-The test suite currently has **332 passing tests** covering unit,
-integration, ontology-invariant, protocol-compliance (230–235), and golden
-byte-reproducibility behavior. `ruff` and `mypy` (strict) are clean.
+The test suite currently has **340+ passing tests** (default `make test`
+excludes `@slow` full-protocol runs; run them with `make test-slow`) covering
+unit, integration, ontology-invariant, protocol-compliance (230–236, 235b),
+and golden byte-reproducibility behavior. `ruff` and `mypy` (strict) are
+clean.
 
 ## Quickstart
 
@@ -37,7 +39,7 @@ byte-reproducibility behavior. `ruff` and `mypy` (strict) are clean.
 bash scripts/setup.sh          # venv + editable install
 make lint                      # ruff
 make type                      # mypy (strict)
-make test                      # pytest (332 tests)
+make test                      # pytest (default fast set; `make test-slow` for @slow)
 ```
 
 ## End-to-end run

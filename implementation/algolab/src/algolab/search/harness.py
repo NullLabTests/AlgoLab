@@ -146,7 +146,27 @@ def _hpo_view() -> WorkloadView:
     )
 
 
-_WORKLOADS = {"toy": _toy_view, "hpo": _hpo_view}
+def _s2_view() -> WorkloadView:
+    from algolab.search import workload_s2
+
+    return WorkloadView(
+        key="s2",
+        display_name="knn-micro-s2",
+        environment_version=workload_s2.S2_WORKLOAD_VERSION,
+        task_suite_version=workload_s2.S2_TASK_SUITE_VERSION,
+        discovery_gate_version="1.0.0",
+        families=tuple(workload_s2.TASK_FAMILIES),
+        held_out_family=workload_s2.HELD_OUT_FAMILY,
+        operators=workload_s2.operators(),
+        has_oracle=False,
+        run_attempt=workload_s2.run_attempt,
+        operator_cost=workload_s2.operator_cost,
+        costs=dict(workload_s2.NOMINAL_COSTS),
+        environment_metadata=workload_s2.environment_metadata,
+    )
+
+
+_WORKLOADS = {"toy": _toy_view, "hpo": _hpo_view, "s2": _s2_view}
 
 
 def resolve_workload(name: str) -> WorkloadView:
