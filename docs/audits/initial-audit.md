@@ -276,6 +276,19 @@ the workflow at a subdirectory path means GitHub Actions ignores it entirely.
 (`working-directory: implementation/algolab`, `-m "not slow"` fast lane, plus a
 `workflow_dispatch` full job); the dead nested file was removed.
 
+**Second finding, exposed the moment CI first ran (D-9b).** The pytest
+collection failed with `ModuleNotFoundError: No module named 'tests'` on 16
+files. Cause: tests do `from tests.conftest import ...`, which resolves only if
+the package directory (which contains `tests/`) is on `sys.path`. `make test`
+uses `python -m pytest`, and `python -m` prepends the current directory to
+`sys.path`, so it works locally; the bare `pytest` console script used by CI
+does not, and there was no `tests/__init__.py`. **The suite was therefore only
+runnable via `python -m pytest` from `implementation/algolab/`.** Fix: add an
+empty `tests/__init__.py` so pytest's prepend import mode puts
+`implementation/algolab/` on `sys.path` and `tests.conftest` resolves under any
+invocation. Verified: `pytest -m "not slow"` → 365 passed via the console
+script.
+
 Severity **S1** because it silently defeated the primary automated safeguard.
 
 ---
