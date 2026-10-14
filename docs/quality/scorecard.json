@@ -8,7 +8,7 @@
     "tests": "pytest -m 'not slow': 365 passed, 3 warnings",
     "commands": ["make lint", "make type", "make test"]
   },
-  "baseline": { "sum": 203, "applicable": 56, "mean": 3.63, "at_or_below_2": 4, "equal_3": 12 },
+  "baseline": { "sum": 201, "applicable": 56, "mean": 3.59, "at_or_below_2": 5, "equal_3": 11 },
   "final":    { "sum": 221, "applicable": 56, "mean": 3.95, "at_or_below_2": 0, "equal_3": 7, "at_or_above_4": 49 },
   "scores": [
     { "id": "A1",  "base": 4, "final": 4, "delta": 0 },
@@ -53,11 +53,11 @@
     { "id": "D8",  "base": 4, "final": 4, "delta": 0 },
     { "id": "D9",  "base": 4, "final": 4, "delta": 0 },
     { "id": "E1",  "base": 3, "final": 3, "delta": 0, "blocker": "no minimal runnable example for search-run" },
-    { "id": "E2",  "base": 4, "final": 4, "delta": 0 },
+    { "id": "E2",  "base": 4, "final": 4, "delta": 0, "note": "evidence corrected: CI never ran (D-9); local setup.sh verified" },
     { "id": "E3",  "base": 4, "final": 4, "delta": 0 },
     { "id": "E4",  "base": 3, "final": 3, "delta": 0, "blocker": "Codespace runbook section partly aspirational" },
     { "id": "E5",  "base": 2, "final": 4, "delta": 2, "evidence": "drift fixes in README/STATUS/FREE_CPU_RUNBOOK/impl README/workload_s2.py" },
-    { "id": "E6",  "base": 3, "final": 5, "delta": 2, "evidence": ".github/workflows/ci.yml runs -m 'not slow' + manual full job" },
+    { "id": "E6",  "base": 1, "final": 5, "delta": 4, "evidence": "root .github/workflows/ci.yml (D-9 fix); fast lane + manual full job", "note": "baseline corrected from 3 to 1: nested workflow was never registered, CI never ran" },
     { "id": "E7",  "base": 4, "final": 4, "delta": 0 },
     { "id": "E8",  "base": 1, "final": 4, "delta": 3, "evidence": "implementation/algolab/CONTRIBUTING.md" },
     { "id": "E9",  "base": 3, "final": 4, "delta": 1, "evidence": "root README 235b/236 rows corrected" },
@@ -73,6 +73,9 @@
     "powered higher-N replication of finding 6 not authorized (A11)",
     "no per-bundle schema validator (B4)",
     "no minimal runnable example / in-repo reviewer exercise (E1, E4, F3)"
+  ],
+  "corrections": [
+    "2026-10-14 post-push: D-9 found (CI workflow nested under implementation/algolab/ was never registered; CI never ran). E6 baseline corrected 3 -> 1; baseline sum 203 -> 201, mean 3.63 -> 3.59, at_or_below_2 4 -> 5. E6 final remains 5 after the root-level workflow fix."
   ],
   "integrity_note": "No goal, margin, threshold, or criterion was weakened; no result was manufactured."
 }

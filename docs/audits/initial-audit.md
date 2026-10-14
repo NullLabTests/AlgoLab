@@ -254,6 +254,30 @@ read literally.
 are intended derived-summary dirs or accidental is unconfirmed; no code path
 generates them.
 
+### D-9 (S1, CONFIRMED) — CI never executes: the workflow is in the wrong directory
+
+**Found during the post-push review, after this audit's first version.** Adding
+the workflow at a subdirectory path means GitHub Actions ignores it entirely.
+
+- The only Actions file was `implementation/algolab/.github/workflows/ci.yml`.
+  GitHub only runs workflows from the **repository root** `.github/workflows/`;
+  a nested path is never registered.
+- Evidence (2026-10-14, authenticated as `NullLabTests`):
+  `gh api repos/NullLabTests/AlgoLab/actions/workflows` → `total_count: 0`, and
+  `gh run list` → `[]`. Actions is `enabled: true`; there was simply no runnable
+  workflow. **CI has never run on this repository.**
+- Consequences: the project's central verification loop was never exercised on
+  the remote; lint/type/test were only ever run locally. Every prior statement
+  that "CI installs / CI checks" (audit E2/E6 evidence, `README`, runbook) was
+  unbacked. This also makes D-4 worse than first recorded: the marker-filter
+  mismatch was moot because nothing ran at all.
+
+**Fix (this pass):** a corrected root-level `.github/workflows/ci.yml`
+(`working-directory: implementation/algolab`, `-m "not slow"` fast lane, plus a
+`workflow_dispatch` full job); the dead nested file was removed.
+
+Severity **S1** because it silently defeated the primary automated safeguard.
+
 ---
 
 ## 5. Missing evidence and unresolved items
@@ -310,6 +334,7 @@ the advance was **not** executed. It must not be presented as a result.
 
 | ID | Sev | Impact | Effort | Affects prereg? | Verification method |
 |---|---|---|---|---|---|
+| D-9 | S1 | CI never ran (workflow in subdir); central safeguard defeated | S | no | root workflow registered; `gh run list` shows a run |
 | D-2 | S2 | Any 236 claim is ambiguous; governance risk | decision + doc (M) | **yes** | human sign-off; doc review |
 | D-1 | S2 | Contributor dead-ends; false references | S | no | link check vs `git ls-files` |
 | D-3 | S3 | Mis-recorded provenance for real runs | S | no | new regression test on `tasks.workload` |

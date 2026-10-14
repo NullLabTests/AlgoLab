@@ -94,11 +94,11 @@ final scores are in `docs/quality/final-scorecard.md`.
 | ID | Criterion | Verification |
 |---|---|---|
 | E1 | New contributor can understand architecture and run a minimal example. | READMEs; quickstart; **`search-run` default is heavy — a minimal example is needed**. |
-| E2 | Install/test instructions work from a clean environment. | `scripts/setup.sh`; CI installs `-e ".[dev]"`. |
+| E2 | Install/test instructions work from a clean environment. | `scripts/setup.sh`; local editable install verified (CI never ran — D-9). |
 | E3 | CLI help and errors are useful. | argparse help; exit codes; error taxonomy. |
 | E4 | Examples are executable, not decorative. | README quickstart commands; **`docs/FREE_CPU_RUNBOOK.md` Codespace block partly aspirational**. |
 | E5 | Documentation matches implementation. | **D-1 drift is the current blocker.** |
-| E6 | CI checks the actual supported workflow. | `.github/workflows/ci.yml` runs lint/type/pytest; **marker filter missing (D-4)**. |
+| E6 | CI checks the actual supported workflow. | **D-9**: the only Actions file was nested under `implementation/algolab/`, so GitHub never registered a workflow; CI never ran. |
 | E7 | Dependencies and license obligations are clear. | `pyproject.toml`, MIT `LICENSE`. |
 | E8 | Contribution guidance explains adding a protocol + validating evidence. | **Missing — no protocol template / CONTRIBUTING.** |
 | E9 | README communicates current capabilities and limitations accurately. | Root README scopes findings; **D-1 references**. |
@@ -164,11 +164,11 @@ Scores are the auditor's judgement at baseline, before improvement work.
 | D8 | 4 | Versioned policies. |
 | D9 | 4 | Computed criterion; L1 autonomy. |
 | E1 | 3 | Minimal example for a newcomer is heavy/undocumented as "minimal". |
-| E2 | 4 | setup.sh + CI install. |
+| E2 | 4 | setup.sh + local editable install (CI never ran; D-9). |
 | E3 | 4 | Help + exit codes. |
 | E4 | 3 | Quickstart works; Codespace section is aspirational. |
 | E5 | 2 | **D-1** numerous dead references. |
-| E6 | 3 | CI works but marker filter missing (D-4). |
+| E6 | 1 | **D-9**: workflow nested under `implementation/algolab/` → never registered; CI never ran. |
 | E7 | 4 | pyproject + MIT. |
 | E8 | 1 | No protocol template / contribution guide. |
 | E9 | 3 | Scoping is good but references are wrong (D-1). |
@@ -179,7 +179,7 @@ Scores are the auditor's judgement at baseline, before improvement work.
 | F5 | 4 | Rubric-based scorecard (this doc). |
 | F6 | 2 | **D-5** S2 abstraction has no working consumer. |
 
-Aggregate baseline: mean = 203/56 ≈ **3.63** over **56** applicable criteria
-(A12=12, B10, C10, D9, E9, F6). **4 criteria score ≤ 2** (A12, E5, E8, F6).
-The improvement plan targets those first. (Final scores:
-`docs/quality/final-scorecard.md`.)
+Aggregate baseline: mean = 201/56 ≈ **3.59** over **56** applicable criteria
+(A12=12, B10, C10, D9, E9, F6). **5 criteria score ≤ 2** (A12, E5, E6, E8, F6;
+E6 corrected down after the D-9 CI finding). The improvement plan targets those
+first. (Final scores: `docs/quality/final-scorecard.md`.)

@@ -33,7 +33,7 @@ Deliverables produced:
 | WP-2 | `tasks.workload` derived from the real workload, not `"toy-discovery"` | `src/algolab/search/harness.py` (3 sites) |
 | WP-3 | Permanent at-rest integrity test over all committed bundles | `tests/test_artifact_integrity.py` |
 | WP-4 | Removed dead references; corrected 235b/236 status | root `README.md`, `docs/STATUS.md`, `docs/FREE_CPU_RUNBOOK.md`, `implementation/algolab/README.md`, `src/algolab/search/workload_s2.py`, `src/algolab/search/rules.py` |
-| WP-5 | CI runs the documented fast lane; full lane wired | `.github/workflows/ci.yml`, `Makefile` |
+| WP-5 / D-9 | CI runs the documented fast lane; full lane wired; workflow **moved to repo root** so GitHub actually runs it | `.github/workflows/ci.yml` (root), removed nested copy, `Makefile` |
 | WP-6 | S2 metadata lists held-out family; docstring matches code; smoke test | `src/algolab/search/workload_s2.py`, `tests/test_provenance_and_s2.py` |
 | WP-7 | Protocol contributor checklist | `implementation/algolab/CONTRIBUTING.md` |
 
@@ -76,9 +76,15 @@ $ make test     -> 365 passed, 3 warnings in 111.05s
 
 ## 6. Results
 
-Mean acceptance score rose **3.63 → 3.95** over 56 criteria; severe defects
-(≤2) fell **4 → 0**. The ≥4-everywhere target is **not** fully met: 7 criteria
+Mean acceptance score rose **3.59 → 3.95** over 56 criteria; severe defects
+(≤2) fell **5 → 0**. The ≥4-everywhere target is **not** fully met: 7 criteria
 remain at 3, each with a named blocker (see `final-scorecard.md`).
+
+> **Post-push correction:** the first pass scored CI (E6) at baseline 3 and
+> missed **D-9** — the workflow lived under `implementation/algolab/` and was
+> never registered by GitHub, so **CI had never run**. A root workflow now
+> fixes this; the audit, scorecard and baseline mean above are corrected
+> accordingly (baseline mean 3.63 → 3.59; ≤2 defects 4 → 5).
 
 ## 7. Recommended next steps (need a human)
 

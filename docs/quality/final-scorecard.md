@@ -63,11 +63,11 @@ identity conflict), the score rose modestly and the open blocker is named.
 | D8 | 4 | 4 | — | Versioned policies. |
 | D9 | 4 | 4 | — | Computed criterion; L1 autonomy. |
 | E1 | 3 | 3 | — | README quickstart present; `search-run` default still heavy, no minimal example added. |
-| E2 | 4 | 4 | — | setup.sh + CI install. |
+| E2 | 4 | 4 | — | setup.sh + local editable install verified; evidence corrected: the earlier "CI installs" citation was void (CI never ran, D-9). |
 | E3 | 4 | 4 | — | Help + exit codes. |
 | E4 | 3 | 3 | — | Quickstart works; Codespace section still partly aspirational. |
-| E5 | 2 | 4 | ▲2 | D-1 fixed: dead references removed from root README, `docs/STATUS.md`, `FREE_CPU_RUNBOOK.md`, impl README, `workload_s2.py`; every referenced path verified present. |
-| E6 | 3 | 5 | ▲2 | CI now runs `pytest -q -m "not slow"` (matches `make test`) plus a manual `workflow_dispatch` full job; marker lane wired. |
+| E5 | 2 | 4 | ▲2 | D-1 fixed: dead references removed from root README, `docs/STATUS.md`, `FREE_CPU_RUNBOOK.md`, impl README, `workload_s2.py`, `rules.py`; every referenced path verified present. |
+| E6 | 1 | 5 | ▲4 | **Correction (post-push review).** Baseline is 1, not 3: the only Actions file was nested under `implementation/algolab/`, so GitHub never registered a workflow (`total_count: 0`) and **CI never ran** (D-9). Now a correct root `.github/workflows/ci.yml` runs the fast lane `-m "not slow"` plus a manual full job; nested file removed. |
 | E7 | 4 | 4 | — | pyproject + MIT. |
 | E8 | 1 | 4 | ▲3 | **New** `implementation/algolab/CONTRIBUTING.md`: concrete protocol checklist over existing machinery. |
 | E9 | 3 | 4 | ▲1 | Root README table now states 235b not run and 236 designation unresolved. |
@@ -82,15 +82,24 @@ identity conflict), the score rose modestly and the open blocker is named.
 
 | | Baseline | Final |
 |---|---|---|
-| Sum | 203 | 221 |
-| Mean (of 56) | 3.63 | **3.95** |
-| Criteria ≤ 2 | 4 (A12, E5, E8, F6) | **0** |
-| Criteria = 3 | 12 | 7 (A11, A12, B4, E1, E4, F3, F6) |
+| Sum | 201 | 221 |
+| Mean (of 56) | 3.59 | **3.95** |
+| Criteria ≤ 2 | 5 (A12, E5, E6, E8, F6) | **0** |
+| Criteria = 3 | 11 | 7 (A11, A12, B4, E1, E4, F3, F6) |
 | Criteria ≥ 4 | — | 49 |
+
+> **Correction (2026-10-14, post-push review).** The first version of this
+> scorecard scored E6 baseline 3 and final 5 on the assumption CI worked. The
+> post-push review found **D-9**: the workflow was nested under
+> `implementation/algolab/`, GitHub never registered it, and CI never ran.
+> E6 baseline is corrected to **1** (raises baseline ≤2 count to 5 and lowers
+> the baseline mean to 3.59); E6 final remains **5** only after the workflow was
+> moved to the repository root in the follow-up commit. The audit's D-9 records
+> the finding.
 
 ## Honest assessment
 
-The pass removed every severe (≤2) defect and raised the mean from 3.63 to
+The pass removed every severe (≤2) defect and raised the mean from 3.59 to
 3.95. The stated target of **≥ 4 on every criterion is not fully met**: seven
 criteria remain at 3, and each is blocked by a named, non-cosmetic reason:
 
@@ -104,4 +113,5 @@ criteria remain at 3, and each is blocked by a named, non-cosmetic reason:
 
 No goal, margin, threshold, or criterion was weakened to reach these scores, and
 no result was manufactured. The largest open items are the 236 decision and the
-missing powered replication.
+missing powered replication. The D-9 finding is a reminder that "CI passes" was
+never true here until this pass — it is now verified by an actual run.

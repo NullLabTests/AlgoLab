@@ -11,49 +11,41 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
+    defaults:
+      run:
+        working-directory: implementation/algolab
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: implementation/algolab
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install
         run: |
-          cd implementation/algolab
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
       - name: Lint (ruff)
-        run: |
-          cd implementation/algolab
-          ruff check src tests
+        run: ruff check src tests
       - name: Typecheck (mypy)
-        run: |
-          cd implementation/algolab
-          mypy
+        run: mypy
       - name: Test (pytest, fast lane)
-        run: |
-          cd implementation/algolab
-          pytest -q -m "not slow"
+        run: pytest -q -m "not slow"
 
   # Full suite, including any @slow tests. Currently none are marked slow, so
   # this matches the fast lane; it exists so the marker lane stays wired.
   full:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: implementation/algolab
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: implementation/algolab
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Install
         run: |
-          cd implementation/algolab
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
       - name: Test (pytest, full)
-        run: |
-          cd implementation/algolab
-          pytest -q
+        run: pytest -q
