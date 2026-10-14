@@ -432,7 +432,8 @@ class PolicyComparison:
             " baseline_config, search_space, seeds, primary_metric, direction,"
             " promotion_threshold, ground_truth, credit_estimate, created_at,"
             " producer) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (task_id, task_id, family, "toy-discovery", "protocol-230 task", "{}",
+            (task_id, task_id, family, self.wl.key,
+             f"{self.cfg.experiment_id} task", "{}",
              json.dumps({"unused": True}), "[1, 2]", "discovery_rate",
              "maximize", self.cfg.promotion_threshold,
              json.dumps({"note": "hidden from policies"}), self.cfg.budget_credits,
@@ -630,7 +631,8 @@ class PolicyComparison:
             " primary_metric, direction, promotion_threshold, ground_truth,"
             " credit_estimate, created_at, producer)"
             " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (task_id, task_id, family, "toy-discovery", "protocol-230 prior",
+            (task_id, task_id, family, self.wl.key,
+             f"{self.cfg.experiment_id} prior",
              "{}", json.dumps({"unused": True}), "[1, 2]", "discovery_rate",
              "maximize", self.cfg.promotion_threshold,
              json.dumps({"note": "hidden from policies"}), 0.0,
@@ -1541,8 +1543,8 @@ class PolicyComparison:
             " primary_metric, direction, promotion_threshold, ground_truth,"
             " credit_estimate, created_at, producer)"
             " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (task_id, task_id, family, "toy-discovery",
-             "protocol-230 held-out transfer", "{}",
+            (task_id, task_id, family, self.wl.key,
+             f"{self.cfg.experiment_id} held-out transfer", "{}",
              json.dumps({"unused": True}), "[1, 2]", "discovery_rate",
              "maximize", self.cfg.promotion_threshold,
              json.dumps({"note": "held-out; never in prior"}),

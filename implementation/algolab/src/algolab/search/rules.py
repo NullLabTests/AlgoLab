@@ -49,8 +49,8 @@ class DecisionRuleSpec:
 
     ``margin`` is the minimum absolute CV improvement a candidate must show
     on *both* replicate seeds to count as a validated discovery. Margins may
-    be resolved per substrate family (e.g. the alpha lattice recalibration
-    of protocol 235b) via :class:`FamilyMarginTable`.
+    be resolved per substrate family (e.g. the alpha lattice recalibration of
+    the registered higher-N promotion design) via :class:`FamilyMarginTable`.
     """
 
     rule_id: str

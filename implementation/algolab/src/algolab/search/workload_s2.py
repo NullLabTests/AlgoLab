@@ -1,15 +1,19 @@
-"""Real-workload bridge, S2 substrate (protocol 236): sklearn family shift.
+"""Second-substrate workload ("S2"): KNN micro-search on a shifted task suite.
 
-Second substrate for the knowledge loop, scoped by
-``spec/research/236_SECOND_SUBSTRATE_TRANSFER.md``. It keeps the 235-v1
-promotion contract (absolute CV-accuracy improvement of 0.005 on *both*
-replicate seeds, margins frozen, no alpha recalibration) but moves the task
-surface to a second family of offline sklearn built-in datasets:
+Status: provisional. The protocol number for this substrate is **unresolved**
+(see ``docs/quality/protocol-236-conflict.md``); module, harness key and the
+``resolve_workload`` registry use the neutral name ``s2``. It is not wired to
+any CLI command or driver yet.
+
+It keeps the 235-v1 promotion contract (absolute CV-accuracy improvement of
+0.005 on *both* replicate seeds, margins frozen, no alpha recalibration) but
+moves the task surface to a second family of offline sklearn built-in datasets:
 
 - task families are sklearn built-in datasets (offline, no downloads):
   iris (alpha), digits-300 subsample (beta), wine (gamma, held out);
-- operators are fixed single-knob configurations across three estimators
-  in one shared pipeline (StandardScaler -> estimator);
+- operators are fixed single-knob configurations of the shared
+  ``StandardScaler -> KNeighborsClassifier`` pipeline (the same KNN knob set as
+  the 235 workload; this module deliberately does not cross estimator families);
 - an attempt scores the modified pipeline with 5-fold stratified CV,
   twice (two replicate seeds), and is a validated discovery iff BOTH
   replicate CV accuracies beat the cached split-matched baseline by at
@@ -48,7 +52,7 @@ ALL_FAMILIES: tuple[str, ...] = TASK_FAMILIES + (HELD_OUT_FAMILY,)
 
 BASELINE_PARAMS: dict[str, Any] = {"n_neighbors": 5}
 
-# Fixed single-knob operator configurations (protocol 236 §3).
+# Fixed single-knob operator configurations (KNN knobs, same set as 235).
 OPERATOR_DELTAS: dict[str, dict[str, Any]] = {
     "k1": {"n_neighbors": 1},
     "k3": {"n_neighbors": 3},
@@ -161,9 +165,10 @@ def run_attempt(family: str, operator: str, *, seed_base: int,
 def environment_metadata() -> dict[str, Any]:
     """Non-oracle environment description for the S2 artifact bundle.
 
-    Byte-scoped by ``spec/research/236_SECOND_SUBSTRATE_TRANSFER.md``
-    (protocol 236, S2 substrate): sklearn family shift on offline built-in
-    datasets, discovery margin byte-frozen at 0.005 (no alpha
+    Byte-scoped by the frozen 235-v1 promotion contract (this module keeps the
+    identical gate); the protocol number for this substrate is unresolved (see
+    ``docs/quality/protocol-236-conflict.md``): sklearn task shift on offline
+    built-in datasets, discovery margin byte-frozen at 0.005 (no alpha
     recalibration), cost dimension kept flat at nominal credits. Mirrors
     the 235-v1 ``environment_metadata`` manifest contract so the sealed
     bundle bytes are comparable across the two substrates.
@@ -182,7 +187,7 @@ def environment_metadata() -> dict[str, Any]:
         "environment_version": S2_WORKLOAD_VERSION,
         "task_suite_version": S2_TASK_SUITE_VERSION,
         "discovery_gate_version": "1.0.0",
-        "families": list(TASK_FAMILIES),
+        "families": list(ALL_FAMILIES),
         "held_out_family": HELD_OUT_FAMILY,
         "ground_truth": None,
         "promotion_threshold": DISCOVERY_MARGIN,
