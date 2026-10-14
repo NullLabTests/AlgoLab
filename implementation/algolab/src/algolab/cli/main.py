@@ -157,7 +157,8 @@ def _build_parser() -> argparse.ArgumentParser:
                           help="episodes per trial (default: manifest default)")
     p_search.add_argument("--trials", type=int, default=0,
                           help="number of trials/seeds (default: manifest default)")
-    p_search.add_argument("--workload", choices=("toy", "hpo"), default="toy",
+    p_search.add_argument("--workload", choices=("toy", "hpo", "s2"),
+                          default="toy",
                           help="search workload (default: toy)")
     p_search.add_argument("--prior-attempts", type=int, default=0,
                           help="prior attempts per family (default: manifest default)")

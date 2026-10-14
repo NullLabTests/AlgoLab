@@ -5,6 +5,20 @@ decision rules are frozen BEFORE execution of experiment `protocol-236-v1`.
 Reference points: `protocol-235-v1` (executed bundle; the frozen reference)
 and `spec/research/235_REAL_WORKLOAD_BRIDGE.md` §6-§10.
 
+**Designation (resolved 2026-10-14, D-2):** this file is the **authoritative**
+definition of protocol 236 (higher-N real-workload promotion). A separate,
+earlier "S2 / second-substrate-transfer" substrate — which some code, tests,
+and docs had also labelled 236 — is **re-designated protocol 237**; see
+`spec/research/237_SECOND_SUBSTRATE_TRANSFER.md` and
+`docs/quality/protocol-236-conflict.md`. The number 236 denotes only the
+higher-N design below.
+
+**Implementation status (honest):** the registered alpha-margin recalibration
+(§3) is **not yet implemented** — `workload_hpo` still ships 1.1.0 / 0.005 /
+gate 1.0.0 and the harness gate is not family-keyed. No `protocol-236-v1`
+bundle may be sealed until the lever is implemented and the machinery-invariant
+control (§4) is checked.
+
 **Amendment discipline:** this is the smallest pre-registered 235§6 next
 step, executed with everything else frozen. The single registered lever is
 **alpha-side discovery-margin recalibration**; the second pre-registered

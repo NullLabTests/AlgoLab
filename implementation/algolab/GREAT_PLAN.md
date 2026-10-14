@@ -7,12 +7,13 @@ incremental cost; no paid compute, no GPU.
 **Authority order honored:** `MASTER_SPEC.md` > `planning/MILESTONES.md` >
 `spec/` > this prompt > existing code.
 
-> **Note (2026-10-14):** this plan assigns the "236" number to the S2 substrate
-> and calls the higher-N work "235b". The committed `spec/research/` instead
-> registers 236 as the higher-N real workload, and no 235b spec exists. That
-> numbering conflict is recorded in
-> `../../docs/quality/protocol-236-conflict.md` and needs a human decision;
-> treat the 236/235b rows below as an unapproved proposal, not as fact.
+> **Note (2026-10-14, updated):** this plan originally assigned the "236"
+> number to the S2 substrate and called the higher-N work "235b". The committed
+> `spec/research/` instead registers 236 as the higher-N real workload, and no
+> 235b spec exists. The numbering conflict was **resolved on 2026-10-14**
+> (`../../docs/quality/protocol-236-conflict.md`): **236 = higher-N real
+> workload, S2 = protocol 237**. The Phase 2/3 headings below were updated to
+> match.
 
 ---
 
@@ -45,7 +46,7 @@ onboarding does not run as any other user.
 | `make lint` (ruff) | All checks passed |
 | `make type` (mypy strict) | Success, no issues (43 source files) |
 | `make test` (pytest) | 344 passed, 2 warnings (~103 s) |
-| `git status` | clean per-commit; in-flight 235b margin work uncommitted at plan time |
+| `git status` | clean per-commit; in-flight higher-N (236) margin work uncommitted at plan time |
 
 **Decision: LOCAL CPU.** Bootstrapping deps cheaply was already satisfied and
 tests run, so the Codespace bootstrap clause is not triggered. No Codespace
@@ -61,10 +62,11 @@ will be created; nothing new is installed.
   M5): toy-discovery substrate (230–233 sweeps, 234 format isolation) + the
   KNN micro-HPO real-workload bridge (`protocol-235-v1`, n=32: ordering
   reproduced on beta, strict promotion bar honestly not met).
-- **In-flight (uncommitted):** protocol-235b pre-work (per-family discovery
-  margins, HPO workload version 1.2.0) — folded into Phase 3 as a
-  pre-registered amendment.
-- **Not started:** official M2, M3, M4, M5; protocol 236 (S2); 235b run.
+- **In-flight (uncommitted):** protocol-236 (higher-N) pre-work (per-family
+  discovery margins, HPO workload version 1.2.0) — folded into Phase 3 below as
+  a pre-registered amendment.
+- **Not started:** official M2, M3, M4, M5; protocol 236 (higher-N) run;
+  protocol 237 (S2) run.
 
 ## 4. Glossary (resolves the milestone/protocol collision)
 
@@ -78,9 +80,8 @@ will be created; nothing new is installed.
   (real-workload KNN bridge) → **236 (this sprint: second substrate S2)**.
   Protocols stop being called "M4/M5" everywhere in README/docs.
 - **Substrates:** `toy` (deterministic planted-truth generator) · `hpo`
-  (KNN micro-HPO on sklearn built-ins, protocol 235) · `s2` (new — protocol
-  236, sklearn family-shift: LogisticRegression / DecisionTree / GaussianNB
-  on tiny offline datasets).
+  (KNN micro-HPO on sklearn built-ins, protocol 235) · `s2` (protocol 237,
+  KNN knobs on a shifted sklearn built-in suite: iris / digits-300 / wine).
 
 ## 5. File plan Phases 0–4
 
@@ -98,25 +99,28 @@ not import sklearn or the planted-truth toy module**; deterministic seeds;
 evidence emission stays on the existing knowledge layer; no new deps;
 protocol-230-v1 golden bundle must stay byte-identical.
 
-**Phase 2 (protocol 236 — second substrate S2):**
-`spec/research/236_SECOND_SUBSTRATE_TRANSFER.md` (pre-registered BEFORE the
+**Phase 2 (protocol 237 — second substrate S2):**
+`spec/research/237_SECOND_SUBSTRATE_TRANSFER.md` (pre-registered BEFORE the
 full run: metric = validated discoveries per fit-credit; families alpha=iris,
-beta=digits-900, gamma=wine held out; operators across LogisticRegression C /
-penalty, DecisionTree max_depth, GaussianNB var_smoothing; credit = fit()
-count; n/seeds/priors/margins/promotion bar + contradiction policy frozen).
-`src/algolab/search/workload_s2.py`; CLI `search-run --workload s2` plus a
-`--protocol 236` preset; hermetic fast tests; sealed
-`experiments/protocol-236-v1/`; report promotion **A confirmed / B partial
-(claim-by-claim) / C falsified** — no tuning to make C+ win.
+beta=digits-300, gamma=wine held out; operators = the same 7 fixed KNN
+single-knob configurations as protocol 235 on `StandardScaler ->
+KNeighborsClassifier`; credit = flat nominal 10.0/operator; n/seeds/priors/
+margins/promotion bar + contradiction policy frozen).
+`src/algolab/search/workload_s2.py`; CLI `search-run --workload s2`; hermetic
+fast tests; sealed `experiments/protocol-237-v1/`; report promotion **A
+confirmed / B partial (claim-by-claim) / C falsified** — no tuning to make C+
+win. *(The earlier LogisticRegression / DecisionTree / GaussianNB family-shift
+sketch was never implemented; 237 is KNN-on-shifted-datasets, see the spec §8.)*
 
-**Phase 3 (protocol 235b — powered replication of 235):**
-`spec/research/235b_POWERED_REPLICATION.md` pre-registering a measurement-
-calibration amendment (alpha margin 0.0035 = 2 × mean-CV lattice step on
-breast_cancer; `HPO_WORKLOAD_VERSION` 1.2.0) and identical-metric higher-n
+**Phase 3 (protocol 236 — higher-N real-workload promotion):**
+`spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md` pre-registering the
+alpha margin recalibration (0.0035 = 2 × mean-CV lattice step on
+breast_cancer; `HPO_WORKLOAD_VERSION` 1.2.0) and the trials 32→96 higher-n
 goal. Runs only if the run fits the CPU budget (< 10 min on 2–4 cores at n
 reported); otherwise a smaller CI smoke (n=8, ~7 min) + **UNRESOLVED-POWER**
-documentation. Machinery-invariant check: trials 0..7 must byte-reproduce
-protocol-235-v1 beta/gamma.
+documentation. Machinery-invariant check: trials 0..31 must byte-reproduce
+protocol-235-v1 beta/gamma. *(Implementation of the alpha lever is pending;
+see `docs/audits/initial-audit.md` D-2.)*
 
 **Phase 4 (optional M2 slice or defer):** if budget remains, a minimal M2
 slice on the S2 (or KNN) substrate: baseline vs one candidate, five seeds,

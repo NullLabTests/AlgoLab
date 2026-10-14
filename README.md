@@ -64,7 +64,7 @@ implementation/algolab/         the executable core (see its README)
 | M4 | Evolutionary search: typed mutations, Pareto archive, diversity, budget-aware selection | Not started |
 | M5 | Controlled meta-improvement: versioned proposals, replay, shadow eval, reversible rollout, governance approval | Not started |
 
-### Knowledge-loop research line (protocols 230–235, 235b, 236)
+### Knowledge-loop research line (protocols 230–237)
 
 Note: knowledge-loop protocols are **not** milestones M4/M5. This is the **KL
 line** of pre-registered experiments; "What we learned" below is scoped by
@@ -74,15 +74,14 @@ substrate.
 |---|---|---|
 | 230–234 | planted-truth toy discovery | Delivered (findings 1–5 below) |
 | 235 | real workload — KNN micro-HPO | Delivered at n=32 (finding 6); promotion bar honestly not met |
-| 235b | KNN micro-HPO, higher n | Not run — higher-power replication deferred; no spec committed |
-| 236 | designation unresolved (see `docs/quality/protocol-236-conflict.md`) | Pre-registered as higher-N real workload (`spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md`); S2 code/docs disagree and no run is sealed |
+| 236 | real workload — KNN micro-HPO, higher n | Pre-registered (`spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md`); **not run** — alpha-margin lever not yet implemented |
+| 237 | second substrate (S2) — KNN on a shifted sklearn suite | Pre-registered (`spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`); **not run** — CLI-reachable as `search-run --workload s2` |
 
 ## What we learned (knowledge-loop protocols 230–235; scoped by substrate)
 
 All results come from pre-registered, checksummed experiments; every claim
 below is scoped to its substrate. Artifacts:
-`implementation/algolab/experiments/`, specs: `spec/research/23{0..5}_*.md`
-and `spec/research/236_*.md`.
+`implementation/algolab/experiments/`, specs: `spec/research/23{0..7}_*.md`.
 
 Findings 1–5 are on the planted-truth toy substrate; finding 6 is on the
 real KNN micro-HPO workload.

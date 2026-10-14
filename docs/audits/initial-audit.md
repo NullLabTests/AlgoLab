@@ -188,8 +188,19 @@ The implementation does **not** implement that design:
 `protocol-236-v1/` bundle is an aborted run that matches neither design cleanly
 (trials=96 but margin=0.005/gate 1.0.0, no family margins). This is a
 scientific-governance defect: the protocol number and its registered design
-disagree. Recorded, not silently resolved (see
-`docs/quality/protocol-236-conflict.md`).
+disagree.
+
+**RESOLVED 2026-10-14 (Option 1, owner decision).** Protocol 236 remains the
+higher-N real-workload design (committed spec authoritative); the S2 substrate is
+re-designated **protocol 237** with its own pre-registration
+(`spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`). Code/tests/docs were
+relabelled (`workload_s2.py` docstring, `test_protocol_236.py` →
+`test_rules_library.py`, root `README.md`, `docs/STATUS.md`, `GREAT_PLAN.md`);
+`s2` is now CLI-reachable (`search-run --workload s2`); and the 236 driver now
+states it is not yet conformant (only the trials lever implemented). Remaining
+work is *not* naming: the registered 236 alpha-margin lever is still
+unimplemented, so no `protocol-236-v1` bundle may be sealed. Full record:
+`docs/quality/protocol-236-conflict.md`.
 
 ### D-3 (S3, CONFIRMED) — Provenance mis-records the workload for non-toy experiments
 
@@ -380,7 +391,7 @@ the advance was **not** executed. It must not be presented as a result.
 |---|---|---|---|---|---|
 | D-9 | S1 | CI never ran (workflow in subdir); central safeguard defeated | S | no | root workflow registered; `gh run list` shows a run |
 | D-10 | S3 | "Byte-reproducible" claim is environment-dependent (over-claimed) | S | no | CI green across matrix; numeric-tolerance golden test |
-| D-2 | S2 | Any 236 claim is ambiguous; governance risk | decision + doc (M) | **yes** | human sign-off; doc review |
+| D-2 | S2 | Any 236 claim is ambiguous; governance risk | decision + doc (M) | **yes** | **RESOLVED** 2026-10-14 (Option 1); 236 = higher-N, S2 → 237 |
 | D-1 | S2 | Contributor dead-ends; false references | S | no | link check vs `git ls-files` |
 | D-3 | S3 | Mis-recorded provenance for real runs | S | no | new regression test on `tasks.workload` |
 | D-5/D-6 | S3/S4 | Unreachable, uncov. registered workload | M | no | smoke test / CLI wiring |

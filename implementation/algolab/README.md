@@ -16,19 +16,19 @@ the executable core of the platform, delivered across five milestones:
   evidence records (`algolab.knowledge.evidence`), the operator catalog and
   credit budgets (`algolab.knowledge.operators`), and the append-only skill
   registry (`algolab.knowledge.registry`). The database schema is at **v3**.
-- **Knowledge-loop research line (protocols 230–236, not milestone M5) —
+- **Knowledge-loop research line (protocols 230–237, not milestone M5) —
   `algolab.search`.** Pluggable search workloads — the deterministic toy
   discovery environment (planted ground truth, two-seed replication gate),
-  the KNN micro-HPO bridge (protocol 235), and the provisional `s2` KNN
-  micro-search substrate (protocol designation unresolved; see
-  `../../docs/quality/protocol-236-conflict.md`); pre-registered policy arms
+  the KNN micro-HPO bridge (protocol 235), and the `s2` KNN micro-search
+  substrate (protocol 237, reachable as `search-run --workload s2`); see
+  `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`); pre-registered policy arms
   A/B/C/D plus cost-aware,
   family-conditioned, commitment, and allocation variants; a
   manifest-frozen, checksummed experiment harness (raw condition streams are
   byte-reproducible; full-precision derived statistics reproduce to 1e-9 across
   environments — see defect D-10) with evidence bundles in `experiments/`.
   Research specs:
-  `../../spec/research/230_*` … `236_*`; findings summarized in the root
+  `../../spec/research/230_*` … `237_*`; findings summarized in the root
   README ("What we learned").
 
 The test suite currently has **366 passing tests** covering unit, integration,

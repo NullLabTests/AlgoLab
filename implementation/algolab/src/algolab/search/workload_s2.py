@@ -1,9 +1,9 @@
 """Second-substrate workload ("S2"): KNN micro-search on a shifted task suite.
 
-Status: provisional. The protocol number for this substrate is **unresolved**
-(see ``docs/quality/protocol-236-conflict.md``); module, harness key and the
-``resolve_workload`` registry use the neutral name ``s2``. It is not wired to
-any CLI command or driver yet.
+Protocol **237** (second-substrate transfer); pre-registered in
+``spec/research/237_SECOND_SUBSTRATE_TRANSFER.md``. The module, harness key and
+the ``resolve_workload`` registry keep the neutral name ``s2``; the workload is
+reachable via ``search-run --workload s2``.
 
 It keeps the 235-v1 promotion contract (absolute CV-accuracy improvement of
 0.005 on *both* replicate seeds, margins frozen, no alpha recalibration) but
@@ -166,9 +166,9 @@ def environment_metadata() -> dict[str, Any]:
     """Non-oracle environment description for the S2 artifact bundle.
 
     Byte-scoped by the frozen 235-v1 promotion contract (this module keeps the
-    identical gate); the protocol number for this substrate is unresolved (see
-    ``docs/quality/protocol-236-conflict.md``): sklearn task shift on offline
-    built-in datasets, discovery margin byte-frozen at 0.005 (no alpha
+    identical gate); protocol 237 (see
+    ``spec/research/237_SECOND_SUBSTRATE_TRANSFER.md``): sklearn task shift on
+    offline built-in datasets, discovery margin byte-frozen at 0.005 (no alpha
     recalibration), cost dimension kept flat at nominal credits. Mirrors
     the 235-v1 ``environment_metadata`` manifest contract so the sealed
     bundle bytes are comparable across the two substrates.

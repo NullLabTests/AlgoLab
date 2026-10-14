@@ -1,12 +1,15 @@
-"""Protocol-236 tests (library phase): rules library + frozen substrate.
+"""Rules-library and frozen-235-substrate tests.
 
-Phase 1 (library extraction, canonical): the knowledge-loop discovery gate
-is a reusable, substrate-agnostic rules library (``algolab.search.rules``).
-All families keep the byte-frozen protocol-235-v1 metric — an absolute
-CV-accuracy improvement of 0.005 per replicate seed on *every* family,
-235-v1 byte-identical, discovery-gate version unfrozen at 1.0.0. Protocol
-236 re-scopes to the S2 substrate (phase 2); its workload contract and
-margins are registered separately in the S2 module.
+The knowledge-loop discovery gate is a reusable, substrate-agnostic rules
+library (``algolab.search.rules``). All families keep the byte-frozen
+protocol-235-v1 metric — an absolute CV-accuracy improvement of 0.005 per
+replicate seed on *every* family, 235-v1 byte-identical, discovery-gate
+version frozen at 1.0.0. The second-substrate (S2) workload is a distinct
+protocol (237); its contract and margins are registered in
+``spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`` and the S2 module.
+
+(Previously named ``test_protocol_236.py``; renamed when D-2 was resolved —
+protocol 236 is the higher-N real-workload design, not the S2 substrate.)
 """
 
 from __future__ import annotations

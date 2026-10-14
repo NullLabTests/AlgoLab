@@ -1,13 +1,57 @@
 # Protocol-236 Identity Conflict — Governance Record
 
-- **Status:** OPEN — requires a human decision. No autonomous resolution made.
+- **Status:** **RESOLVED** (human decision, 2026-10-14). Decision: **Option 1**.
 - **Recorded:** 2026-10-14, at HEAD `93e5f11220f8b98bb97a2c63d95be5054cd380e4`.
+- **Resolved:** 2026-10-14 by the repository owner.
 - **Related:** `docs/audits/initial-audit.md` §4 D-2; `docs/quality/improvement-plan.md` WP-1.
 
+## 0. Resolution (2026-10-14)
+
+**Decision (owner):** keep the committed pre-registration authoritative —
+**protocol 236 = the higher-N real-workload promotion**
+(`spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md`). The competing
+"S2 / second-substrate-transfer" substrate is **re-designated protocol 237**
+with its own pre-registration,
+`spec/research/237_SECOND_SUBSTRATE_TRANSFER.md` (transcribed from the
+implemented `workload_s2.py` and frozen before any 237 run).
+
+Rationale: the committed spec holds the number 236, and renumbering a
+pre-registered design (Option 2) is exactly what pre-registration governance
+exists to prevent. The S2 substrate was never sealed, so giving it a fresh
+number and a written pre-registration is safe.
+
+Changes made under this decision:
+
+- **New spec:** `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`.
+- **236 spec:** marked authoritative; a note records that the registered
+  alpha-margin lever is **not yet implemented** (so no `protocol-236-v1`
+  bundle may be sealed).
+- **Code:** `src/algolab/search/workload_s2.py` docstring now names protocol
+  237 and the real spec; the module/harness key stays the neutral `s2`.
+- **CLI:** `search-run --workload s2` is now reachable (WP-6, previously
+  deferred to this naming decision); covered by
+  `tests/test_search.py::test_cli_search_run_s2_workload_is_reachable`.
+- **Tests:** `tests/test_protocol_236.py` → `tests/test_rules_library.py`
+  (it tests the rules library + frozen 235 substrate, not protocol 236).
+- **Driver:** `scripts/run_protocol_236.py` docstring/notes now state it is
+  **not yet conformant** (only the trials lever is implemented) and it prints
+  a warning before sealing.
+- **Docs:** root `README.md`, `docs/STATUS.md`, and
+  `implementation/algolab/GREAT_PLAN.md` updated (236 = higher-N; 237 = S2).
+
+**Still open (not a naming issue):** implementing the registered 236
+alpha-margin recalibration and sealing a conformant `protocol-236-v1` bundle
+(requires authorization + compute; see D-2 §4 and the 236 spec §3).
+
+---
+
+This note also preserves the original conflict record for provenance.
+
 This note records a conflict between the **pre-registered** definition of
-protocol 236 and the **implemented/tested** definition. It deliberately does not
+protocol 236 and the **implemented/tested** definition. It deliberately did not
 rewrite the pre-registration or assign a new number, because doing so would
-change a scientific question and therefore requires human approval.
+change a scientific question and therefore requires human approval (now given
+— see §0).
 
 ## 1. The two definitions
 
@@ -76,7 +120,9 @@ in substrate, sample size, margin, and versioning. Claim style
 ("on substrate X, at n=Y, rule R beat S on pre-registered metric M") cannot be
 formed without first resolving the name.
 
-## 5. Options (for a human to choose; not implemented here)
+## 5. Options (human decision)
+
+> **Chosen: Option 1** (see §0). The options are retained below for the record.
 
 1. **Keep 236 = higher-N real workload** (as the committed spec says) and
    re-label the S2 substrate as a new protocol number with its own
@@ -87,5 +133,7 @@ formed without first resolving the name.
 3. **Withdraw the S2 substrate** (delete it and its docstring/spec references)
    and keep the single higher-N 236 design.
 
-All options touch a pre-registered design or a scientific question. This record
-therefore stops here pending approval.
+All options touch a pre-registered design or a scientific question, so the
+choice required human approval. Approval was given on 2026-10-14 (Option 1);
+see §0 for the changes made. This section is retained as the pre-decision
+record.

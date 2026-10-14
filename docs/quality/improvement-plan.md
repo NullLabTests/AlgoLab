@@ -9,25 +9,30 @@ Effort: S ≤ 1 h, M ≤ half a day, L ≥ a day. All work is CPU-only, offline.
 
 ---
 
-## WP-1 — Reconcile the protocol-236 identity (governance)
+## WP-1 — Reconcile the protocol-236 identity (governance) — **RESOLVED 2026-10-14**
 
 - **Problem / evidence:** `initial-audit.md` §4 D-2. The pre-registered
   `spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md` (higher-N KNN, alpha
   margin 0.0035, versions 1.2.0) conflicts with the implemented/tested S2
   substrate and the docs, which call 236 "S2". No sealed run exists for either.
-- **Intended change:** **Record, do not resolve.** Write
+- **First pass (intended change):** **Record, do not resolve.** Write
   `docs/quality/protocol-236-conflict.md` capturing the exact divergence, the
   provenance of the aborted bundle, and the decision required. Do **not** edit
   the pre-registered spec or numerically weaken any goal.
-- **Files:** new `docs/quality/protocol-236-conflict.md`; a status note added to
-  `docs/STATUS.md` and `spec/research/236_...md` (pointer only).
-- **Acceptance test:** a reviewer can state, from the record, which design is
-  registered and why no 236 claim is currently publishable.
-- **Regression risk:** none (docs only).
+- **Resolution (owner, Option 1):** 236 = the higher-N real workload (committed
+  spec authoritative); the S2 substrate becomes **protocol 237** with its own
+  pre-registration (`spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`). Applied
+  under a separate follow-up to code/tests/docs (no goal weakened).
+- **Files:** `docs/quality/protocol-236-conflict.md`;
+  `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`; `README.md`,
+  `docs/STATUS.md`, `GREAT_PLAN.md`, `src/algolab/search/workload_s2.py`,
+  `tests/test_rules_library.py`.
+- **Acceptance test:** a reviewer can state, from the record, which design owns
+  236 (higher-N) and which owns 237 (S2).
+- **Regression risk:** none (docs + a neutral-name code key).
 - **Depends on:** none.
-- **Rollback:** delete the new doc / revert the pointer.
-- **Affects preregistered design:** **yes — reason for a human decision, not an
-  autonomous edit.**
+- **Rollback:** revert the relabelling commit.
+- **Affects preregistered design:** **yes — was a human decision (now made).**
 - **Cost:** S.
 
 ## WP-2 — Fix provenance mislabel for non-toy workloads (code)
@@ -116,6 +121,10 @@ Effort: S ≤ 1 h, M ≤ half a day, L ≥ a day. All work is CPU-only, offline.
   produces a manifest and statistics for a 2-trial run in < ~20 s.
 - **Regression risk:** low; no sealed S2 bundle exists to break.
 - **Depends on:** WP-1 for any CLI/name changes.
+- **Follow-up (done):** once WP-1 resolved (S2 = protocol 237), `s2` was exposed
+  on the CLI (`search-run --workload s2`) with a reachability test
+  (`tests/test_search.py`), and a pre-registration
+  (`spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`) was written.
 - **Rollback:** revert module docstring/metadata/test.
 - **Affects preregistered design:** no (S2 has no sealed preregistration; the
   conflict is WP-1).

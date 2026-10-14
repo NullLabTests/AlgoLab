@@ -358,3 +358,23 @@ def test_cli_search_run_end_to_end(tmp_path) -> None:
         "--episodes", "2",
         "--prior-attempts", "10",
     ]) != 0
+
+
+def test_cli_search_run_s2_workload_is_reachable(tmp_path) -> None:
+    """Protocol 237 (S2) is reachable via the CLI (WP-6, unblocked by D-2)."""
+    db = tmp_path / "s2.db"
+    out = tmp_path / "s2-artifacts"
+    code = cli_main([
+        "search-run", "protocol-237-smoke",
+        "--path", str(db),
+        "--dir", str(out),
+        "--workload", "s2",
+        "--trials", "2",
+        "--episodes", "2",
+        "--prior-attempts", "2",
+    ])
+    assert code == 0
+    manifest = json.loads((out / "manifest.json").read_text())
+    assert manifest["workload"] == "s2"
+    env = json.loads((out / "environment.json").read_text())
+    assert env["held_out_family"] in env["families"]

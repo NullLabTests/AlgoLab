@@ -1,8 +1,8 @@
 # STATUS — proven claims, substrates, sample sizes, evidence links
 
-Updated: quality-hardening pass, 2026-10-14. No new scientific claims added;
-the protocol-236 designation is disputed — see
-`docs/quality/protocol-236-conflict.md`. Entry format:
+Updated: quality-hardening pass, 2026-10-14. No new scientific claims added.
+The protocol-236 designation was resolved (D-2: 236 = higher-N real workload,
+S2 = protocol 237) — see `docs/quality/protocol-236-conflict.md`. Entry format:
 **claim** — substrate, n, register link, evidence bundle.
 
 ## toy substrate (deterministic planted-truth generator)
@@ -20,13 +20,13 @@ the protocol-236 designation is disputed — see
 | # | Claim | n | Spec | Evidence |
 |---|---|---|---|---|
 | 6 | On real KNN hyperparameter search, static < B < C ≈ C+ ordering reproduces on beta; held-out gamma shows the adaptive loop surviving knob inversion (k21 29%→0% for frozen commitment); **strict ≥2-family promotion bar NOT met at n=32** | 32 | `spec/research/235_REAL_WORKLOAD_BRIDGE.md` | `experiments/protocol-235-v1/` |
-| 7 | *UNRESOLVED-POWER* — powered higher-n replication of finding 6 not performed (CPU budget); no margin amendment is committed | — | *no spec committed* | *no bundle* |
+| 7 | *UNRESOLVED-POWER* — powered higher-n replication of finding 6 (protocol 236: trials 32→96, alpha margin 0.005→0.0035) is pre-registered but not performed; the alpha-margin lever is not yet implemented | — | `spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md` | *no bundle* |
 
-## s2 substrate (provisional; protocol designation unresolved)
+## s2 substrate (protocol 237, second-substrate transfer; KNN on a shifted sklearn suite)
 
 | # | Claim | n | Spec | Evidence |
 |---|---|---|---|---|
-| 8 | No confirmatory claim. `experiments/protocol-236-v1/` (untracked) is an **aborted partial bundle** — manifest + prior snapshots only, no conditions/report/checksums — and is not evidence | — | `spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md` (registered design, differs from the S2 code) | *none sealed* |
+| 8 | No confirmatory claim. The untracked `experiments/protocol-236-v1/` is an **aborted partial bundle** (manifest + prior snapshots only; no conditions/report/checksums) and is not evidence; no `protocol-237-v1` bundle has been sealed | — | `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md` | *none sealed* |
 
 ## Official milestones (per `planning/MILESTONES.md`)
 
@@ -36,6 +36,8 @@ off) · M4 planned · M5 planned (governance-gated).
 
 ## Naming
 
-Milestone IDs (M0–M5) are NOT the knowledge-loop protocols. The 230–23x
-series is the **KL research line**; the designation "236" is unresolved (see
-`docs/quality/protocol-236-conflict.md`).
+Milestone IDs (M0–M5) are NOT the knowledge-loop protocols. The 230–237
+series is the **KL research line**: 236 = higher-N real-workload promotion
+(`spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md`), 237 = second-substrate
+transfer (`spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`). See
+`docs/quality/protocol-236-conflict.md`.

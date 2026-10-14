@@ -29,12 +29,12 @@ Deliverables produced:
 
 | WP | Change | Files |
 |---|---|---|
-| WP-1 | Recorded the 236 identity conflict; **deferred the decision** | `docs/quality/protocol-236-conflict.md`; notes in `docs/STATUS.md`, `GREAT_PLAN.md` |
+| WP-1 | Recorded the 236 identity conflict; decision **deferred in the first pass**, then **resolved by the owner (Option 1)**: 236 = higher-N real workload, S2 → protocol 237 | `docs/quality/protocol-236-conflict.md`, `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`; `README.md`, `docs/STATUS.md`, `GREAT_PLAN.md` |
 | WP-2 | `tasks.workload` derived from the real workload, not `"toy-discovery"` | `src/algolab/search/harness.py` (3 sites) |
 | WP-3 | Permanent at-rest integrity test over all committed bundles | `tests/test_artifact_integrity.py` |
 | WP-4 | Removed dead references; corrected 235b/236 status | root `README.md`, `docs/STATUS.md`, `docs/FREE_CPU_RUNBOOK.md`, `implementation/algolab/README.md`, `src/algolab/search/workload_s2.py`, `src/algolab/search/rules.py` |
 | WP-5 / D-9 | CI runs the documented fast lane; full lane wired; workflow **moved to repo root** so GitHub actually runs it | `.github/workflows/ci.yml` (root), removed nested copy, `Makefile` |
-| WP-6 | S2 metadata lists held-out family; docstring matches code; smoke test | `src/algolab/search/workload_s2.py`, `tests/test_provenance_and_s2.py` |
+| WP-6 | S2 metadata lists held-out family; docstring matches code; smoke test; **`s2` wired into the CLI** after D-2 resolved | `src/algolab/search/workload_s2.py`, `src/algolab/cli/main.py`, `tests/test_provenance_and_s2.py`, `tests/test_search.py` |
 | WP-7 | Protocol contributor checklist | `implementation/algolab/CONTRIBUTING.md` |
 
 Also corrected three self-inconsistencies found in this session's own
@@ -75,14 +75,18 @@ $ make test     -> 366 passed in ~105 s (fast lane, -m "not slow")
 - No hypothesis, promotion margin, threshold, sample size, or acceptance
   criterion was changed.
 - No experiment was run, re-run, or fabricated; no result was manufactured.
-- The protocol-236 identity conflict was **not** resolved: resolving it changes
-  a pre-registered scientific question and requires a human decision.
+- The protocol-236 identity conflict was **not** resolved in the first pass
+  (it changes a pre-registered scientific question and required a human
+  decision). It was **resolved by the owner on 2026-10-14 (Option 1):** 236
+  stays the higher-N real workload; the S2 substrate becomes protocol 237 with
+  its own pre-registration. The registered 236 alpha-margin lever remains
+  unimplemented, so no `protocol-236-v1` bundle was sealed.
 - No network/model calls were made; all work was local CPU.
 
 ## 6. Results
 
-Mean acceptance score rose **3.59 → 3.95** over 56 criteria; severe defects
-(≤2) fell **5 → 0**. The ≥4-everywhere target is **not** fully met: 7 criteria
+Mean acceptance score rose **3.59 → 3.98** over 56 criteria; severe defects
+(≤2) fell **5 → 0**. The ≥4-everywhere target is **not** fully met: 5 criteria
 remain at 3, each with a named blocker (see `final-scorecard.md`).
 
 > **Post-push correction:** the first pass scored CI (E6) at baseline 3 and
@@ -90,11 +94,19 @@ remain at 3, each with a named blocker (see `final-scorecard.md`).
 > never registered by GitHub, so **CI had never run**. A root workflow now
 > fixes this; the audit, scorecard and baseline mean above are corrected
 > accordingly (baseline mean 3.63 → 3.59; ≤2 defects 4 → 5).
+>
+> **Second follow-up:** CI's first real run exposed **D-10** (golden guard was
+> environment-dependent for full-precision floats). The owner then resolved
+> **D-2** (Option 1), re-scoring A12 and F6 (3 → 4), so the final mean rose
+> 3.95 → 3.98 and criteria-at-3 fell 7 → 5.
 
 ## 7. Recommended next steps (need a human)
 
-1. **Resolve protocol 236** (`docs/quality/protocol-236-conflict.md`): choose
-   higher-N-real-workload vs S2, then re-label/re-pre-register accordingly.
+1. **Implement the registered 236 alpha-margin lever** (per-family margins:
+   alpha 0.0035, beta/gamma 0.005; versions 1.2.0 / gate 1.1.0), verify the
+   machinery-invariant control (trials 0..31 byte-reproduce 235-v1 beta/gamma),
+   then seal `protocol-236-v1` — requires authorizing the compute.
 2. **Authorize the powered replication of finding 6** (A11) if CPU budget
    permits — the largest open scientific gap.
-3. Optionally wire `s2` to the CLI and add a per-bundle JSON-schema validator.
+3. Optionally add a per-bundle JSON-schema validator (B4) and a minimal
+   runnable example (E1/E4). (`s2` was wired to the CLI in this follow-up.)

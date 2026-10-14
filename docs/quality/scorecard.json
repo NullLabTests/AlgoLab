@@ -5,11 +5,11 @@
   "verification": {
     "lint": "ruff check src tests scripts: clean",
     "type": "mypy strict: clean (45 source files)",
-    "tests": "pytest -m 'not slow': 365 passed, 3 warnings",
+    "tests": "pytest -m 'not slow': 366 passed",
     "commands": ["make lint", "make type", "make test"]
   },
   "baseline": { "sum": 201, "applicable": 56, "mean": 3.59, "at_or_below_2": 5, "equal_3": 11 },
-  "final":    { "sum": 221, "applicable": 56, "mean": 3.95, "at_or_below_2": 0, "equal_3": 7, "at_or_above_4": 49 },
+  "final":    { "sum": 223, "applicable": 56, "mean": 3.98, "at_or_below_2": 0, "equal_3": 5, "at_or_above_4": 51 },
   "scores": [
     { "id": "A1",  "base": 4, "final": 4, "delta": 0 },
     { "id": "A2",  "base": 4, "final": 4, "delta": 0 },
@@ -22,7 +22,7 @@
     { "id": "A9",  "base": 4, "final": 4, "delta": 0 },
     { "id": "A10", "base": 4, "final": 4, "delta": 0 },
     { "id": "A11", "base": 3, "final": 3, "delta": 0, "blocker": "real-substrate breadth: one workload at n=32; needs authorized compute" },
-    { "id": "A12", "base": 2, "final": 3, "delta": 1, "evidence": "docs/quality/protocol-236-conflict.md; GREAT_PLAN.md note", "blocker": "protocol-236 identity unresolved (human decision)" },
+    { "id": "A12", "base": 2, "final": 4, "delta": 2, "evidence": "D-2 resolved: 236 = higher-N real workload (spec authoritative); S2 -> protocol 237 with own prereg (237_SECOND_SUBSTRATE_TRANSFER.md)" },
     { "id": "B1",  "base": 4, "final": 4, "delta": 0 },
     { "id": "B2",  "base": 4, "final": 4, "delta": 0 },
     { "id": "B3",  "base": 4, "final": 4, "delta": 0 },
@@ -40,7 +40,7 @@
     { "id": "C5",  "base": 4, "final": 4, "delta": 0 },
     { "id": "C6",  "base": 4, "final": 4, "delta": 0 },
     { "id": "C7",  "base": 4, "final": 4, "delta": 0 },
-    { "id": "C8",  "base": 4, "final": 4, "delta": 0, "note": "365 tests; no property-based tests" },
+    { "id": "C8",  "base": 4, "final": 4, "delta": 0, "note": "366 tests; no property-based tests" },
     { "id": "C9",  "base": 4, "final": 4, "delta": 0 },
     { "id": "C10", "base": 4, "final": 4, "delta": 0 },
     { "id": "D1",  "base": 4, "final": 4, "delta": 0 },
@@ -66,17 +66,18 @@
     { "id": "F3",  "base": 3, "final": 3, "delta": 0, "blocker": "reviewer roles not yet exercised in-repo" },
     { "id": "F4",  "base": 4, "final": 4, "delta": 0 },
     { "id": "F5",  "base": 4, "final": 4, "delta": 0, "note": "rubric + this machine-readable scorecard" },
-    { "id": "F6",  "base": 2, "final": 3, "delta": 1, "evidence": "s2 has tested consumer + consistent metadata", "blocker": "s2 not CLI-reachable pending A12 decision" }
+    { "id": "F6",  "base": 2, "final": 4, "delta": 2, "evidence": "S2 is protocol 237: prereg 237_SECOND_SUBSTRATE_TRANSFER.md, tested consumer, CLI-reachable (search-run --workload s2)" }
   ],
   "open_blockers": [
-    "protocol-236 identity conflict requires a human decision (A12, F6)",
+    "registered 236 alpha-margin lever not yet implemented; no protocol-236-v1 bundle sealed",
     "powered higher-N replication of finding 6 not authorized (A11)",
     "no per-bundle schema validator (B4)",
     "no minimal runnable example / in-repo reviewer exercise (E1, E4, F3)"
   ],
   "corrections": [
     "2026-10-14 post-push: D-9 found (CI workflow nested under implementation/algolab/ was never registered; CI never ran). E6 baseline corrected 3 -> 1; baseline sum 203 -> 201, mean 3.63 -> 3.59, at_or_below_2 4 -> 5. E6 final remains 5 after the root-level workflow fix.",
-    "2026-10-14 post-push (2): D-10 found once CI first ran on Python 3.11 (golden guard compared full-precision statistics.json byte-for-byte, which is environment-dependent). No numeric score changed; the golden test now compares JSON numerically (1e-9) and keeps byte-exact comparison for raw streams and report.md. Reproducibility docs qualified accordingly."
+    "2026-10-14 post-push (2): D-10 found once CI first ran on Python 3.11 (golden guard compared full-precision statistics.json byte-for-byte, which is environment-dependent). No numeric score changed; the golden test now compares JSON numerically (1e-9) and keeps byte-exact comparison for raw streams and report.md. Reproducibility docs qualified accordingly.",
+    "2026-10-14 D-2 resolved (Option 1): 236 = higher-N real workload; S2 -> protocol 237 with own prereg. A12 and F6 blockers removed (both 3 -> 4); final sum 221 -> 223, mean 3.95 -> 3.98, equal_3 7 -> 5, at_or_above_4 49 -> 51. Also wired s2 into the CLI and renamed tests/test_protocol_236.py -> tests/test_rules_library.py."
   ],
   "integrity_note": "No goal, margin, threshold, or criterion was weakened; no result was manufactured."
 }

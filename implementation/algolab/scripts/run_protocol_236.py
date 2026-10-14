@@ -1,9 +1,19 @@
-"""Run the frozen protocol-236-v1 experiment (auditable driver).
+"""Run the protocol-236-v1 experiment (auditable driver).
 
-Mirrors the executed protocol-235-v1 bundle except for the two registered
-236 levers: trials 32 -> 96 and the alpha discovery-margin recalibration
-(0.0035), implemented in algolab.search.workload_hpo. Everything else is
-byte-frozen (spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md).
+Protocol 236 is the higher-N real-workload promotion
+(spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md). Its single registered
+lever is an alpha-side discovery-margin recalibration (0.005 -> 0.0035) with
+per-family margins and a workload-version bump (1.1.0 -> 1.2.0).
+
+WARNING — NOT YET CONFORMANT (D-2). The alpha-margin recalibration is
+registered but NOT implemented: ``algolab.search.workload_hpo`` still ships
+1.1.0 / 0.005 / gate 1.0.0 and the harness gate is not family-keyed. This
+driver therefore sets only the trials lever (32 -> 96) and would seal a
+``protocol-236-v1`` bundle that does NOT match the pre-registration. Do not run
+or seal until the lever is implemented and the machinery-invariant control
+(trials 0..31 must byte-reproduce protocol-235-v1 beta/gamma) is checked. See
+``docs/quality/protocol-236-conflict.md`` and ``docs/audits/initial-audit.md``
+D-2.
 
 Usage (from implementation/algolab, using the project venv):
 
@@ -27,10 +37,11 @@ from algolab.storage.db import connect
 
 EXPERIMENT_ID = "protocol-236-v1"
 CHANGES_FROM_235 = (
-    "trials 32->96; alpha discovery margin 0.005->0.0035 (lattice "
-    "recalibration); HPO_WORKLOAD_VERSION 1.1.0->1.2.0; "
-    "discovery_gate_version 1.0.0->1.1.0; everything else frozen "
-    "identical to the executed protocol-235-v1 bundle."
+    "trials 32->96 ONLY. The registered alpha discovery-margin recalibration "
+    "(0.005->0.0035 with per-family margins, HPO_WORKLOAD_VERSION "
+    "1.1.0->1.2.0, discovery_gate_version 1.0.0->1.1.0) is NOT yet "
+    "implemented; a bundle sealed by this driver is therefore NOT conformant "
+    "to protocol 236 (see docs/audits/initial-audit.md D-2)."
 )
 
 
@@ -77,6 +88,13 @@ def main_cli(argv: list[str] | None = None) -> int:
         return 1
 
     cfg = build_cfg()
+    print(
+        "WARNING: this driver is NOT yet conformant to protocol 236 — only the "
+        "trials lever is set; the registered alpha-margin recalibration "
+        "(0.0035) is not implemented, so the sealed bundle would not match the "
+        "pre-registration (see docs/audits/initial-audit.md D-2).",
+        file=sys.stderr,
+    )
     conn: sqlite3.Connection = connect(args.db, initialize=args.force)
     print(f"writing artifacts to: {artifact_dir}")
     return main(cfg, conn, artifact_dir, force=args.force, out=sys.stdout)
