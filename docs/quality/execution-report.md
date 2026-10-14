@@ -66,9 +66,12 @@ $ make test     -> 366 passed in ~105 s (fast lane, -m "not slow")
 ## 4. Preserved pre-existing work (not reverted, not claimed)
 
 - `M README.md` — the baseline's uncommitted edit; the drift fixes build on it.
-- `?? implementation/algolab/experiments/protocol-236-v1/` — untracked aborted
-  bundle (manifest + snapshots only). **Not** treated as evidence; labeled as
-  aborted in `docs/STATUS.md`.
+- `?? implementation/algolab/experiments/protocol-236-v1/` — aborted
+  bundle (manifest + snapshots only). **Not** treated as evidence. Now archived
+  and committed as non-evidence at
+  `experiments/_aborted/protocol-236-v1-2026-09-19/` (with `ABORTED.md`),
+  freeing the reserved `protocol-236-v1/` path; labeled aborted in
+  `docs/STATUS.md`.
 
 ## 5. Scientific integrity statement
 

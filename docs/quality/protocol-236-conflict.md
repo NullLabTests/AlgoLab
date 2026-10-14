@@ -103,7 +103,9 @@ higher-N design to the (nonexistent) name 235b.
 ## 3. Evidence status
 
 - **No confirmatory bundle exists for either definition.**
-- `experiments/protocol-236-v1/` (untracked) is an **aborted run**: it contains
+- `experiments/protocol-236-v1/` (untracked at baseline; since 2026-10-14 archived
+  and committed at `experiments/_aborted/protocol-236-v1-2026-09-19/` with an
+  `ABORTED.md` marker) is an **aborted run**: it contains
   only `manifest.json` + `knowledge-snapshot{,-by-family}.json`; there are no
   `conditions/`, `statistics.json`, `report.md`, or `checksums.json`. Its
   manifest (`trials: 96`, `environment_version: 1.1.0`,

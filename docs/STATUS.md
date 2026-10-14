@@ -26,7 +26,7 @@ S2 = protocol 237) — see `docs/quality/protocol-236-conflict.md`. Entry format
 
 | # | Claim | n | Spec | Evidence |
 |---|---|---|---|---|
-| 8 | No confirmatory claim. The untracked `experiments/protocol-236-v1/` is an **aborted partial bundle** (manifest + prior snapshots only; no conditions/report/checksums) and is not evidence; no `protocol-237-v1` bundle has been sealed | — | `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md` | *none sealed* |
+| 8 | No confirmatory claim. The aborted partial bundle (manifest + prior snapshots only; no conditions/report/checksums) is archived as non-evidence at `experiments/_aborted/protocol-236-v1-2026-09-19/`; no `protocol-237-v1` bundle has been sealed | — | `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md` | *none sealed* |
 
 ## Official milestones (per `planning/MILESTONES.md`)
 

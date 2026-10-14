@@ -200,7 +200,8 @@ relabelled (`workload_s2.py` docstring, `test_protocol_236.py` →
 states it is not yet conformant (only the trials lever implemented). Remaining
 work is *not* naming: the registered 236 alpha-margin lever is still
 unimplemented, so no `protocol-236-v1` bundle may be sealed. Full record:
-`docs/quality/protocol-236-conflict.md`.
+`docs/quality/protocol-236-conflict.md`. The aborted partial bundle was archived
+to `experiments/_aborted/protocol-236-v1-2026-09-19/` (marked non-evidence).
 
 ### D-3 (S3, CONFIRMED) — Provenance mis-records the workload for non-toy experiments
 
@@ -263,7 +264,8 @@ read literally.
 `experiments/{protocol-230-beta-analysis, ...}` contain only `REPORT.md`
 (no checksums). `experiments/protocol-236-v1` is incomplete (D-2). Whether these
 are intended derived-summary dirs or accidental is unconfirmed; no code path
-generates them.
+generates them. The aborted `protocol-236-v1` partial bundle (D-2) is now
+archived under `experiments/_aborted/` and is likewise not a sealed bundle.
 
 ### D-9 (S1, CONFIRMED) — CI never executes: the workflow is in the wrong directory
 
@@ -350,11 +352,17 @@ claim was stronger than reality and, until CI ran, was never exercised.
 
 ### 5.2 The aborted 236 bundle
 
-The untracked `protocol-236-v1/manifest.json` (created 2026-09-19T15:06:51Z) was
+The aborted `protocol-236-v1/manifest.json` (created 2026-09-19T15:06:51Z) was
 written, along with the prior knowledge snapshots, but no `conditions/`,
 `statistics.json`, `report.md`, or `checksums.json` exist. HEAD's commit message
 names the cause ("shebang 126, stale sqlite WAL lock, tool time cap") and states
 the advance was **not** executed. It must not be presented as a result.
+
+**Disposition (2026-10-14):** it was untracked at baseline; it is now archived,
+committed, and explicitly marked non-evidence at
+`experiments/_aborted/protocol-236-v1-2026-09-19/` (with an `ABORTED.md`), so
+the reserved `experiments/protocol-236-v1/` path is free for the future sealed
+bundle and the run driver no longer refuses to start. It remains unciteable.
 
 ### 5.3 Documentation vs. implementation drift (beyond D-1)
 
