@@ -55,19 +55,37 @@ implementation/algolab/         the executable core (see its README)
 
 ## Milestone status
 
-| Milestone | Scope | Status |
+| Milestone | Official scope (planning/MILESTONES.md) | Status |
 |---|---|---|
 | M0 | Contracts: IDs, models, state machines, append-only event store, budget ledger, manifest validation, CLI | Delivered |
 | M1 | Deterministic execution core: expansion, persistent queue, isolated workers, hash-sealed artifacts, recovery, aggregation | Delivered |
-| M4 | Knowledge layer: schema v3, deterministic statistics, evidence records, operator catalog, skill registry | Delivered |
-| M5 | Causal loop evaluation: pre-registered protocols 230–235 executed (see findings below); first real-workload bridge run (KNN micro-HPO) reproduces the qualitative ordering and demonstrates the adaptive loop's insurance value under distribution shift | Toy promotion criterion met (231); real-workload criterion pending higher n (235) |
+| M2 | Reference rediscovery: baseline reproduction, typed candidates across five seeds, statistical report, clean replication | Sliced or deferred — see `docs/STATUS.md` |
+| M3 | LLM-assisted research: provider adapter, structured hypotheses, skeptical review | Not started (adapter default off) |
+| M4 | Evolutionary search: typed mutations, Pareto archive, diversity, budget-aware selection | Not started |
+| M5 | Controlled meta-improvement: versioned proposals, replay, shadow eval, reversible rollout, governance approval | Not started |
 
-## What we learned (M5 knowledge-loop research line, protocols 230–235)
+### Knowledge-loop research line (protocols 230–235, 235b, 236)
 
-All results come from pre-registered, checksummed experiments on the
-deterministic toy-discovery environment; every claim below is scoped to
-that substrate. Artifacts: `implementation/algolab/experiments/`, specs:
-`spec/research/23{0..5}_*.md`.
+Note: knowledge-loop protocols are **not** milestones M4/M5. This is the **KL
+line** of pre-registered experiments; "What we learned" below is scoped by
+substrate.
+
+| Protocol | Substrate | Status |
+|---|---|---|
+| 230–234 | planted-truth toy discovery | Delivered (findings 1–5 below) |
+| 235 | real workload — KNN micro-HPO | Delivered at n=32 (finding 6); promotion bar honestly not met |
+| 235b | KNN micro-HPO, higher n | Not run — higher-power replication deferred; no spec committed |
+| 236 | designation unresolved (see `docs/quality/protocol-236-conflict.md`) | Pre-registered as higher-N real workload (`spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md`); S2 code/docs disagree and no run is sealed |
+
+## What we learned (knowledge-loop protocols 230–235; scoped by substrate)
+
+All results come from pre-registered, checksummed experiments; every claim
+below is scoped to its substrate. Artifacts:
+`implementation/algolab/experiments/`, specs: `spec/research/23{0..5}_*.md`
+and `spec/research/236_*.md`.
+
+Findings 1–5 are on the planted-truth toy substrate; finding 6 is on the
+real KNN micro-HPO workload.
 
 1. **The knowledge loop is real — but only with the right selector
    objective.** Plain Thompson-sampling adaptation (C) beat static and
@@ -107,6 +125,9 @@ that substrate. Artifacts: `implementation/algolab/experiments/`, specs:
    when knowledge mis-ranks — which this environment's realizations never
    needed (`spec/research/234_DECISION_RULE_FORMAT.md`,
    `experiments/protocol-233-p{30,60,120,240}/`).
+
+**KNN micro-HPO substrate (protocol 235):**
+
 6. **First contact with a real workload confirms the insurance story —
    and honestly withholds the crown.** On a genuine KNN hyperparameter
    search (breast_cancer/wine; digits held out), the toy-era ordering

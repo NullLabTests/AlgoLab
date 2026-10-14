@@ -19,19 +19,22 @@ the executable core of the platform, delivered across five milestones:
 - **Knowledge-loop research line (protocols 230–236, not milestone M5) —
   `algolab.search`.** Pluggable search workloads — the deterministic toy
   discovery environment (planted ground truth, two-seed replication gate),
-  the KNN micro-HPO bridge (protocol 235), and the S2 family-shift substrate
-  (protocol 236); pre-registered policy arms A/B/C/D plus cost-aware,
+  the KNN micro-HPO bridge (protocol 235), and the provisional `s2` KNN
+  micro-search substrate (protocol designation unresolved; see
+  `../../docs/quality/protocol-236-conflict.md`); pre-registered policy arms
+  A/B/C/D plus cost-aware,
   family-conditioned, commitment, and allocation variants; a
   manifest-frozen, byte-reproducible experiment harness with checksummed
   evidence bundles in `experiments/`. Research specs:
   `../../spec/research/230_*` … `236_*`; findings summarized in the root
   README ("What we learned").
 
-The test suite currently has **340+ passing tests** (default `make test`
-excludes `@slow` full-protocol runs; run them with `make test-slow`) covering
-unit, integration, ontology-invariant, protocol-compliance (230–236, 235b),
-and golden byte-reproducibility behavior. `ruff` and `mypy` (strict) are
-clean.
+The test suite currently has **365+ passing tests** covering unit, integration,
+ontology-invariant, protocol-compliance (230–236, including a provenance and
+s2 smoke test), committed-artifact integrity, and golden byte-reproducibility
+behavior. `make test` runs the fast lane (`-m "not slow"`); no test is marked
+`@slow` yet, so `make test-full` is currently identical. `ruff` and `mypy`
+(strict) are clean.
 
 ## Quickstart
 
@@ -39,7 +42,7 @@ clean.
 bash scripts/setup.sh          # venv + editable install
 make lint                      # ruff
 make type                      # mypy (strict)
-make test                      # pytest (default fast set; `make test-slow` for @slow)
+make test                      # pytest fast lane (-m "not slow"; test-full = all)
 ```
 
 ## End-to-end run

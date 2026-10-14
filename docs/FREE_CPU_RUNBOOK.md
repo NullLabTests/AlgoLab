@@ -14,17 +14,19 @@ cd implementation/algolab
 # Every phase gate
 make lint                        # ruff     (must: All checks passed)
 make type                        # mypy --strict (must: no issues)
-make test                        # pytest, default = fast set (-m "not slow") < 3 min
-make test-slow                   # @slow full-protocol runs, each < 10 min
+make test                        # pytest fast lane (-m "not slow") < 3 min
+make test-full                   # entire suite (currently identical to `make test`)
+make test-slow                   # @slow lane — no tests are marked @slow today,
+                                 # so pytest collects nothing and exits 5 (hard fail)
 
 # git identity for this repo must be NullLabTests
 gh auth status
 gh api user --jq .login          # MUST print: NullLabTests
 ```
 
-CPU budget rule: if a @slow run exceeds ~10 min on 2–4 cores, abort and
-shrink the grid (or, if shrinking defeats the purpose, document
-UNRESOLVED-POWER instead of forcing it).
+CPU budget rule: if a run exceeds ~10 min on 2–4 cores, abort and shrink the
+grid (or, if shrinking defeats the purpose, document UNRESOLVED-POWER instead
+of forcing it). No test is marked `@slow` at present; mark one to use the lane.
 
 ## Codespace bootstrap (only if local install is not cheap)
 
@@ -57,5 +59,5 @@ used, and only CPU-oriented (no CUDA mounts, modest `hostRequirements.cpus`).
 ## Contract
 
 - No GPU/TPU, no paid cloud/model APIs, no large downloads.
-- `pip install` only to keep current tests green + the S2 substrate.
+- `pip install` only to keep current tests green (incl. the provisional `s2` workload).
 - Money block → cut the task, record it; never buy compute.

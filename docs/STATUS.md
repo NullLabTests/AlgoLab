@@ -1,6 +1,8 @@
 # STATUS — proven claims, substrates, sample sizes, evidence links
 
-Updated: sprint "Good → Great" (protocols 235b / 236). Entry format:
+Updated: quality-hardening pass, 2026-10-14. No new scientific claims added;
+the protocol-236 designation is disputed — see
+`docs/quality/protocol-236-conflict.md`. Entry format:
 **claim** — substrate, n, register link, evidence bundle.
 
 ## toy substrate (deterministic planted-truth generator)
@@ -18,13 +20,13 @@ Updated: sprint "Good → Great" (protocols 235b / 236). Entry format:
 | # | Claim | n | Spec | Evidence |
 |---|---|---|---|---|
 | 6 | On real KNN hyperparameter search, static < B < C ≈ C+ ordering reproduces on beta; held-out gamma shows the adaptive loop surviving knob inversion (k21 29%→0% for frozen commitment); **strict ≥2-family promotion bar NOT met at n=32** | 32 | `spec/research/235_REAL_WORKLOAD_BRIDGE.md` | `experiments/protocol-235-v1/` |
-| 7 | *UNRESOLVED-POWER* — powered higher-n replication needs CPU time beyond the budget; machinery + margin amendment smoke only | ≤8 | `spec/research/235b_POWERED_REPLICATION.md` (amendment pre-registered) | `experiments/protocol-235-v2/` |
+| 7 | *UNRESOLVED-POWER* — powered higher-n replication of finding 6 not performed (CPU budget); no margin amendment is committed | — | *no spec committed* | *no bundle* |
 
-## s2 substrate (protocol 236 — sklearn family shift, tiny/offline)
+## s2 substrate (provisional; protocol designation unresolved)
 
 | # | Claim | n | Spec | Evidence |
 |---|---|---|---|---|
-| 8 | *(pending — this sprint)* A/B/C promotion verdict for C+ on the S2 substrate | frozen in spec | `spec/research/236_SECOND_SUBSTRATE_TRANSFER.md` | `experiments/protocol-236-v1/` |
+| 8 | No confirmatory claim. `experiments/protocol-236-v1/` (untracked) is an **aborted partial bundle** — manifest + prior snapshots only, no conditions/report/checksums — and is not evidence | — | `spec/research/236_HIGHER_N_REAL_WORKLOAD_PROMOTION.md` (registered design, differs from the S2 code) | *none sealed* |
 
 ## Official milestones (per `planning/MILESTONES.md`)
 
@@ -35,4 +37,5 @@ off) · M4 planned · M5 planned (governance-gated).
 ## Naming
 
 Milestone IDs (M0–M5) are NOT the knowledge-loop protocols. The 230–23x
-series is the **KL research line**; this sprint adds 235b and 236.
+series is the **KL research line**; the designation "236" is unresolved (see
+`docs/quality/protocol-236-conflict.md`).

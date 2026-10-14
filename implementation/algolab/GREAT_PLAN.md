@@ -7,6 +7,13 @@ incremental cost; no paid compute, no GPU.
 **Authority order honored:** `MASTER_SPEC.md` > `planning/MILESTONES.md` >
 `spec/` > this prompt > existing code.
 
+> **Note (2026-10-14):** this plan assigns the "236" number to the S2 substrate
+> and calls the higher-N work "235b". The committed `spec/research/` instead
+> registers 236 as the higher-N real workload, and no 235b spec exists. That
+> numbering conflict is recorded in
+> `../../docs/quality/protocol-236-conflict.md` and needs a human decision;
+> treat the 236/235b rows below as an unapproved proposal, not as fact.
+
 ---
 
 ## 1. Preflight output (required gate — verified)
