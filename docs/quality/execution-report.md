@@ -47,12 +47,17 @@ not 10).
 ```text
 $ make lint     -> All checks passed!
 $ make type     -> Success: no issues found in 45 source files
-$ make test     -> 365 passed, 3 warnings in 111.05s
+$ make test     -> 366 passed in ~105 s (fast lane, -m "not slow")
 ```
 
-- Baseline was 345 tests; +20 new tests, all green. Golden byte-reproduction
-  (`test_protocol_230_golden.py`) still passes, so WP-2 did not alter any
-  artifact bytes.
+- Baseline was 345 tests; +21 new/split tests, all green. The golden
+  reproduction guard (`test_protocol_230_golden.py`) still passes, so WP-2 did
+  not alter any artifact bytes.
+- A post-push CI run (Python 3.11) exposed defect **D-10**: the golden guard
+  compared full-precision `statistics.json` byte-for-byte, which is only
+  reproducible on the sealing environment (last-ULP libm/BLAS differences).
+  The guard now compares JSON artifacts numerically (1e-9) and keeps byte-exact
+  comparison for the raw condition streams and `report.md`; see the audit D-10.
 - `pytest -m slow` collects 0 tests and exits 5 (a hard failure) — documented
   as such now.
 - All `spec/research/*` and `experiments/*` paths referenced by the edited docs

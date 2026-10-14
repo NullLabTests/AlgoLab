@@ -75,7 +75,8 @@
     "no minimal runnable example / in-repo reviewer exercise (E1, E4, F3)"
   ],
   "corrections": [
-    "2026-10-14 post-push: D-9 found (CI workflow nested under implementation/algolab/ was never registered; CI never ran). E6 baseline corrected 3 -> 1; baseline sum 203 -> 201, mean 3.63 -> 3.59, at_or_below_2 4 -> 5. E6 final remains 5 after the root-level workflow fix."
+    "2026-10-14 post-push: D-9 found (CI workflow nested under implementation/algolab/ was never registered; CI never ran). E6 baseline corrected 3 -> 1; baseline sum 203 -> 201, mean 3.63 -> 3.59, at_or_below_2 4 -> 5. E6 final remains 5 after the root-level workflow fix.",
+    "2026-10-14 post-push (2): D-10 found once CI first ran on Python 3.11 (golden guard compared full-precision statistics.json byte-for-byte, which is environment-dependent). No numeric score changed; the golden test now compares JSON numerically (1e-9) and keeps byte-exact comparison for raw streams and report.md. Reproducibility docs qualified accordingly."
   ],
   "integrity_note": "No goal, margin, threshold, or criterion was weakened; no result was manufactured."
 }

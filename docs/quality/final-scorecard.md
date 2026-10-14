@@ -96,6 +96,13 @@ identity conflict), the score rose modestly and the open blocker is named.
 > the baseline mean to 3.59); E6 final remains **5** only after the workflow was
 > moved to the repository root in the follow-up commit. The audit's D-9 records
 > the finding.
+>
+> **Second correction (2026-10-14, after CI first ran).** The Python 3.11 job
+> exposed **D-10**: the golden guard compared full-precision `statistics.json`
+> byte-for-byte, which only reproduces on the sealing environment (last-ULP
+> libm/BLAS differences). No numeric score changed; the guard now compares JSON
+> numerically (1e-9) and keeps byte-exact comparison for the raw condition
+> streams and `report.md`, and the reproducibility wording was qualified.
 
 ## Honest assessment
 

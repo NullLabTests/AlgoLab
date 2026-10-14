@@ -24,14 +24,16 @@ the executable core of the platform, delivered across five milestones:
   `../../docs/quality/protocol-236-conflict.md`); pre-registered policy arms
   A/B/C/D plus cost-aware,
   family-conditioned, commitment, and allocation variants; a
-  manifest-frozen, byte-reproducible experiment harness with checksummed
-  evidence bundles in `experiments/`. Research specs:
+  manifest-frozen, checksummed experiment harness (raw condition streams are
+  byte-reproducible; full-precision derived statistics reproduce to 1e-9 across
+  environments — see defect D-10) with evidence bundles in `experiments/`.
+  Research specs:
   `../../spec/research/230_*` … `236_*`; findings summarized in the root
   README ("What we learned").
 
-The test suite currently has **365+ passing tests** covering unit, integration,
+The test suite currently has **366 passing tests** covering unit, integration,
 ontology-invariant, protocol-compliance (230–236, including a provenance and
-s2 smoke test), committed-artifact integrity, and golden byte-reproducibility
+s2 smoke test), committed-artifact integrity, and golden reproduction
 behavior. `make test` runs the fast lane (`-m "not slow"`); no test is marked
 `@slow` yet, so `make test-full` is currently identical. `ruff` and `mypy`
 (strict) are clean.
