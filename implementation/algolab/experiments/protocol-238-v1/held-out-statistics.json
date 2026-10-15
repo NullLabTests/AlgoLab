@@ -1,0 +1,387 @@
+{
+  "claim_readiness": {
+    "c_beats_knowledge_informed_by_family": {
+      "alpha": false,
+      "beta": false
+    },
+    "c_beats_static_by_family": {
+      "alpha": false,
+      "beta": false
+    },
+    "claim_ready": false,
+    "held_out_persistence_vs_knowledge_informed": true,
+    "held_out_persistence_vs_static": false,
+    "training_families_analysed": 2,
+    "verdict": "promotion criterion NOT met; unmet components: adaptive-cost-aware>A with adjusted p < 0.05 on >=2 families; adaptive-cost-aware>B with adjusted p < 0.05 on >=2 families; gap persistence on held-out gamma"
+  },
+  "comparisons": [
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "static",
+      "base_mean": 0.020833333333333336,
+      "candidate": "knowledge-informed",
+      "candidate_mean": 0.0,
+      "ci_high": -0.016666666666666666,
+      "ci_low": -0.025,
+      "delta": -0.020833333333333336,
+      "effect_size": -5.0,
+      "p_value": 0.5022488755622189,
+      "relative_delta": -1.0
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "static",
+      "base_mean": 0.020833333333333336,
+      "candidate": "adaptive",
+      "candidate_mean": 0.016666666666666666,
+      "ci_high": 0.0,
+      "ci_low": -0.008333333333333335,
+      "delta": -0.004166666666666669,
+      "effect_size": -1.0000000000000004,
+      "p_value": 1.0,
+      "relative_delta": -0.2000000000000001
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed",
+      "base_mean": 0.0,
+      "candidate": "adaptive",
+      "candidate_mean": 0.016666666666666666,
+      "ci_high": 0.016666666666666666,
+      "ci_low": 0.016666666666666666,
+      "delta": 0.016666666666666666,
+      "effect_size": 0.0,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "static",
+      "base_mean": 0.020833333333333336,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.0125,
+      "ci_high": -0.008333333333333333,
+      "ci_low": -0.008333333333333335,
+      "delta": -0.008333333333333335,
+      "effect_size": -1.4142135623730951,
+      "p_value": 0.5022488755622189,
+      "relative_delta": -0.4
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed",
+      "base_mean": 0.0,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.0125,
+      "ci_high": 0.016666666666666666,
+      "ci_low": 0.008333333333333333,
+      "delta": 0.0125,
+      "effect_size": 3.0,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "adaptive",
+      "base_mean": 0.016666666666666666,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.0125,
+      "ci_high": 0.0,
+      "ci_low": -0.008333333333333333,
+      "delta": -0.004166666666666666,
+      "effect_size": -0.9999999999999998,
+      "p_value": 1.0,
+      "relative_delta": -0.24999999999999994
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed-cost-rank",
+      "base_mean": 0.0,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.0125,
+      "ci_high": 0.016666666666666666,
+      "ci_low": 0.008333333333333333,
+      "delta": 0.0125,
+      "effect_size": 3.0,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "knowledge-informed",
+      "base_mean": 0.0,
+      "candidate": "knowledge-informed-family",
+      "candidate_mean": 0.0,
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "delta": 0.0,
+      "effect_size": 0.0,
+      "p_value": 1.0,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "knowledge-informed-family",
+      "base_mean": 0.0,
+      "candidate": "knowledge-informed-family-cost-rank",
+      "candidate_mean": 0.0,
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "delta": 0.0,
+      "effect_size": 0.0,
+      "p_value": 1.0,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed-family-cost-rank",
+      "base_mean": 0.0,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.0125,
+      "ci_high": 0.016666666666666666,
+      "ci_low": 0.008333333333333333,
+      "delta": 0.0125,
+      "effect_size": 3.0,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.0125,
+      "candidate": "adaptive-cost-aware-family",
+      "candidate_mean": 0.029166666666666667,
+      "ci_high": 0.025,
+      "ci_low": 0.008333333333333335,
+      "delta": 0.016666666666666666,
+      "effect_size": 2.8284271247461903,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 1.3333333333333333
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "knowledge-informed-family-cost-rank",
+      "base_mean": 0.0,
+      "candidate": "knowledge-informed-family-commit",
+      "candidate_mean": 0.0,
+      "ci_high": 0.0,
+      "ci_low": 0.0,
+      "delta": 0.0,
+      "effect_size": 0.0,
+      "p_value": 1.0,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed-family-commit",
+      "base_mean": 0.0,
+      "candidate": "adaptive-cost-aware-family",
+      "candidate_mean": 0.029166666666666667,
+      "ci_high": 0.03333333333333333,
+      "ci_low": 0.025,
+      "delta": 0.029166666666666667,
+      "effect_size": 7.000000000000002,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed-family-cost-rank",
+      "base_mean": 0.0,
+      "candidate": "knowledge-informed-family-alloc",
+      "candidate_mean": 0.016666666666666666,
+      "ci_high": 0.016666666666666666,
+      "ci_low": 0.016666666666666666,
+      "delta": 0.016666666666666666,
+      "effect_size": 0.0,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed-family-alloc",
+      "base_mean": 0.016666666666666666,
+      "candidate": "adaptive-cost-aware-family",
+      "candidate_mean": 0.029166666666666667,
+      "ci_high": 0.016666666666666666,
+      "ci_low": 0.008333333333333335,
+      "delta": 0.0125,
+      "effect_size": 3.000000000000001,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.75
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "static",
+      "base_mean": 0.020833333333333336,
+      "candidate": "qd-adaptive-cost-aware",
+      "candidate_mean": 0.020833333333333336,
+      "ci_high": 0.008333333333333335,
+      "ci_low": -0.008333333333333335,
+      "delta": 0.0,
+      "effect_size": 0.0,
+      "p_value": 1.0,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed",
+      "base_mean": 0.0,
+      "candidate": "qd-adaptive-cost-aware",
+      "candidate_mean": 0.020833333333333336,
+      "ci_high": 0.025,
+      "ci_low": 0.016666666666666666,
+      "delta": 0.020833333333333336,
+      "effect_size": 5.0,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.0125,
+      "candidate": "qd-adaptive-cost-aware",
+      "candidate_mean": 0.020833333333333336,
+      "ci_high": 0.01666666666666667,
+      "ci_low": 0.0,
+      "delta": 0.008333333333333335,
+      "effect_size": 1.4142135623730951,
+      "p_value": 1.0,
+      "relative_delta": 0.6666666666666667
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "static",
+      "base_mean": 0.020833333333333336,
+      "candidate": "basin-escape",
+      "candidate_mean": 0.029166666666666667,
+      "ci_high": 0.016666666666666663,
+      "ci_low": 0.0,
+      "delta": 0.008333333333333331,
+      "effect_size": 0.6324555320336758,
+      "p_value": 1.0,
+      "relative_delta": 0.39999999999999986
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "knowledge-informed",
+      "base_mean": 0.0,
+      "candidate": "basin-escape",
+      "candidate_mean": 0.029166666666666667,
+      "ci_high": 0.041666666666666664,
+      "ci_low": 0.016666666666666666,
+      "delta": 0.029166666666666667,
+      "effect_size": 2.3333333333333335,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 0.0
+    },
+    {
+      "adjusted_p": 0.849959635566832,
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.0125,
+      "candidate": "basin-escape",
+      "candidate_mean": 0.029166666666666667,
+      "ci_high": 0.024999999999999998,
+      "ci_low": 0.008333333333333333,
+      "delta": 0.016666666666666666,
+      "effect_size": 1.2649110640673518,
+      "p_value": 0.5022488755622189,
+      "relative_delta": 1.3333333333333333
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "qd-adaptive-cost-aware",
+      "base_mean": 0.020833333333333336,
+      "candidate": "basin-escape",
+      "candidate_mean": 0.029166666666666667,
+      "ci_high": 0.024999999999999998,
+      "ci_low": -0.008333333333333335,
+      "delta": 0.008333333333333331,
+      "effect_size": 0.6324555320336758,
+      "p_value": 1.0,
+      "relative_delta": 0.39999999999999986
+    }
+  ],
+  "family": "gamma",
+  "note": "Transfer evaluation: arms evaluated on held-out family gamma, which was never included in the K0 prior.",
+  "per_condition": {
+    "adaptive": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.016667,
+      "validated_discoveries": 4
+    },
+    "adaptive-cost-aware": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.0125,
+      "validated_discoveries": 3
+    },
+    "adaptive-cost-aware-family": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.029167,
+      "validated_discoveries": 7
+    },
+    "basin-escape": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.029167,
+      "validated_discoveries": 7
+    },
+    "knowledge-informed": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.0,
+      "validated_discoveries": 0
+    },
+    "knowledge-informed-cost-rank": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.0,
+      "validated_discoveries": 0
+    },
+    "knowledge-informed-family": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.0,
+      "validated_discoveries": 0
+    },
+    "knowledge-informed-family-alloc": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.016667,
+      "validated_discoveries": 4
+    },
+    "knowledge-informed-family-commit": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.0,
+      "validated_discoveries": 0
+    },
+    "knowledge-informed-family-cost-rank": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.0,
+      "validated_discoveries": 0
+    },
+    "qd-adaptive-cost-aware": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.020833,
+      "validated_discoveries": 5
+    },
+    "random": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.020833,
+      "validated_discoveries": 5
+    },
+    "static": {
+      "attempts": 24,
+      "compute_credits": 240.0,
+      "discoveries_per_credit": 0.020833,
+      "validated_discoveries": 5
+    }
+  }
+}

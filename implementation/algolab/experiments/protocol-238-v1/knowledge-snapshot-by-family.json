@@ -1,0 +1,108 @@
+{
+  "alpha": {
+    "attempts": {
+      "chebyshev": 1,
+      "dist-weight": 1,
+      "k1": 0,
+      "k11": 0,
+      "k21": 0,
+      "k3": 0,
+      "manhattan": 0
+    },
+    "credits": {
+      "chebyshev": 10.0,
+      "dist-weight": 10.0,
+      "k1": 0.0,
+      "k11": 0.0,
+      "k21": 0.0,
+      "k3": 0.0,
+      "manhattan": 0.0
+    },
+    "event_range": [
+      "prior-alpha-0",
+      "prior-alpha-1"
+    ],
+    "snapshot_id": "K0-protocol-238-v1-alpha",
+    "successes": {
+      "chebyshev": 0,
+      "dist-weight": 0,
+      "k1": 0,
+      "k11": 0,
+      "k21": 0,
+      "k3": 0,
+      "manhattan": 0
+    },
+    "sum_effect": {
+      "chebyshev": -0.027232,
+      "dist-weight": 0.0,
+      "k1": 0.0,
+      "k11": 0.0,
+      "k21": 0.0,
+      "k3": 0.0,
+      "manhattan": 0.0
+    },
+    "sum_effect_sq": {
+      "chebyshev": 0.0007415818239999999,
+      "dist-weight": 0.0,
+      "k1": 0.0,
+      "k11": 0.0,
+      "k21": 0.0,
+      "k3": 0.0,
+      "manhattan": 0.0
+    },
+    "version": "1.0.0"
+  },
+  "beta": {
+    "attempts": {
+      "chebyshev": 0,
+      "dist-weight": 1,
+      "k1": 0,
+      "k11": 0,
+      "k21": 0,
+      "k3": 1,
+      "manhattan": 0
+    },
+    "credits": {
+      "chebyshev": 0.0,
+      "dist-weight": 10.0,
+      "k1": 0.0,
+      "k11": 0.0,
+      "k21": 0.0,
+      "k3": 10.0,
+      "manhattan": 0.0
+    },
+    "event_range": [
+      "prior-beta-0",
+      "prior-beta-1"
+    ],
+    "snapshot_id": "K0-protocol-238-v1-beta",
+    "successes": {
+      "chebyshev": 0,
+      "dist-weight": 0,
+      "k1": 0,
+      "k11": 0,
+      "k21": 0,
+      "k3": 0,
+      "manhattan": 0
+    },
+    "sum_effect": {
+      "chebyshev": 0.0,
+      "dist-weight": 0.0,
+      "k1": 0.0,
+      "k11": 0.0,
+      "k21": 0.0,
+      "k3": -0.008333,
+      "manhattan": 0.0
+    },
+    "sum_effect_sq": {
+      "chebyshev": 0.0,
+      "dist-weight": 0.0,
+      "k1": 0.0,
+      "k11": 0.0,
+      "k21": 0.0,
+      "k3": 6.943888900000001e-05,
+      "manhattan": 0.0
+    },
+    "version": "1.0.0"
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "cells": [
+    {
+      "cell": [
+        1,
+        [
+          0.333333,
+          0.5
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.333333,
+          0.5
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "entry_id": "chebyshev",
+      "metadata": {
+        "operator": "chebyshev",
+        "phase": "prior"
+      },
+      "novelty": 0.23570273180003665,
+      "payload": {
+        "operator": "chebyshev"
+      },
+      "quality": 0.03333333333333333
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.333333,
+          0.333333
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.333333,
+          0.333333
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "entry_id": "dist-weight",
+      "metadata": {
+        "operator": "dist-weight",
+        "phase": "prior"
+      },
+      "novelty": 1.0172129952856481,
+      "payload": {
+        "operator": "dist-weight"
+      },
+      "quality": 0.025
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.5,
+          0.5
+        ],
+        [
+          0.5,
+          0.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.5,
+          0.5
+        ],
+        [
+          0.5,
+          0.0
+        ]
+      ],
+      "entry_id": "k1",
+      "metadata": {
+        "operator": "k1",
+        "phase": "prior"
+      },
+      "novelty": 1.0,
+      "payload": {
+        "operator": "k1"
+      },
+      "quality": 0.05
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.5,
+          0.333333
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.5,
+          0.333333
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "entry_id": "k3",
+      "metadata": {
+        "operator": "k3",
+        "phase": "prior"
+      },
+      "novelty": 1.0274024419758794,
+      "payload": {
+        "operator": "k3"
+      },
+      "quality": 0.03333333333333333
+    }
+  ],
+  "novelty_weight": 0.25,
+  "version": "1.0.0"
+}
