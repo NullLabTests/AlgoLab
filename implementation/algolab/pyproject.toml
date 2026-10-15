@@ -61,6 +61,11 @@ module = ["sklearn.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
+# Custom transformers subclass sklearn's untyped BaseEstimator/TransformerMixin.
+module = ["algolab.search.workload_transform"]
+disable_error_code = ["misc", "no-any-return"]
+
+[[tool.mypy.overrides]]
 # sqlite3.Row field access and Dict[str, Any] manifests are dynamic by design.
 module = [
     "algolab.storage.*",

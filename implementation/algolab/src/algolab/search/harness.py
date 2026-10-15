@@ -170,7 +170,28 @@ def _s2_view() -> WorkloadView:
     )
 
 
-_WORKLOADS = {"toy": _toy_view, "hpo": _hpo_view, "s2": _s2_view}
+def _transform_view() -> WorkloadView:
+    from algolab.search import workload_transform
+
+    return WorkloadView(
+        key="transform",
+        display_name="typed-feature-transform",
+        environment_version=workload_transform.WORKLOAD_VERSION,
+        task_suite_version=workload_transform.TASK_SUITE_VERSION,
+        discovery_gate_version="1.0.0",
+        families=tuple(workload_transform.TASK_FAMILIES),
+        held_out_family=workload_transform.HELD_OUT_FAMILY,
+        operators=workload_transform.operators(),
+        has_oracle=False,
+        run_attempt=workload_transform.run_attempt,
+        operator_cost=workload_transform.operator_cost,
+        costs=dict(workload_transform.OPERATOR_COSTS),
+        environment_metadata=workload_transform.environment_metadata,
+    )
+
+
+_WORKLOADS = {"toy": _toy_view, "hpo": _hpo_view, "s2": _s2_view,
+              "transform": _transform_view}
 
 
 def resolve_workload(name: str) -> WorkloadView:
