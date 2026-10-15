@@ -171,6 +171,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_search.add_argument("--top-k", type=int, default=0,
                           help="top-K operators cycled by condition B "
                                "(default: manifest default)")
+    p_search.add_argument("--arms", type=str, default=None,
+                          help="comma-separated policy arms (default: procedural set)")
     p_search.add_argument("--force", action="store_true",
                           help="reuse an existing artifact directory")
     p_search.add_argument("--json", action="store_true",
@@ -500,6 +502,9 @@ def cmd_search_run(args: argparse.Namespace) -> int:
         top_k=args.top_k or 3,
         producer=config.producer,
         workload=args.workload,
+        arms=tuple(a.strip() for a in args.arms.split(","))
+        if args.arms else ("static", "knowledge-informed", "adaptive",
+                           "random"),
     )
     try:
         rc = run_search(cfg, conn, artifact_dir, force=args.force)

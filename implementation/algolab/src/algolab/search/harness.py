@@ -34,17 +34,20 @@ from algolab.search.policies import (
     ADAPTIVE_COST_AWARE_POLICY_VERSION,
     ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION,
     ADAPTIVE_POLICY_VERSION,
+    BASIN_ESCAPE_POLICY_VERSION,
     COST_RANKED_KNOWLEDGE_POLICY_VERSION,
     FAMILY_ALLOC_POLICY_VERSION,
     FAMILY_COMMIT_POLICY_VERSION,
     FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION,
     FAMILY_KNOWLEDGE_POLICY_VERSION,
     KNOWLEDGE_INFORMED_POLICY_VERSION,
+    QD_ADAPTIVE_COST_AWARE_POLICY_VERSION,
     RANDOM_POLICY_VERSION,
     STATIC_POLICY_VERSION,
     AdaptiveCostAwareFamilyPolicy,
     AdaptiveCostAwarePolicy,
     AdaptivePolicy,
+    BasinEscapePolicy,
     CostRankedFamilyKnowledgePolicy,
     CostRankedKnowledgePolicy,
     FamilyAllocPolicy,
@@ -52,6 +55,7 @@ from algolab.search.policies import (
     FamilyConditionedKnowledgePolicy,
     KnowledgeInformedPolicy,
     KnowledgeSnapshot,
+    QDAdaptiveCostAwarePolicy,
     RandomPolicy,
     StaticPolicy,
     build_prior_snapshot,
@@ -196,6 +200,10 @@ ARMS_PROTOCOL_234 = ARMS_PROTOCOL_232 + (
     "knowledge-informed-family-commit",
     "knowledge-informed-family-alloc",
 )
+ARMS_PROTOCOL_238 = ARMS_PROTOCOL_234 + (
+    "qd-adaptive-cost-aware",
+    "basin-escape",
+)
 PRIMARY_COMPARISONS: tuple[tuple[str, str], ...] = (
     ("static", "knowledge-informed"),
     ("static", "adaptive"),
@@ -252,6 +260,20 @@ def primary_comparisons_for(
             ("knowledge-informed-family-alloc",
              "adaptive-cost-aware-family"),
         ]
+    if "qd-adaptive-cost-aware" in arms:
+        pairs += [
+            ("static", "qd-adaptive-cost-aware"),
+            ("knowledge-informed", "qd-adaptive-cost-aware"),
+            ("adaptive-cost-aware", "qd-adaptive-cost-aware"),
+        ]
+    if "basin-escape" in arms:
+        pairs += [
+            ("static", "basin-escape"),
+            ("knowledge-informed", "basin-escape"),
+            ("adaptive-cost-aware", "basin-escape"),
+        ]
+        if "qd-adaptive-cost-aware" in arms:
+            pairs += [("qd-adaptive-cost-aware", "basin-escape")]
     return tuple(pairs)
 
 
@@ -360,6 +382,12 @@ def freeze_manifest(cfg: ExperimentConfig) -> dict[str, Any]:
             **({"knowledge-informed-family-alloc":
                 FAMILY_ALLOC_POLICY_VERSION}
                if "knowledge-informed-family-alloc" in cfg.arms else {}),
+            **({"qd-adaptive-cost-aware":
+                QD_ADAPTIVE_COST_AWARE_POLICY_VERSION}
+               if "qd-adaptive-cost-aware" in cfg.arms else {}),
+            **({"basin-escape":
+                BASIN_ESCAPE_POLICY_VERSION}
+               if "basin-escape" in cfg.arms else {}),
         },
         "budget_credits": cfg.budget_credits,
         "episodes_per_trial": cfg.episodes_per_trial,
@@ -790,6 +818,17 @@ class PolicyComparison:
         if arm == "knowledge-informed-family-alloc":
             return FamilyAllocPolicy(
                 self.snapshots_by_family, snapshot, costs=self.wl.costs)
+        if arm in ("qd-adaptive-cost-aware", "qd-adaptive", "qd-cost-aware",
+                   "QDAdaptiveCostAwarePolicy"):
+            return QDAdaptiveCostAwarePolicy(
+                snapshot, self.wl.operators, rng_seed=rng_seed,
+                costs=self.wl.costs,
+                archive=self._make_qd_archive())
+        if arm in ("basin-escape", "basin_escape", "fork-and-flush",
+                   "BasinEscapePolicy"):
+            return BasinEscapePolicy(
+                snapshot, self.wl.operators, rng_seed=rng_seed,
+                costs=self.wl.costs, archive=self._make_qd_archive())
         if arm == "adaptive-cost-aware-family":
             return AdaptiveCostAwareFamilyPolicy(
                 snapshot, self.wl.operators, rng_seed=rng_seed,
@@ -809,6 +848,32 @@ class PolicyComparison:
             shuffled = self._shuffled_snapshot(snapshot, rng_seed)
             return KnowledgeInformedPolicy(shuffled, top_k=self.cfg.top_k)
         raise HarnessError(f"unknown arm {arm!r}")
+
+    def _make_qd_archive(self) -> Any:
+        """Seed a QD archive from the frozen prior snapshot (deterministic)."""
+        from algolab.search.qd_archive import QDArchive, behavior_descriptor, cost_tier
+        archive = QDArchive()
+        snapshot = self.snapshot
+        if snapshot is None:
+            return archive
+        for op in self.wl.operators:
+            try:
+                rate = snapshot.success_rate(op)
+            except Exception:  # noqa: BLE001
+                rate = 0.5
+            cost = self.wl.operator_cost(op)
+            aff = [rate]
+            # family-affinity signature across prior family slices (if known)
+            if self.snapshots_by_family:
+                aff = [snap.success_rate(op)
+                       for snap in self.snapshots_by_family.values()]
+            desc = behavior_descriptor(cost_tier(cost), aff,
+                                     (rate, snapshot.attempts.get(op, 0)))
+            quality = (rate / cost) if cost and cost > 0 else rate
+            archive.insert(op, desc, quality,
+                           metadata={"operator": op, "phase": "prior"},
+                           payload={"operator": op})
+        return archive
 
     def _shuffled_snapshot(self, snapshot: KnowledgeSnapshot,
                            rng_seed: int) -> KnowledgeSnapshot:
@@ -1782,6 +1847,11 @@ class PolicyComparison:
         # manifest.json last content change before checksumming
         (ad / "manifest.json").write_text(
             json.dumps(self.manifest, indent=2, sort_keys=True) + "\n")
+
+        # qd-archive.json (Protocol 238) — seeded from the frozen prior.
+        archive = self._make_qd_archive()
+        (ad / "qd-archive.json").write_text(
+            json.dumps(archive.to_dict(), indent=2, sort_keys=True) + "\n")
 
         # checksums.json (SHA-256 of all deterministic artifact files;
         # the checksum file itself and the reproducibility verdict derived

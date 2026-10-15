@@ -28,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from algolab.knowledge.operators import OPERATOR_BUDGETS
+from algolab.search.qd_archive import QDArchive, behavior_descriptor, cost_tier
 
 STATIC_POLICY_VERSION = "1.0.0"
 KNOWLEDGE_INFORMED_POLICY_VERSION = "1.0.0"
@@ -40,7 +41,8 @@ FAMILY_COST_RANKED_KNOWLEDGE_POLICY_VERSION = "1.0.0"
 ADAPTIVE_FAMILY_COST_AWARE_POLICY_VERSION = "1.0.0"
 FAMILY_COMMIT_POLICY_VERSION = "1.0.0"
 FAMILY_ALLOC_POLICY_VERSION = "1.0.0"
-
+QD_ADAPTIVE_COST_AWARE_POLICY_VERSION = "1.0.0"
+BASIN_ESCAPE_POLICY_VERSION = "1.0.0"
 
 class PolicyError(RuntimeError):
     """A policy violated its contract (e.g. read future knowledge)."""
@@ -804,6 +806,323 @@ def build_prior_snapshot(
     )
 
 
+class QDAdaptiveCostAwarePolicy(AdaptiveCostAwarePolicy):
+    """Protocol 238 arm: cost-aware Thompson selection biased toward the
+    current quality-diversity archive.
+
+    The archive is maintained over operator-level behaviours and is queried
+    (rather than re-implemented inline) for bias / restriction. It is empty
+    at construction and seeded from the prior snapshot plus updated outcomes.
+    """
+
+    label = "qd-adaptive-cost-aware"
+    version = QD_ADAPTIVE_COST_AWARE_POLICY_VERSION
+
+    def __init__(
+        self,
+        snapshot: KnowledgeSnapshot,
+        operators: tuple[str, ...],
+        *,
+        rng_seed: int,
+        feedback_shuffle_seed: int | None = None,
+        costs: Mapping[str, float] | None = None,
+        archive: QDArchive | None = None,
+        bias_weight: float = 0.25,
+        restrict_to_archive: bool = False,
+    ):
+        super().__init__(snapshot, operators, rng_seed=rng_seed,
+                         feedback_shuffle_seed=feedback_shuffle_seed,
+                         costs=costs)
+        self._cost_table = (dict(OPERATOR_BUDGETS) if costs is None
+                            else dict(costs))
+        self._archive = archive if archive is not None else QDArchive()
+        self._bias_weight = float(bias_weight)
+        self._restrict = bool(restrict_to_archive)
+        self._family_order = ("alpha", "beta")
+        self._seed_archive(snapshot, None)
+        self._forked_parents: list[str] = []
+        self._last_parent_id: str | None = None
+
+    @property
+    def qd_archive(self) -> QDArchive:
+        return self._archive
+
+    @property
+    def archive(self) -> QDArchive:
+        return self._archive
+
+    @property
+    def parent_ids(self) -> list[str]:
+        return list(self._forked_parents)
+
+    def _cost_of(self, op: str) -> float:
+        return float(self._cost_table.get(op, 1.0))
+
+    def _family_affinities(self, family: str, operator: str) -> tuple[float, ...]:
+        # The operator's own posterior-mean vector across the known family
+        # order; held-out families fall back to the current family only.
+        families = [f for f in self._family_order if f in self._alpha]
+        if not families:
+            families = [family]
+        if family not in families:
+            families = families + [family]
+        means: list[float] = []
+        for fam in families:
+            if fam not in self._known_families:
+                self._init_family(fam, self._snapshot_snapshot)
+            means.append(self.posterior_stats(fam, operator)["mean"])
+        return tuple(means)
+
+    def _descriptor_for(self, family: str, operator: str) -> tuple[Any, ...]:
+        stats = self.posterior_stats(family, operator)
+        cost = self._cost_of(operator)
+        affinities = self._family_affinities(family, operator)
+        return behavior_descriptor(
+            cost_tier(cost),
+            affinities,
+            (stats["mean"], stats["uncertainty"], 1.0 if stats["mean"] > 0 else 0.0),
+        )
+
+    def _seed_archive(self, snapshot: KnowledgeSnapshot, costs: Any) -> None:
+        for op in self._operators:
+            try:
+                rate = snapshot.success_rate(op)
+            except Exception:  # noqa: BLE001
+                rate = 0.5
+            cost = self._cost_of(op)
+            # Pooled rate as the affinity prior for every family (the policy
+            # only receives the pooled snapshot; per-family refinement
+            # happens via update()).
+            affinities = (rate, rate)
+            desc = behavior_descriptor(cost_tier(cost), affinities,
+                                     (rate, rate, snapshot.attempts.get(op, 0)))
+            quality = rate / cost if cost > 0 else rate
+            self._archive.insert(
+                op, desc, quality, metadata={"operator": op, "phase": "prior"},
+                payload={"operator": op})
+
+    def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
+        if family not in self._known_families:
+            self._init_family(family, self._snapshot_snapshot)
+        base_scores: dict[str, float] = {}
+        for op in self._operators:
+            a = self._alpha[family][op]
+            b = self._beta[family][op]
+            theta = self._rng.betavariate(a, b)
+            base_scores[op] = theta / self._cost_of(op)
+        # Bias / restrict using the QD archive.
+        archive_entries = {e.entry_id: e for e in self._archive.entries()}
+        allowed = self._operators
+        if self._restrict and archive_entries:
+            archived_ops = [op for op in self._operators
+                            if op in archive_entries]
+            if archived_ops:
+                allowed = tuple(archived_ops)
+        best_op = None
+        best_score = None
+        for op in allowed:
+            score = base_scores[op]
+            entry = archive_entries.get(op)
+            if entry is not None:
+                score = score + self._bias_weight * entry.quality
+            if best_score is None or score > best_score:
+                best_score = score
+                best_op = op
+        assert best_op is not None
+        operator = best_op
+        stats = self.posterior_stats(family, operator)
+        cost = self._cost_of(operator)
+        record = SelectionRecord(
+            step=step,
+            operator=operator,
+            policy=self.label,
+            policy_version=self.version,
+            family=family,
+            prior_stats={op: round(self.posterior_stats(family, op)["mean"], 6)
+                         for op in self._operators},
+            posterior_stats=stats,
+            selection_score=round(base_scores[operator], 6),
+            selection_probability=round(stats["mean"] / cost, 6),
+            reason=(
+                f"qd-biased cost-normalized thompson argmax "
+                f"(theta/cost + {self._bias_weight:g}*archive_quality; "
+                f"archive_size={self._archive.size};"
+                f"{' restricted' if self._restrict else ' biased'}; "
+                f"{int(self._alpha[family][operator] - 1)} successes, "
+                f"{int(self._beta[family][operator] - 1)} failures seen; "
+                f"cost {cost:g})"
+            ),
+        )
+        return operator, record
+
+    def update(self, family: str, operator: str, discovery: bool) -> None:
+        super().update(family, operator, discovery)
+        # Update the archive with the (possibly improved) incumbent.
+        try:
+            stats = self.posterior_stats(family, operator)
+        except Exception:  # noqa: BLE001
+            return
+        cost = self._cost_of(operator)
+        desc = self._descriptor_for(family, operator)
+        quality = (stats["mean"] / cost) if cost > 0 else stats["mean"]
+        self._archive.insert(
+            operator, desc, quality,
+            metadata={"operator": operator, "family": family},
+            payload={"operator": operator, "family": family,
+                     "discovery": bool(discovery)},
+            novelty=self._archive.novelty(desc))
+
+
+class BasinEscapePolicy(AdaptiveCostAwarePolicy):
+    """Protocol 238 arm: periodic basin-escape forking (fork-and-flush).
+
+    Every ``fork_every`` selections, or when stagnation is detected (no
+    discovery in the last ``stagnation_window`` attempts), fork a
+    high-quality, high-novelty parent from the QD archive into a fresh
+    adaptive trajectory and spend a reserved exploration budget on it.
+    """
+
+    label = "basin-escape"
+    version = BASIN_ESCAPE_POLICY_VERSION
+
+    def __init__(
+        self,
+        snapshot: KnowledgeSnapshot,
+        operators: tuple[str, ...],
+        *,
+        rng_seed: int,
+        feedback_shuffle_seed: int | None = None,
+        costs: Mapping[str, float] | None = None,
+        archive: QDArchive | None = None,
+        fork_every: int = 25,
+        stagnation_window: int = 5,
+        exploration_budget: int = 3,
+    ):
+        super().__init__(snapshot, operators, rng_seed=rng_seed,
+                         feedback_shuffle_seed=feedback_shuffle_seed,
+                         costs=costs)
+        self._cost_table = (dict(OPERATOR_BUDGETS) if costs is None
+                            else dict(costs))
+        self._archive = archive if archive is not None else QDArchive()
+        self._fork_every = int(fork_every)
+        self._stagnation_window = int(stagnation_window)
+        self._exploration_budget = int(exploration_budget)
+        self._step_counter = 0
+        self._recent: list[bool] = []
+        self._fork_remaining = 0
+        self._current_parent: str | None = None
+        self._forked_parents: list[str] = []
+        self._last_parent_id: str | None = None
+        # Seed archive from prior (same as QD arm).
+        for op in self._operators:
+            try:
+                rate = snapshot.success_rate(op)
+            except Exception:  # noqa: BLE001
+                rate = 0.5
+            cost = self._cost_of(op)
+            desc = behavior_descriptor(cost_tier(cost), (rate,),
+                                     (rate, snapshot.attempts.get(op, 0)))
+            self._archive.insert(
+                op, desc, (rate / cost) if cost > 0 else rate,
+                metadata={"operator": op, "phase": "prior"},
+                payload={"operator": op})
+
+    @property
+    def qd_archive(self) -> QDArchive:
+        return self._archive
+
+    @property
+    def archive(self) -> QDArchive:
+        return self._archive
+
+    @property
+    def parent_ids(self) -> list[str]:
+        return list(self._forked_parents)
+
+    def _cost_of(self, op: str) -> float:
+        return float(self._cost_table.get(op, 1.0))
+
+    def _stagnant(self) -> bool:
+        if len(self._recent) < self._stagnation_window:
+            return False
+        return not any(self._recent[-self._stagnation_window:])
+
+    def _choose_parent(self) -> str | None:
+        candidates = self._archive.high_quality_novel()
+        if not candidates:
+            # Fall back to cost-argmax of the frozen snapshot.
+            return None
+        parent = candidates[0].entry_id
+        return parent
+
+    def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
+        if family not in self._known_families:
+            self._init_family(family, self._snapshot_snapshot)
+        self._step_counter += 1
+        # Trigger a fork on cadence or stagnation.
+        if self._fork_remaining <= 0:
+            if (self._step_counter % self._fork_every == 0
+                    or self._stagnant()):
+                parent = self._choose_parent()
+                if parent is not None:
+                    self._current_parent = parent
+                    self._fork_remaining = self._exploration_budget
+                    self._forked_parents.append(parent)
+                    self._last_parent_id = parent
+        # Fork path: spend the reserved exploration budget on the parent.
+        if self._fork_remaining > 0 and self._current_parent is not None:
+            operator = self._current_parent
+            if operator not in self._operators:
+                operator = self._operators[0]
+            self._fork_remaining -= 1
+            stats = self.posterior_stats(family, operator)
+            cost = self._cost_of(operator)
+            record = SelectionRecord(
+                step=step,
+                operator=operator,
+                policy=self.label,
+                policy_version=self.version,
+                family=family,
+                prior_stats={op: round(self.posterior_stats(family, op)["mean"], 6)
+                             for op in self._operators},
+                posterior_stats=stats,
+                selection_score=round(stats["mean"] / cost, 6),
+                selection_probability=round(stats["mean"] / cost, 6),
+                reason=(
+                    f"basin-escape fork: parent={operator} "
+                    f"(reserved exploration budget; "
+                    f"fork_remaining={self._fork_remaining}; "
+                    f"stagnant={self._stagnant()}; parent_id={operator})"
+                ),
+            )
+            return operator, record
+        # Normal adaptive cost-aware selection (inherited behaviour).
+        op, record = super().select(family, step)
+        return op, record
+
+    def update(self, family: str, operator: str, discovery: bool) -> None:
+        super().update(family, operator, discovery)
+        self._recent.append(bool(discovery))
+        if len(self._recent) > 50:
+            self._recent = self._recent[-50:]
+        # Keep archive fresh.
+        try:
+            stats = self.posterior_stats(family, operator)
+        except Exception:  # noqa: BLE001
+            return
+        cost = self._cost_of(operator)
+        desc = behavior_descriptor(cost_tier(cost), (stats["mean"],),
+                                  (stats["mean"], stats["uncertainty"]))
+        quality = (stats["mean"] / cost) if cost > 0 else stats["mean"]
+        self._archive.insert(
+            operator, desc, quality,
+            metadata={"operator": operator, "family": family},
+            payload={"operator": operator, "family": family,
+                     "discovery": bool(discovery),
+                     "parent_id": self._last_parent_id},
+            novelty=self._archive.novelty(desc))
+
+
 __all__ = [
     "STATIC_POLICY_VERSION",
     "KNOWLEDGE_INFORMED_POLICY_VERSION",
@@ -831,4 +1150,8 @@ __all__ = [
     "AdaptiveCostAwarePolicy",
     "AdaptiveCostAwareFamilyPolicy",
     "build_prior_snapshot",
+    "QD_ADAPTIVE_COST_AWARE_POLICY_VERSION",
+    "BASIN_ESCAPE_POLICY_VERSION",
+    "QDAdaptiveCostAwarePolicy",
+    "BasinEscapePolicy",
 ]
