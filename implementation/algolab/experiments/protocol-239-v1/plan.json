@@ -1,0 +1,54 @@
+{
+  "ablations": [
+    "permuted",
+    "shuffled"
+  ],
+  "analysis_seed": 11,
+  "arms": [
+    "static",
+    "adaptive",
+    "adaptive-cost-aware",
+    "random",
+    "knowledge-informed-family-commit",
+    "qd-adaptive-cost-aware",
+    "basin-escape"
+  ],
+  "artifact_bundle_version": "1.0.0",
+  "baseline_version": "1.0.0",
+  "budget_credits": 100.0,
+  "created_at": "2026-10-15T22:43:58+00:00",
+  "discovery_gate": "valid implementation AND effect_1 >= threshold AND effect_2 >= threshold (2-seed replication gate)",
+  "discovery_gate_version": "1.0.0",
+  "environment_version": "1.0.0",
+  "episodes_per_trial": 2,
+  "experiment_id": "protocol-239-v1",
+  "ground_truth": null,
+  "held_out_family": "gamma",
+  "notes": "",
+  "operator_registry_version": "1.0.0",
+  "policy_versions": {
+    "adaptive": "1.0.0",
+    "adaptive-cost-aware": "1.0.0",
+    "basin-escape": "1.0.0",
+    "knowledge-informed": "1.0.0",
+    "knowledge-informed-family-commit": "1.0.0",
+    "qd-adaptive-cost-aware": "1.0.0",
+    "random": "1.0.0",
+    "static": "1.0.0"
+  },
+  "primary_metric": "validated_discoveries / credits_consumed",
+  "prior_attempts_per_family": 20,
+  "prior_seed": 101,
+  "producer": "algolab",
+  "promotion_threshold": 0.15,
+  "protocol_version": "1.1.0",
+  "seed_base": 7,
+  "task_rotation": [
+    "alpha",
+    "beta"
+  ],
+  "task_suite_version": "1.0.0",
+  "top_k": 3,
+  "trials": 8,
+  "workload": "transform"
+}

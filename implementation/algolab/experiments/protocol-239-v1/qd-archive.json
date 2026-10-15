@@ -1,0 +1,448 @@
+{
+  "cells": [
+    {
+      "cell": [
+        0,
+        [
+          0.5,
+          0.333333
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.5,
+          0.333333
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "entry_id": "clip-1_99",
+      "metadata": {
+        "operator": "clip-1_99",
+        "phase": "prior"
+      },
+      "novelty": 0.23570273180003665,
+      "payload": {
+        "operator": "clip-1_99"
+      },
+      "quality": 0.05555555555555555
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.333333,
+          0.2
+        ],
+        [
+          0.166667,
+          4.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.333333,
+          0.2
+        ],
+        [
+          0.166667,
+          4.0
+        ]
+      ],
+      "entry_id": "interaction+robust",
+      "metadata": {
+        "operator": "interaction+robust",
+        "phase": "prior"
+      },
+      "novelty": 1.0047110972259636,
+      "payload": {
+        "operator": "interaction+robust"
+      },
+      "quality": 0.01111111111111111
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.5,
+          0.2
+        ],
+        [
+          0.2,
+          3.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.5,
+          0.2
+        ],
+        [
+          0.2,
+          3.0
+        ]
+      ],
+      "entry_id": "interaction-top2",
+      "metadata": {
+        "operator": "interaction-top2",
+        "phase": "prior"
+      },
+      "novelty": 1.0150260533055295,
+      "payload": {
+        "operator": "interaction-top2"
+      },
+      "quality": 0.02
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.333333,
+          0.5
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.333333,
+          0.5
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "entry_id": "log1p",
+      "metadata": {
+        "operator": "log1p",
+        "phase": "prior"
+      },
+      "novelty": 1.0,
+      "payload": {
+        "operator": "log1p"
+      },
+      "quality": 0.06666666666666667
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.333333,
+          0.333333
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.333333,
+          0.333333
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "entry_id": "pca-10",
+      "metadata": {
+        "operator": "pca-10",
+        "phase": "prior"
+      },
+      "novelty": 0.18633914719671762,
+      "payload": {
+        "operator": "pca-10"
+      },
+      "quality": 0.017857142857142856
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.333333,
+          0.5
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.333333,
+          0.5
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "entry_id": "poly2-all",
+      "metadata": {
+        "operator": "poly2-all",
+        "phase": "prior"
+      },
+      "novelty": 1.0,
+      "payload": {
+        "operator": "poly2-all"
+      },
+      "quality": 0.02222222222222222
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.25,
+          0.333333
+        ],
+        [
+          0.2,
+          3.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.25,
+          0.333333
+        ],
+        [
+          0.2,
+          3.0
+        ]
+      ],
+      "entry_id": "poly2-top5",
+      "metadata": {
+        "operator": "poly2-top5",
+        "phase": "prior"
+      },
+      "novelty": 0.2833331764707409,
+      "payload": {
+        "operator": "poly2-top5"
+      },
+      "quality": 0.016666666666666666
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.25,
+          0.5
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.25,
+          0.5
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "entry_id": "power-yeo-johnson",
+      "metadata": {
+        "operator": "power-yeo-johnson",
+        "phase": "prior"
+      },
+      "novelty": 1.0150260533055298,
+      "payload": {
+        "operator": "power-yeo-johnson"
+      },
+      "quality": 0.020833333333333332
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.25,
+          0.25
+        ],
+        [
+          0.166667,
+          4.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.25,
+          0.25
+        ],
+        [
+          0.166667,
+          4.0
+        ]
+      ],
+      "entry_id": "quantile-bin-3",
+      "metadata": {
+        "operator": "quantile-bin-3",
+        "phase": "prior"
+      },
+      "novelty": 1.0040196600555191,
+      "payload": {
+        "operator": "quantile-bin-3"
+      },
+      "quality": 0.020833333333333332
+    },
+    {
+      "cell": [
+        1,
+        [
+          0.2,
+          0.25
+        ],
+        [
+          0.142857,
+          5.0
+        ]
+      ],
+      "descriptor": [
+        1,
+        [
+          0.2,
+          0.25
+        ],
+        [
+          0.142857,
+          5.0
+        ]
+      ],
+      "entry_id": "quantile-bin-5",
+      "metadata": {
+        "operator": "quantile-bin-5",
+        "phase": "prior"
+      },
+      "novelty": 1.415297465588065,
+      "payload": {
+        "operator": "quantile-bin-5"
+      },
+      "quality": 0.014285714285714285
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.166667,
+          0.166667
+        ],
+        [
+          0.1,
+          8.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.166667,
+          0.166667
+        ],
+        [
+          0.1,
+          8.0
+        ]
+      ],
+      "entry_id": "robust-scale",
+      "metadata": {
+        "operator": "robust-scale",
+        "phase": "prior"
+      },
+      "novelty": 5.0044701961791125,
+      "payload": {
+        "operator": "robust-scale"
+      },
+      "quality": 0.0125
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.333333,
+          0.25
+        ],
+        [
+          0.2,
+          3.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.333333,
+          0.25
+        ],
+        [
+          0.2,
+          3.0
+        ]
+      ],
+      "entry_id": "sqrt",
+      "metadata": {
+        "operator": "sqrt",
+        "phase": "prior"
+      },
+      "novelty": 2.019969724745646,
+      "payload": {
+        "operator": "sqrt"
+      },
+      "quality": 0.04
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.333333,
+          0.333333
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.333333,
+          0.333333
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "entry_id": "standard-scale",
+      "metadata": {
+        "operator": "standard-scale",
+        "phase": "prior"
+      },
+      "novelty": 1.0047110972259636,
+      "payload": {
+        "operator": "standard-scale"
+      },
+      "quality": 0.03125
+    }
+  ],
+  "novelty_weight": 0.25,
+  "version": "1.0.0"
+}

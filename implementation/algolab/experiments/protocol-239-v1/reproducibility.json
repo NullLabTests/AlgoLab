@@ -1,0 +1,81 @@
+{
+  "checks": [
+    {
+      "actual": "1.1.0",
+      "check": "protocol_version",
+      "expected": "1.1.0",
+      "pass": true
+    },
+    {
+      "actual": "1.0.0",
+      "check": "environment_version",
+      "expected": "1.0.0",
+      "pass": true
+    },
+    {
+      "actual": [
+        "static",
+        "adaptive",
+        "adaptive-cost-aware",
+        "random",
+        "knowledge-informed-family-commit",
+        "qd-adaptive-cost-aware",
+        "basin-escape"
+      ],
+      "check": "arms_match",
+      "expected": [
+        "static",
+        "adaptive",
+        "adaptive-cost-aware",
+        "random",
+        "knowledge-informed-family-commit",
+        "qd-adaptive-cost-aware",
+        "basin-escape"
+      ],
+      "pass": true
+    },
+    {
+      "actual": 100.0,
+      "check": "budget_match",
+      "expected": 100.0,
+      "pass": true
+    },
+    {
+      "actual": [
+        "adaptive",
+        "adaptive-cost-aware",
+        "b-shuffled",
+        "basin-escape",
+        "c-permuted",
+        "c-plus-permuted",
+        "knowledge-informed-family-commit",
+        "qd-adaptive-cost-aware",
+        "random",
+        "static"
+      ],
+      "check": "stats_arms_present",
+      "expected": [
+        "adaptive",
+        "adaptive-cost-aware",
+        "b-shuffled",
+        "basin-escape",
+        "c-permuted",
+        "c-plus-permuted",
+        "knowledge-informed-family-commit",
+        "qd-adaptive-cost-aware",
+        "random",
+        "static"
+      ],
+      "pass": true
+    },
+    {
+      "actual": true,
+      "check": "held_out_family_in_manifest",
+      "expected": true,
+      "pass": true
+    }
+  ],
+  "manifest_path": "experiments/protocol-239-v1/manifest.json",
+  "reproducible": true,
+  "statistics_path": "experiments/protocol-239-v1/statistics.json"
+}

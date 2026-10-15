@@ -1,0 +1,76 @@
+{
+  "discovery_gate_version": "1.0.0",
+  "environment_version": "1.0.0",
+  "families": [
+    "alpha",
+    "beta",
+    "gamma"
+  ],
+  "ground_truth": null,
+  "held_out_family": "gamma",
+  "operator_costs": {
+    "clip-1_99": 6.0,
+    "interaction+robust": 15.0,
+    "interaction-top2": 10.0,
+    "log1p": 5.0,
+    "pca-10": 14.0,
+    "poly2+log1p": 18.0,
+    "poly2-all": 15.0,
+    "poly2-top5": 12.0,
+    "power-yeo-johnson": 12.0,
+    "quantile-bin-3": 8.0,
+    "quantile-bin-5": 10.0,
+    "robust-scale": 8.0,
+    "sqrt": 5.0,
+    "standard-scale": 8.0
+  },
+  "operators": [
+    "log1p",
+    "sqrt",
+    "clip-1_99",
+    "robust-scale",
+    "standard-scale",
+    "quantile-bin-3",
+    "interaction-top2",
+    "quantile-bin-5",
+    "poly2-top5",
+    "power-yeo-johnson",
+    "pca-10",
+    "poly2-all",
+    "interaction+robust",
+    "poly2+log1p"
+  ],
+  "promotion_threshold": 0.15,
+  "task_suite_version": "1.0.0",
+  "workload_metadata": {
+    "base_estimator": "StandardScaler->LogisticRegression",
+    "baseline_params": {
+      "max_iter": 1000
+    },
+    "dataset_shapes": {
+      "alpha": {
+        "n_classes": 2,
+        "n_features": 30,
+        "n_rows": 569
+      },
+      "beta": {
+        "n_classes": 3,
+        "n_features": 13,
+        "n_rows": 178
+      },
+      "gamma": {
+        "n_classes": 10,
+        "n_features": 64,
+        "n_rows": 900
+      }
+    },
+    "discovery_margin_absolute": 0.005,
+    "measured_attempts": 3213,
+    "measured_operator_seconds": 981.46,
+    "name": "transform",
+    "nominal_costs_flat": false,
+    "numpy_version": "2.5.2",
+    "python_version": "3.14.4",
+    "sklearn_version": "1.9.0"
+  }
+}

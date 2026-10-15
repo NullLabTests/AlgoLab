@@ -1,0 +1,517 @@
+{
+  "ablations": [
+    {
+      "base": "adaptive",
+      "base_mean": 0.0059864139985043,
+      "candidate": "c-permuted",
+      "candidate_mean": 0.0034344739499792077,
+      "ci_high": 0.0027158731144080947,
+      "ci_low": -0.008355564227725308,
+      "delta": -0.0025519400485250927,
+      "effect_size": -0.3324802747594371,
+      "note": "permuted-outcome feedback (machinery kept)",
+      "p_value": 0.5172413793103449,
+      "relative_delta": -0.426288601016016
+    },
+    {
+      "base": "b-shuffled",
+      "base_mean": 0.005228279863552654,
+      "candidate": "static",
+      "candidate_mean": 0.003926701570680628,
+      "ci_high": 0.0013395778795811516,
+      "ci_low": -0.004445232604311023,
+      "delta": -0.0013015782928720255,
+      "effect_size": -0.20174700838897872,
+      "note": "shuffled knowledge vs no knowledge",
+      "p_value": 0.495752123938031,
+      "relative_delta": -0.24894962145113514
+    },
+    {
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.010526315789473684,
+      "candidate": "c-plus-permuted",
+      "candidate_mean": 0.007110385204009749,
+      "ci_high": 0.006698198708507987,
+      "ci_low": -0.01951016046279586,
+      "delta": -0.0034159305854639353,
+      "effect_size": -0.15527107453477662,
+      "note": "permuted-outcome feedback on cost-aware machinery",
+      "p_value": 1.0,
+      "relative_delta": -0.3245134056190739
+    }
+  ],
+  "comparisons": [
+    {
+      "adjusted_p": 0.7646176911544228,
+      "base": "static",
+      "base_mean": 0.003926701570680628,
+      "candidate": "adaptive",
+      "candidate_mean": 0.0059864139985043,
+      "ci_high": 0.006411709123907835,
+      "ci_low": -0.0010853498816026023,
+      "delta": 0.0020597124278236723,
+      "effect_size": 0.31269381192253126,
+      "p_value": 0.3823088455772114,
+      "relative_delta": 0.5245400982857619
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "static",
+      "base_mean": 0.003926701570680628,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.010526315789473684,
+      "ci_high": 0.025034444750620003,
+      "ci_low": -0.003926701570680629,
+      "delta": 0.006599614218793056,
+      "effect_size": 0.30841405061565924,
+      "p_value": 1.0,
+      "relative_delta": 1.680701754385965
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "adaptive",
+      "base_mean": 0.0059864139985043,
+      "candidate": "adaptive-cost-aware",
+      "candidate_mean": 0.010526315789473684,
+      "ci_high": 0.02602137820084826,
+      "ci_low": -0.009163839232963657,
+      "delta": 0.004539901790969384,
+      "effect_size": 0.208984283244786,
+      "p_value": 1.0,
+      "relative_delta": 0.758367495482884
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "static",
+      "base_mean": 0.003926701570680628,
+      "candidate": "qd-adaptive-cost-aware",
+      "candidate_mean": 0.012337378914169857,
+      "ci_high": 0.02715915142318974,
+      "ci_low": -0.0019384532210334625,
+      "delta": 0.008410677343489228,
+      "effect_size": 0.3815474794080825,
+      "p_value": 0.7566216891554223,
+      "relative_delta": 2.141919163475257
+    },
+    {
+      "adjusted_p": 0.6636681659170415,
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.010526315789473684,
+      "candidate": "qd-adaptive-cost-aware",
+      "candidate_mean": 0.012337378914169857,
+      "ci_high": 0.0034585047604367967,
+      "ci_low": 0.0,
+      "delta": 0.0018110631246961734,
+      "effect_size": 0.05988995025587044,
+      "p_value": 0.24887556221889057,
+      "relative_delta": 0.17205099684613648
+    },
+    {
+      "adjusted_p": 0.6636681659170415,
+      "base": "static",
+      "base_mean": 0.003926701570680628,
+      "candidate": "basin-escape",
+      "candidate_mean": 0.0,
+      "ci_high": -0.0006544502617801048,
+      "ci_low": -0.007853403141361256,
+      "delta": -0.003926701570680628,
+      "effect_size": -1.02469507659596,
+      "p_value": 0.13093453273363317,
+      "relative_delta": -1.0
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "adaptive-cost-aware",
+      "base_mean": 0.010526315789473684,
+      "candidate": "basin-escape",
+      "candidate_mean": 0.0,
+      "ci_high": 0.0,
+      "ci_low": -0.031578947368421054,
+      "delta": -0.010526315789473684,
+      "effect_size": -0.5,
+      "p_value": 1.0,
+      "relative_delta": -1.0
+    },
+    {
+      "adjusted_p": 0.6636681659170415,
+      "base": "qd-adaptive-cost-aware",
+      "base_mean": 0.012337378914169857,
+      "candidate": "basin-escape",
+      "candidate_mean": 0.0,
+      "ci_high": 0.0,
+      "ci_low": -0.034389783735075466,
+      "delta": -0.012337378914169857,
+      "effect_size": -0.5683345013037081,
+      "p_value": 0.24887556221889057,
+      "relative_delta": -1.0
+    }
+  ],
+  "interpretation": {
+    "outcome": 4,
+    "verdict": "hypothesis not supported in this environment (A \u2248 B \u2248 C)"
+  },
+  "per_condition": {
+    "adaptive": {
+      "attempts": 136,
+      "compute_credits": 1508.0,
+      "discoveries_per_credit": 0.005968,
+      "validated_discoveries": 9
+    },
+    "adaptive-cost-aware": {
+      "attempts": 217,
+      "compute_credits": 1537.0,
+      "discoveries_per_credit": 0.01041,
+      "validated_discoveries": 16
+    },
+    "b-shuffled": {
+      "attempts": 153,
+      "compute_credits": 1515.0,
+      "discoveries_per_credit": 0.005281,
+      "validated_discoveries": 8
+    },
+    "basin-escape": {
+      "attempts": 204,
+      "compute_credits": 1551.0,
+      "discoveries_per_credit": 0.0,
+      "validated_discoveries": 0
+    },
+    "c-permuted": {
+      "attempts": 137,
+      "compute_credits": 1500.0,
+      "discoveries_per_credit": 0.003333,
+      "validated_discoveries": 5
+    },
+    "c-plus-permuted": {
+      "attempts": 140,
+      "compute_credits": 1516.0,
+      "discoveries_per_credit": 0.007256,
+      "validated_discoveries": 11
+    },
+    "knowledge-informed-family-commit": {
+      "attempts": 288,
+      "compute_credits": 1568.0,
+      "discoveries_per_credit": 0.012755,
+      "validated_discoveries": 20
+    },
+    "qd-adaptive-cost-aware": {
+      "attempts": 226,
+      "compute_credits": 1523.0,
+      "discoveries_per_credit": 0.012475,
+      "validated_discoveries": 19
+    },
+    "random": {
+      "attempts": 137,
+      "compute_credits": 1507.0,
+      "discoveries_per_credit": 0.005309,
+      "validated_discoveries": 8
+    },
+    "static": {
+      "attempts": 168,
+      "compute_credits": 1528.0,
+      "discoveries_per_credit": 0.003927,
+      "validated_discoveries": 6
+    }
+  },
+  "per_family": {
+    "alpha": {
+      "comparisons": [
+        {
+          "adjusted_p": 1.0,
+          "base": "static",
+          "base_mean": 0.0,
+          "candidate": "adaptive",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "static",
+          "base_mean": 0.0,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "adaptive",
+          "base_mean": 0.0,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "static",
+          "base_mean": 0.0,
+          "candidate": "qd-adaptive-cost-aware",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "adaptive-cost-aware",
+          "base_mean": 0.0,
+          "candidate": "qd-adaptive-cost-aware",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "static",
+          "base_mean": 0.0,
+          "candidate": "basin-escape",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "adaptive-cost-aware",
+          "base_mean": 0.0,
+          "candidate": "basin-escape",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "qd-adaptive-cost-aware",
+          "base_mean": 0.0,
+          "candidate": "basin-escape",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        }
+      ],
+      "per_condition": {
+        "adaptive": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "adaptive-cost-aware": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "b-shuffled": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "basin-escape": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "c-permuted": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "c-plus-permuted": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "knowledge-informed-family-commit": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "qd-adaptive-cost-aware": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "random": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "static": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        }
+      }
+    },
+    "beta": {
+      "comparisons": [
+        {
+          "adjusted_p": 0.7646176911544228,
+          "base": "static",
+          "base_mean": 0.008064516129032258,
+          "candidate": "adaptive",
+          "candidate_mean": 0.011905882238547194,
+          "ci_high": 0.012412899013639608,
+          "ci_low": -0.0022569813317335533,
+          "delta": 0.003841366109514936,
+          "effect_size": 0.2906481285550061,
+          "p_value": 0.3823088455772114,
+          "relative_delta": 0.47632939757985204
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "static",
+          "base_mean": 0.008064516129032258,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.02,
+          "ci_high": 0.04655913978494624,
+          "ci_low": -0.008064516129032258,
+          "delta": 0.011935483870967743,
+          "effect_size": 0.2927739499464939,
+          "p_value": 1.0,
+          "relative_delta": 1.4800000000000002
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "adaptive",
+          "base_mean": 0.011905882238547194,
+          "candidate": "adaptive-cost-aware",
+          "candidate_mean": 0.02,
+          "ci_high": 0.048801990757198724,
+          "ci_low": -0.01806463804031278,
+          "delta": 0.008094117761452807,
+          "effect_size": 0.1955798359085912,
+          "p_value": 1.0,
+          "relative_delta": 0.6798419133734424
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "static",
+          "base_mean": 0.008064516129032258,
+          "candidate": "qd-adaptive-cost-aware",
+          "candidate_mean": 0.024511383161512027,
+          "ci_high": 0.05358287260281565,
+          "ci_low": -0.004074260752688173,
+          "delta": 0.01644686703247977,
+          "effect_size": 0.37456036417019384,
+          "p_value": 1.0,
+          "relative_delta": 2.0394115120274914
+        },
+        {
+          "adjusted_p": 0.6636681659170415,
+          "base": "adaptive-cost-aware",
+          "base_mean": 0.02,
+          "candidate": "qd-adaptive-cost-aware",
+          "candidate_mean": 0.024511383161512027,
+          "ci_high": 0.00893094931271477,
+          "ci_low": 0.0,
+          "delta": 0.004511383161512027,
+          "effect_size": 0.07662796214151107,
+          "p_value": 0.24887556221889057,
+          "relative_delta": 0.22556915807560132
+        },
+        {
+          "adjusted_p": 0.6636681659170415,
+          "base": "static",
+          "base_mean": 0.008064516129032258,
+          "candidate": "basin-escape",
+          "candidate_mean": 0.0,
+          "ci_high": -0.0013440860215053765,
+          "ci_low": -0.016129032258064516,
+          "delta": -0.008064516129032258,
+          "effect_size": -1.0246950765959597,
+          "p_value": 0.13093453273363317,
+          "relative_delta": -1.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "adaptive-cost-aware",
+          "base_mean": 0.02,
+          "candidate": "basin-escape",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": -0.06,
+          "delta": -0.02,
+          "effect_size": -0.5,
+          "p_value": 1.0,
+          "relative_delta": -1.0
+        },
+        {
+          "adjusted_p": 0.6636681659170415,
+          "base": "qd-adaptive-cost-aware",
+          "base_mean": 0.024511383161512027,
+          "candidate": "basin-escape",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": -0.06832581615120274,
+          "delta": -0.024511383161512027,
+          "effect_size": -0.5674098156857426,
+          "p_value": 0.24887556221889057,
+          "relative_delta": -1.0
+        }
+      ],
+      "per_condition": {
+        "adaptive": {
+          "efficiency_mean": 0.011905882238547194,
+          "trials": 8
+        },
+        "adaptive-cost-aware": {
+          "efficiency_mean": 0.02,
+          "trials": 8
+        },
+        "b-shuffled": {
+          "efficiency_mean": 0.010382300830889542,
+          "trials": 8
+        },
+        "basin-escape": {
+          "efficiency_mean": 0.0,
+          "trials": 8
+        },
+        "c-permuted": {
+          "efficiency_mean": 0.0066650038798359386,
+          "trials": 8
+        },
+        "c-plus-permuted": {
+          "efficiency_mean": 0.014180193024786137,
+          "trials": 8
+        },
+        "knowledge-informed-family-commit": {
+          "efficiency_mean": 0.025,
+          "trials": 8
+        },
+        "qd-adaptive-cost-aware": {
+          "efficiency_mean": 0.024511383161512027,
+          "trials": 8
+        },
+        "random": {
+          "efficiency_mean": 0.010929775768334912,
+          "trials": 8
+        },
+        "static": {
+          "efficiency_mean": 0.008064516129032258,
+          "trials": 8
+        }
+      }
+    }
+  }
+}
