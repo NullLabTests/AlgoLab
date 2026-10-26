@@ -158,3 +158,13 @@ slice sizes to pay off.
 - No self-modification outside versioned, reviewable proposals.
 - No uncontrolled external actions or credential use.
 - Human approval before scaling compute, publishing, or changing governance.
+
+
+## For Researchers
+
+- [Citation](CITATION.cff) - How to cite AlgoLab in your research
+- [Reproducibility Guide](REPRODUCIBILITY.md) - How to reproduce and verify experiments
+- [Contributing](CONTRIBUTING.md) - How to contribute to the project
+- [Protocol Template](protocol_template.md) - Template for pre-registering new experiments
+- [API Documentation](docs/api/README.md) - Module and API overview
+- [Examples](examples/) - Quickstart scripts and usage examples

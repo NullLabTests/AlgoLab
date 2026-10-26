@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use AlgoLab in your research, please cite it as below."
+type: software
+title: "AlgoLab v1: Autonomous AI Algorithm Discovery Laboratory"
+version: "0.3.0"
+date-released: "2026-10-26"
+url: "https://github.com/NullLabTests/AlgoLab"
+license: "MIT"
+authors:
+  - name: "NullLabTests"
+repository-code: "https://github.com/NullLabTests/AlgoLab"
+abstract: "A bounded, reproducible research platform for proposing, implementing, testing, rejecting, refining, and reporting candidate improvements to AI systems. AlgoLab encodes the scientific method as an executable pipeline with hard budgets, immutable provenance, and statistical gates no claim may bypass."
+keywords:
+  - autonomous research
+  - algorithm discovery
+  - reproducible science
+  - meta-learning
+  - hyperparameter optimization
+  - experimental automation
+  - provenance tracking
+  - scientific method
+references:
+  - type: generic
+    title: "AlgoLab Master Specification"
+    url: "https://github.com/NullLabTests/AlgoLab/blob/main/MASTER_SPEC.md"
