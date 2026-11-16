@@ -157,7 +157,8 @@ def _build_parser() -> argparse.ArgumentParser:
                           help="episodes per trial (default: manifest default)")
     p_search.add_argument("--trials", type=int, default=0,
                           help="number of trials/seeds (default: manifest default)")
-    p_search.add_argument("--workload", choices=("toy", "hpo", "s2", "transform"),
+    p_search.add_argument("--workload",
+                          choices=("toy", "hpo", "s2", "transform", "compose"),
                           default="toy",
                           help="search workload (default: toy)")
     p_search.add_argument("--prior-attempts", type=int, default=0,
@@ -507,7 +508,16 @@ def cmd_search_run(args: argparse.Namespace) -> int:
                            "random"),
     )
     try:
-        rc = run_search(cfg, conn, artifact_dir, force=args.force)
+        if cfg.workload == "compose":
+            # Protocol 240: the compose workload is only meaningful together
+            # with its pre-registered primary analysis, so the generic and
+            # protocol-specific paths cannot diverge.
+            from algolab.search.compose_experiment import run_protocol_240
+
+            run_protocol_240(cfg, conn, artifact_dir, force=args.force)
+            rc = 0
+        else:
+            rc = run_search(cfg, conn, artifact_dir, force=args.force)
     except HarnessError as exc:
         conn.close()
         return _error(str(exc))

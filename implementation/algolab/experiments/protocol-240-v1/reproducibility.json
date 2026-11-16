@@ -1,0 +1,71 @@
+{
+  "checks": [
+    {
+      "actual": "1.1.0",
+      "check": "protocol_version",
+      "expected": "1.1.0",
+      "pass": true
+    },
+    {
+      "actual": "1.0.0",
+      "check": "environment_version",
+      "expected": "1.0.0",
+      "pass": true
+    },
+    {
+      "actual": [
+        "random-program",
+        "greedy-history",
+        "evolutionary-archive",
+        "static-atoms",
+        "greedy-permuted"
+      ],
+      "check": "arms_match",
+      "expected": [
+        "random-program",
+        "greedy-history",
+        "evolutionary-archive",
+        "static-atoms",
+        "greedy-permuted"
+      ],
+      "pass": true
+    },
+    {
+      "actual": 45.0,
+      "check": "budget_match",
+      "expected": 45.0,
+      "pass": true
+    },
+    {
+      "actual": [
+        "b-shuffled",
+        "c-permuted",
+        "evolutionary-archive",
+        "greedy-history",
+        "greedy-permuted",
+        "random-program",
+        "static-atoms"
+      ],
+      "check": "stats_arms_present",
+      "expected": [
+        "b-shuffled",
+        "c-permuted",
+        "evolutionary-archive",
+        "greedy-history",
+        "greedy-permuted",
+        "random-program",
+        "static-atoms"
+      ],
+      "pass": true
+    },
+    {
+      "actual": true,
+      "check": "held_out_family_in_manifest",
+      "expected": true,
+      "pass": true
+    }
+  ],
+  "manifest_path": "experiments/protocol-240-v1/manifest.json",
+  "reproducible": true,
+  "statistics_path": "experiments/protocol-240-v1/statistics.json"
+}

@@ -1,0 +1,279 @@
+{
+  "ablations": [],
+  "comparisons": [
+    {
+      "adjusted_p": 1.0,
+      "base": "random-program",
+      "base_mean": 0.002092491439071244,
+      "candidate": "greedy-history",
+      "candidate_mean": 0.001820112795722552,
+      "ci_high": 0.0029666457468952106,
+      "ci_low": -0.003091890838470643,
+      "delta": -0.000272378643348692,
+      "effect_size": -0.07230839067299014,
+      "p_value": 0.8825587206396801,
+      "relative_delta": -0.13016953773994305
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "random-program",
+      "base_mean": 0.002092491439071244,
+      "candidate": "evolutionary-archive",
+      "candidate_mean": 0.0026390399948750115,
+      "ci_high": 0.0039158701780061,
+      "ci_low": -0.0023352499352499354,
+      "delta": 0.0005465485558037676,
+      "effect_size": 0.13568314926655362,
+      "p_value": 0.6301849075462269,
+      "relative_delta": 0.26119512156587565
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "random-program",
+      "base_mean": 0.002092491439071244,
+      "candidate": "static-atoms",
+      "candidate_mean": 0.0035398230088495575,
+      "ci_high": 0.0040787383707737695,
+      "ci_low": -0.0004815542936208239,
+      "delta": 0.0014473315697783136,
+      "effect_size": 0.33982625196998856,
+      "p_value": 0.5017491254372813,
+      "relative_delta": 0.6916786098875101
+    },
+    {
+      "adjusted_p": 1.0,
+      "base": "greedy-history",
+      "base_mean": 0.001820112795722552,
+      "candidate": "greedy-permuted",
+      "candidate_mean": 0.0018181818181818182,
+      "ci_high": 0.004853944853944854,
+      "ci_low": -0.0036585365853658543,
+      "delta": -1.9309775407337203e-06,
+      "effect_size": -0.00038654542019913603,
+      "p_value": 1.0,
+      "relative_delta": -0.0010609109200658948
+    }
+  ],
+  "interpretation": {
+    "outcome": 4,
+    "verdict": "hypothesis not supported in this environment (A \u2248 B \u2248 C)"
+  },
+  "per_condition": {
+    "b-shuffled": {
+      "attempts": 285,
+      "compute_credits": 1702.0,
+      "discoveries_per_credit": 0.003525,
+      "validated_discoveries": 6
+    },
+    "c-permuted": {
+      "attempts": 292,
+      "compute_credits": 1669.0,
+      "discoveries_per_credit": 0.004793,
+      "validated_discoveries": 8
+    },
+    "evolutionary-archive": {
+      "attempts": 160,
+      "compute_credits": 1548.5,
+      "discoveries_per_credit": 0.002583,
+      "validated_discoveries": 4
+    },
+    "greedy-history": {
+      "attempts": 178,
+      "compute_credits": 1586.0,
+      "discoveries_per_credit": 0.001892,
+      "validated_discoveries": 3
+    },
+    "greedy-permuted": {
+      "attempts": 173,
+      "compute_credits": 1589.5,
+      "discoveries_per_credit": 0.001887,
+      "validated_discoveries": 3
+    },
+    "random-program": {
+      "attempts": 142,
+      "compute_credits": 1520.0,
+      "discoveries_per_credit": 0.001974,
+      "validated_discoveries": 3
+    },
+    "static-atoms": {
+      "attempts": 280,
+      "compute_credits": 1695.0,
+      "discoveries_per_credit": 0.00354,
+      "validated_discoveries": 6
+    }
+  },
+  "per_family": {
+    "alpha": {
+      "comparisons": [
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0012121212121212121,
+          "candidate": "greedy-history",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": -0.0036363636363636364,
+          "delta": -0.0012121212121212121,
+          "effect_size": -0.447213595499958,
+          "p_value": 1.0,
+          "relative_delta": -1.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0012121212121212121,
+          "candidate": "evolutionary-archive",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": -0.0036363636363636364,
+          "delta": -0.0012121212121212121,
+          "effect_size": -0.447213595499958,
+          "p_value": 1.0,
+          "relative_delta": -1.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0012121212121212121,
+          "candidate": "static-atoms",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": -0.0036363636363636364,
+          "delta": -0.0012121212121212121,
+          "effect_size": -0.447213595499958,
+          "p_value": 1.0,
+          "relative_delta": -1.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "greedy-history",
+          "base_mean": 0.0,
+          "candidate": "greedy-permuted",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        }
+      ],
+      "per_condition": {
+        "b-shuffled": {
+          "efficiency_mean": 0.0,
+          "trials": 10
+        },
+        "c-permuted": {
+          "efficiency_mean": 0.0,
+          "trials": 10
+        },
+        "evolutionary-archive": {
+          "efficiency_mean": 0.0,
+          "trials": 10
+        },
+        "greedy-history": {
+          "efficiency_mean": 0.0,
+          "trials": 10
+        },
+        "greedy-permuted": {
+          "efficiency_mean": 0.0,
+          "trials": 10
+        },
+        "random-program": {
+          "efficiency_mean": 0.0012121212121212121,
+          "trials": 10
+        },
+        "static-atoms": {
+          "efficiency_mean": 0.0,
+          "trials": 10
+        }
+      }
+    },
+    "beta": {
+      "comparisons": [
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0028696895424836603,
+          "candidate": "greedy-history",
+          "candidate_mean": 0.003697195987993265,
+          "ci_high": 0.00748554784678349,
+          "ci_low": -0.0046875,
+          "delta": 0.0008275064455096045,
+          "effect_size": 0.11230919260221768,
+          "p_value": 1.0,
+          "relative_delta": 0.28836096492633617
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0028696895424836603,
+          "candidate": "evolutionary-archive",
+          "candidate_mean": 0.005475080475080475,
+          "ci_high": 0.009551059642971408,
+          "ci_low": -0.003297386845180963,
+          "delta": 0.002605390932596815,
+          "effect_size": 0.32332829969919186,
+          "p_value": 0.6301849075462269,
+          "relative_delta": 0.9078999292522423
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0028696895424836603,
+          "candidate": "static-atoms",
+          "candidate_mean": 0.007185628742514971,
+          "ci_high": 0.011501567942546281,
+          "ci_low": -0.0008393751712261749,
+          "delta": 0.0043159392000313105,
+          "effect_size": 0.5177908254005597,
+          "p_value": 0.5017491254372813,
+          "relative_delta": 1.5039742578899142
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "greedy-history",
+          "base_mean": 0.003697195987993265,
+          "candidate": "greedy-permuted",
+          "candidate_mean": 0.0034682080924855487,
+          "ci_high": 0.009255198990100324,
+          "ci_low": -0.007643312101910829,
+          "delta": -0.0002289878955077161,
+          "effect_size": -0.02337706179939979,
+          "p_value": 1.0,
+          "relative_delta": -0.061935557717621666
+        }
+      ],
+      "per_condition": {
+        "b-shuffled": {
+          "efficiency_mean": 0.007207792207792207,
+          "trials": 10
+        },
+        "c-permuted": {
+          "efficiency_mean": 0.00962321780528581,
+          "trials": 10
+        },
+        "evolutionary-archive": {
+          "efficiency_mean": 0.005475080475080475,
+          "trials": 10
+        },
+        "greedy-history": {
+          "efficiency_mean": 0.003697195987993265,
+          "trials": 10
+        },
+        "greedy-permuted": {
+          "efficiency_mean": 0.0034682080924855487,
+          "trials": 10
+        },
+        "random-program": {
+          "efficiency_mean": 0.0028696895424836603,
+          "trials": 10
+        },
+        "static-atoms": {
+          "efficiency_mean": 0.007185628742514971,
+          "trials": 10
+        }
+      }
+    }
+  }
+}

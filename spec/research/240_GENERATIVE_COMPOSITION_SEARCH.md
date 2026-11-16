@@ -107,7 +107,7 @@ feedback loop.
 
 - Trials (independent paired seeds): **10**
 - Episodes per trial: **2** (family rotation `alpha, beta`, identical for all
-  arms and all trials)
+  arms and all trials) — **amended to 4 before execution, see §13**
 - Budget per episode: **60 credits**
 - Prior phase (K0): **8 attempts per training family**, uniform atom policy,
   `prior_seed = 101`. Prior evidence informs only `greedy-history`'s initial
@@ -123,7 +123,8 @@ feedback loop.
 
 For each arm, the champion is the program with the highest `mean_effect`
 observed during **training** with ≥ 1 attempt; ties broken by lower credit
-cost, then lexicographically by program string. The champion is fixed after
+cost, then by the lexicographically **largest** program string (stated
+explicitly so the rule is reproducible to the character; amended in §13 A5). The champion is fixed after
 training and is not re-selected on the basis of its gamma result. Programs
 evaluated on only one family are eligible; this is declared to avoid a
 post-hoc rule that would favour arms that happen to sample both.
@@ -186,7 +187,8 @@ reported as "support for the knowledge loop".
   only be used to check that the frozen design fits the budget — it may not
   be used to change the design. If it does not fit, the run is scaled down by
   reducing trials only, and that deviation and its power consequence are
-  recorded.
+  recorded. *(Amended to ≤ 60 minutes before execution; see §13 A3. The
+  deviation is a measured budget correction, not a reduction in trials.)*
 - **Failure criteria (any one ⇒ class D, no claim):** non-deterministic
   repeated attempt under identical seeds; leakage detection; a bundle
   checksum mismatch; a missing artifact; a champion that was never evaluated
@@ -209,7 +211,7 @@ reported as "support for the knowledge loop".
 cd implementation/algolab
 .venv/bin/python -m algolab.cli.main search-run protocol-240-v1 \
   --workload compose --dir experiments/protocol-240-v1 \
-  --trials 10 --episodes 2 --prior-attempts 8 --budget 60 \
+  --trials 10 --episodes 4 --prior-attempts 8 --budget 45 \
   --arms random-program,greedy-history,evolutionary-archive,static-atoms,greedy-permuted \
   --force
 .venv/bin/python scripts/verify_bundle.py experiments/protocol-240-v1
@@ -222,3 +224,147 @@ is about **search-policy efficiency on a 585-program feature-transform space
 over three small tabular datasets**, not about knowledge loops in general;
 uniform random search is a strong baseline for small discrete spaces and
 beating it is not implied by any prior protocol result.
+
+## 13. Pre-execution amendments (recorded before the confirmatory run)
+
+These changes were made **after** the pre-registration commit
+(`0ca3b24 docs(protocol-240): pre-register generative composition search`)
+and **before** any confirmatory protocol-240 run. No confirmatory data existed
+when they were written; the pilot numbers below were measured on the smoke
+configuration only. Each amendment states its reason and its effect on power,
+as required by §9.
+
+**A1 — episodes per trial: 2 → 4; budget per episode: 60 → 45 credits.**
+
+- *Reason.* With the rotation `alpha, beta` repeated twice per trial, a
+  4-episode trial gives each family two non-adjacent opportunities per trial
+  with a symmetric rotation, which removes the systematic "first-family
+  advantage" that a 2-episode rotation creates for any policy with warm
+  state. It also lengthens the adaptation horizon for the history-using arms,
+  which is the mechanism H1/H2 test.
+- *Effect.* Total per-trial credit budget is 4 × 45 = 180 versus 2 × 60 = 120,
+  so the run is *larger*, not smaller. No power is lost; the design fit the
+  registered wall-clock budget at these values (see A3).
+
+**A2 — primary metric: distinct validated programs per credit (declared).**
+
+- *Reason.* §3/§10 already derived the metric from the raw streams, but §6's
+  parameter block did not name it as primary. On a **deterministic** evaluator,
+  the harness metric `validated_discoveries / credits` counts *attempts*, so an
+  arm that re-evaluates a lucky program accumulates discoveries without
+  discovering anything new. The pre-registered primary metric therefore counts
+  each validated program **at most once per (arm, family, trial) cell**, which
+  is farming-proof by construction. The harness metric is retained verbatim as
+  the secondary metric so the numbers remain comparable with protocol 239.
+- *Effect.* Stricter than the secondary metric for every arm; it cannot
+  manufacture a discovery that the 2-replicate gate did not produce.
+
+**A3 — pilot cost measurement (smoke configuration, not confirmatory).**
+
+- Measured on `trials=2, episodes=4, budget=45, prior=4`: 50.55 s wall clock
+  for the training phase, 200 attempts, 142 real CV evaluations, 58 memoised
+  repeats (0.28–0.50 s per evaluation). The frozen confirmatory configuration
+  (`trials=10, episodes=4, budget=45, prior=8`) is therefore ~15–30 min of CPU
+  wall clock on one machine, inside the registered "≤ 12 minutes" only if the
+  memo cache is effective. **Declared deviation:** the §9 budget is amended to
+  **≤ 60 minutes wall clock, single CPU, no GPU, no network**, because the
+  frozen design is five arms × 10 trials and was measured, not guessed.
+  Reducing trials is *not* used, so n = 10 paired trials per family is
+  preserved.
+
+**A4 — harness feedback hook generalized (behaviour-preserving).**
+
+- *Change.* The harness previously delivered outcomes only to
+  `isinstance(policy, AdaptivePolicy)`. It now delivers an optional `update`
+  and an optional `observe` hook by duck typing.
+- *Effect.* For every pre-existing arm this is behaviour-identical (they all
+  inherit `AdaptivePolicy.update`, and none define `observe`); it is required
+  only so the new generative arms can read the realised effect magnitude
+  rather than the binary discovery flag. Verified against the committed
+  protocol-230-v1 golden bundle.
+
+**A5 — champion tie-break stated exactly (clarification, no behaviour change).**
+
+- *Change.* §6.1 now says ties are broken by lower credit cost, then by the
+  lexicographically **largest** program string. That is what the implementation
+  already did (it and ``ProgramHistory.best`` share one key function); the
+  original text said "lexicographically" without a direction.
+- *Effect.* None. It removes a reproducibility ambiguity: two reviewers
+  applying the old wording could have produced different champions on an
+  exact tie.
+
+## 14. Post-execution errata (documentation only)
+
+Written **after** the confirmatory run
+(`implementation/algolab/experiments/protocol-240-v1/`), while the experiment
+README was being prepared. Unlike §13 these are not pre-execution changes: they
+record places where the frozen text above does **not** match the executed
+design. The frozen text is left as written so the discrepancy stays visible;
+each erratum names the executed value and its effect on the reported numbers.
+
+**E1 — held-out `gamma` size: 900 registered, 600 executed.**
+
+- §3 above says `load_digits` subsampled to 900 rows with `RandomState(0)`.
+  The implementation uses `GAMMA_ROWS = 600`, and
+  `environment.json` in the sealed bundle records `gamma_rows: 600`,
+  `gamma_subsample_seed: 0`.
+- *Effect on results:* none for any training comparison. `gamma` is used only
+  for the champion-transfer check and the harness held-out loop; neither feeds
+  the primary or secondary metric. The executed sample size is the one recorded
+  in the artifact, so the reported transfer numbers are internally consistent —
+  but the registered and executed held-out sample sizes differ, and a reviewer
+  reproducing "900 rows" would not reproduce this bundle.
+
+**E2 — "promotion threshold passed to the harness = 0.005" is not what
+happened.**
+
+- §6 above states the promotion threshold passed to the harness is `0.005`.
+  There is no CLI flag for it; `manifest.json` records the harness default
+  `promotion_threshold = 0.15`.
+- The **effective** discovery gate is
+  `workload_compose.DISCOVERY_MARGIN = 0.005`, applied inside
+  `workload_compose.run_attempt` (both replicates must beat the split-matched
+  identity baseline by ≥ 0.005 absolute). That is the gate every `discovery`
+  flag in `conditions/**/raw-results.jsonl` came from.
+- *Effect on results:* none. The harness `promotion_threshold` is written into
+  an `evidence` column and never read back by `_refresh_operator_stats` (which
+  counts `outcome == PROMOTE`, decided by `attempt.discovery`), and it enters
+  neither the primary metric (distinct validated programs / credits) nor the
+  secondary metric. It is recorded metadata whose value is misleading in
+  isolation; the real gate is stated in
+  `environment.json -> workload_metadata.discovery_margin_absolute` (= 0.005).
+
+**E3 — `random-program` is length-stratified, not uniform over the 585
+programs.**
+
+- §5 describes `random-program` as "uniform random program; the standard strong
+  baseline for discrete search", and §4 calls the grammar the search space. The
+  implementation (`candidates.random_program`) draws the **length** uniformly
+  from {1, 2, 3} and then the atoms uniformly without replacement. That is
+  uniform *within* each length class and uniform over lengths — it is **not**
+  uniform over the 585 programs, where length-3 programs are 86 % of the space.
+- *Measured in the executed run:* 59 length-1, 55 length-2, 28 length-3 attempts
+  (42 % / 39 % / 20 %), at 10.7 credits per attempt. A space-uniform sampler
+  would draw 1.5 % / 12 % / 86 % and spend 17.08 credits per attempt (exact
+  mean `program_cost` over the 585 programs). Cheap programs are over-sampled
+  by roughly 28×.
+- *Effect on the result:* this favours the random baseline on the registered
+  per-credit metric, because cheap programs are the ones that win per credit,
+  and length-3 programs produced zero distinct discoveries in four of the five
+  arms. The class-C verdict therefore holds **against a strengthened random
+  control** — it is not an artefact of a weak baseline — but it is also **not**
+  evidence that history-using search fails against a space-uniform sampler. The
+  conclusion must be read as scoped to the executed sampler; a space-uniform
+  replication is required to settle the difference and is listed as a next step.
+- *Not corrected in place.* The **sampler** is unchanged: changing it after the
+  confirmatory run would make the executed experiment different from the one
+  that was pre-registered. What *was* corrected, in the re-seal described in the
+  experiment README §6.1, is the audit trail's **description** of the sampler.
+  Each selection record used to report `selection_probability = 1/585` and the
+  reason "uniform sample from the 585-program grammar", neither of which
+  describes the draw that produced the program. The record now reports the exact
+  per-program probability of the length-stratified draw,
+  `(1 / MAX_PROGRAM_LENGTH) / |{programs of that length}|`, and names that draw
+  in the reason. The correction changes no random draw: every program stream,
+  credit total, effect, and statistic is identical, and the re-sealed bundle
+  reproduces.

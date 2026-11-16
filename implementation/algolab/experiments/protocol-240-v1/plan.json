@@ -1,0 +1,55 @@
+{
+  "ablations": [
+    "permuted",
+    "shuffled"
+  ],
+  "analysis_seed": 11,
+  "arms": [
+    "random-program",
+    "greedy-history",
+    "evolutionary-archive",
+    "static-atoms",
+    "greedy-permuted"
+  ],
+  "artifact_bundle_version": "1.0.0",
+  "baseline_version": "1.0.0",
+  "budget_credits": 45.0,
+  "created_at": "2026-11-15T03:52:55+00:00",
+  "discovery_gate": "valid implementation AND effect_1 >= threshold AND effect_2 >= threshold (2-seed replication gate)",
+  "discovery_gate_version": "1.0.0",
+  "environment_version": "1.0.0",
+  "episodes_per_trial": 4,
+  "experiment_id": "protocol-240-v1",
+  "ground_truth": null,
+  "held_out_family": "gamma",
+  "notes": "",
+  "operator_registry_version": "1.0.0",
+  "policy_versions": {
+    "adaptive": "1.0.0",
+    "evolutionary-archive": "1.0.0",
+    "greedy-history": "1.0.0",
+    "greedy-permuted": "1.0.0",
+    "knowledge-informed": "1.0.0",
+    "random": "1.0.0",
+    "random-program": "1.0.0",
+    "static": "1.0.0",
+    "static-atoms": "1.0.0"
+  },
+  "primary_metric": "validated_discoveries / credits_consumed",
+  "prior_attempts_per_family": 8,
+  "prior_seed": 101,
+  "producer": "algolab",
+  "promotion_threshold": 0.15,
+  "protocol_version": "1.1.0",
+  "seed_base": 7,
+  "task_rotation": [
+    "alpha",
+    "beta",
+    "alpha",
+    "beta"
+  ],
+  "task_suite_version": "1.0.0",
+  "top_k": 3,
+  "trials": 10,
+  "workload": "compose"
+}

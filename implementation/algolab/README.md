@@ -16,27 +16,33 @@ the executable core of the platform, delivered across five milestones:
   evidence records (`algolab.knowledge.evidence`), the operator catalog and
   credit budgets (`algolab.knowledge.operators`), and the append-only skill
   registry (`algolab.knowledge.registry`). The database schema is at **v3**.
-- **Knowledge-loop research line (protocols 230–237, not milestone M5) —
+- **Knowledge-loop research line (protocols 230–240, not milestone M5) —
   `algolab.search`.** Pluggable search workloads — the deterministic toy
   discovery environment (planted ground truth, two-seed replication gate),
-  the KNN micro-HPO bridge (protocol 235), and the `s2` KNN micro-search
-  substrate (protocol 237, reachable as `search-run --workload s2`); see
-  `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`); pre-registered policy arms
+  the KNN micro-HPO bridge (protocol 235), the `s2` KNN micro-search
+  substrate (protocol 237, reachable as `search-run --workload s2`; see
+  `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md`), the typed
+  feature-transform substrate (protocol 239, `--workload transform`), and the
+  generative composition substrate (protocol 240, `--workload compose`: a
+  closed 585-program grammar of 1–3 typed transformers executed as real
+  scikit-learn pipelines); pre-registered policy arms
   A/B/C/D plus cost-aware,
-  family-conditioned, commitment, and allocation variants; a
+  family-conditioned, commitment, allocation, and five generative arms; a
   manifest-frozen, checksummed experiment harness (raw condition streams are
   byte-reproducible; full-precision derived statistics reproduce to 1e-9 across
-  environments — see defect D-10) with evidence bundles in `experiments/`.
+  environments — see defect D-10) with evidence bundles in `experiments/`, and
+  `scripts/verify_bundle.py`, which re-executes a sealed bundle from its
+  manifest in a clean process and reports a verdict.
   Research specs:
-  `../../spec/research/230_*` … `237_*`; findings summarized in the root
+  `../../spec/research/230_*` … `240_*`; findings summarized in the root
   README ("What we learned").
 
-The test suite currently has **366 passing tests** covering unit, integration,
-ontology-invariant, protocol-compliance (230–236, including a provenance and
-s2 smoke test), committed-artifact integrity, and golden reproduction
-behavior. `make test` runs the fast lane (`-m "not slow"`); no test is marked
-`@slow` yet, so `make test-full` is currently identical. `ruff` and `mypy`
-(strict) are clean.
+The test suite currently has **443 passing tests** covering unit, integration,
+ontology-invariant, protocol-compliance (230–240, including a provenance and
+s2 smoke test), committed-artifact integrity, sealed-bundle reproduction, and
+golden reproduction behavior. `make test` runs the fast lane (`-m "not slow"`);
+no test is marked `@slow` yet, so `make test-full` is currently identical.
+`ruff` and `mypy` (strict) are clean.
 
 ## Quickstart
 
@@ -84,7 +90,8 @@ algolab list-runs [--status S] [--json]
 algolab show-run RUN_ID | cancel-run RUN_ID
 algolab audit-log [--json]
 algolab worker [--poll-interval SECONDS]
-algolab search-run EXP_ID [--dir DIR] [--budget N] [--trials N] [--episodes N]
+algolab search-run EXP_ID [--workload toy|hpo|s2|transform|compose]
+                [--dir DIR] [--budget N] [--trials N] [--episodes N]
                 [--prior-attempts N] [--top-k K] [--force] [--json]
 ```
 
@@ -109,9 +116,16 @@ Executed series (all checksummed under `experiments/`):
 `protocol-230-v1` (plain C misses the promotion bar on beta),
 `protocol-230-v2` (cost-aware C+ meets it), `protocol-232-v1`
 (family-conditioned knowledge), the `protocol-233-*`/`protocol-234-*`
-sweeps isolating history quantity from decision-rule format, and
-`protocol-235-v1`, the first real-workload bridge. Findings are
-summarized in the repository root README.
+sweeps isolating history quantity from decision-rule format,
+`protocol-235-v1`, the first real-workload bridge, `protocol-239-v1`
+(typed transform selection: no promotion), and `protocol-240-v1` (generative
+composition search: outcome class C — no advantage over random program search
+and no positively transferring champion). Findings are summarized in the
+repository root README. Each sealed bundle can be re-executed independently:
+
+```bash
+.venv/bin/python scripts/verify_bundle.py experiments/protocol-240-v1
+```
 
 ## Package layout
 

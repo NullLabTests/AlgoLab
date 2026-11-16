@@ -5,6 +5,19 @@ the A/B/C comparison harness used to test the cumulative-knowledge-loop
 hypothesis.
 """
 
+from algolab.search import candidates as program_grammar
+from algolab.search.generative_policies import (
+    EVOLUTIONARY_ARCHIVE_POLICY_VERSION,
+    GREEDY_HISTORY_POLICY_VERSION,
+    PERMUTED_GREEDY_POLICY_VERSION,
+    RANDOM_PROGRAM_POLICY_VERSION,
+    STATIC_ATOMS_POLICY_VERSION,
+    EvolutionaryArchivePolicy,
+    GenerativeRandomPolicy,
+    GreedyHistoryPolicy,
+    PermutedGreedyHistoryPolicy,
+    StaticAtomsPolicy,
+)
 from algolab.search.harness import (
     ExperimentConfig,
     HarnessError,
@@ -111,4 +124,15 @@ __all__ = [
     "is_useful",
     "operator_cost",
     "run_attempt",
+    "program_grammar",
+    "EVOLUTIONARY_ARCHIVE_POLICY_VERSION",
+    "GREEDY_HISTORY_POLICY_VERSION",
+    "PERMUTED_GREEDY_POLICY_VERSION",
+    "RANDOM_PROGRAM_POLICY_VERSION",
+    "STATIC_ATOMS_POLICY_VERSION",
+    "EvolutionaryArchivePolicy",
+    "GenerativeRandomPolicy",
+    "GreedyHistoryPolicy",
+    "PermutedGreedyHistoryPolicy",
+    "StaticAtomsPolicy",
 ]

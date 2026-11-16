@@ -1,0 +1,763 @@
+{
+  "arms": [
+    "random-program",
+    "greedy-history",
+    "evolutionary-archive",
+    "static-atoms",
+    "greedy-permuted"
+  ],
+  "arms_with_training_discovery": [
+    "random-program",
+    "greedy-history",
+    "evolutionary-archive",
+    "static-atoms",
+    "greedy-permuted"
+  ],
+  "champion_transfer": {
+    "evolutionary-archive": {
+      "champion": {
+        "cost": 5.0,
+        "found_in_family": "beta",
+        "found_in_trial": 0,
+        "mean_effect": 0.01135,
+        "program": "sqrt"
+      },
+      "transfer": {
+        "all_replicates_positive": false,
+        "cost_credits": 5.0,
+        "family": "gamma",
+        "mean_effect": -0.002083,
+        "program": "sqrt",
+        "program_length": 1,
+        "replicates": [
+          {
+            "discovery": false,
+            "effect_1": -0.003333,
+            "effect_2": 0.005,
+            "mean_effect": 0.000834,
+            "replicate": 1,
+            "valid": true
+          },
+          {
+            "discovery": false,
+            "effect_1": -0.01,
+            "effect_2": 0.0,
+            "mean_effect": -0.005,
+            "replicate": 2,
+            "valid": true
+          }
+        ],
+        "validated": false
+      }
+    },
+    "greedy-history": {
+      "champion": {
+        "cost": 5.0,
+        "found_in_family": "beta",
+        "found_in_trial": 9,
+        "mean_effect": 0.008413,
+        "program": "sqrt"
+      },
+      "transfer": {
+        "all_replicates_positive": false,
+        "cost_credits": 5.0,
+        "family": "gamma",
+        "mean_effect": -0.002083,
+        "program": "sqrt",
+        "program_length": 1,
+        "replicates": [
+          {
+            "discovery": false,
+            "effect_1": -0.003333,
+            "effect_2": 0.005,
+            "mean_effect": 0.000834,
+            "replicate": 1,
+            "valid": true
+          },
+          {
+            "discovery": false,
+            "effect_1": -0.01,
+            "effect_2": 0.0,
+            "mean_effect": -0.005,
+            "replicate": 2,
+            "valid": true
+          }
+        ],
+        "validated": false
+      }
+    },
+    "greedy-permuted": {
+      "champion": {
+        "cost": 5.0,
+        "found_in_family": "beta",
+        "found_in_trial": 0,
+        "mean_effect": 0.01135,
+        "program": "sqrt"
+      },
+      "transfer": {
+        "all_replicates_positive": false,
+        "cost_credits": 5.0,
+        "family": "gamma",
+        "mean_effect": -0.002083,
+        "program": "sqrt",
+        "program_length": 1,
+        "replicates": [
+          {
+            "discovery": false,
+            "effect_1": -0.003333,
+            "effect_2": 0.005,
+            "mean_effect": 0.000834,
+            "replicate": 1,
+            "valid": true
+          },
+          {
+            "discovery": false,
+            "effect_1": -0.01,
+            "effect_2": 0.0,
+            "mean_effect": -0.005,
+            "replicate": 2,
+            "valid": true
+          }
+        ],
+        "validated": false
+      }
+    },
+    "random-program": {
+      "champion": {
+        "cost": 18.0,
+        "found_in_family": "beta",
+        "found_in_trial": 6,
+        "mean_effect": 0.01119,
+        "program": "log1p+sqrt+poly2-top5"
+      },
+      "transfer": {
+        "all_replicates_positive": false,
+        "cost_credits": 18.0,
+        "family": "gamma",
+        "mean_effect": -0.016667,
+        "program": "log1p+sqrt+poly2-top5",
+        "program_length": 3,
+        "replicates": [
+          {
+            "discovery": false,
+            "effect_1": -0.016667,
+            "effect_2": -0.018333,
+            "mean_effect": -0.0175,
+            "replicate": 1,
+            "valid": true
+          },
+          {
+            "discovery": false,
+            "effect_1": -0.021667,
+            "effect_2": -0.01,
+            "mean_effect": -0.015834,
+            "replicate": 2,
+            "valid": true
+          }
+        ],
+        "validated": false
+      }
+    },
+    "static-atoms": {
+      "champion": {
+        "cost": 5.0,
+        "found_in_family": "beta",
+        "found_in_trial": 0,
+        "mean_effect": 0.01135,
+        "program": "sqrt"
+      },
+      "transfer": {
+        "all_replicates_positive": false,
+        "cost_credits": 5.0,
+        "family": "gamma",
+        "mean_effect": -0.002083,
+        "program": "sqrt",
+        "program_length": 1,
+        "replicates": [
+          {
+            "discovery": false,
+            "effect_1": -0.003333,
+            "effect_2": 0.005,
+            "mean_effect": 0.000834,
+            "replicate": 1,
+            "valid": true
+          },
+          {
+            "discovery": false,
+            "effect_1": -0.01,
+            "effect_2": 0.0,
+            "mean_effect": -0.005,
+            "replicate": 2,
+            "valid": true
+          }
+        ],
+        "validated": false
+      }
+    }
+  },
+  "compute": {
+    "attempts": 2382,
+    "budget_credits_per_episode": 45.0,
+    "cache_hits": 1061,
+    "episodes_per_trial": 4,
+    "evaluation_seconds": 619.37,
+    "evaluations": 1321,
+    "prior_attempts_per_family": 8,
+    "trials": 10
+  },
+  "discovered_programs": {
+    "evolutionary-archive": [
+      "log1p+sqrt",
+      "sqrt",
+      "sqrt+standard-scale"
+    ],
+    "greedy-history": [
+      "log1p",
+      "sqrt",
+      "sqrt+interaction-top2"
+    ],
+    "greedy-permuted": [
+      "log1p+robust-scale",
+      "sqrt",
+      "sqrt+log1p"
+    ],
+    "random-program": [
+      "clip-1_99+log1p",
+      "log1p+sqrt",
+      "log1p+sqrt+poly2-top5"
+    ],
+    "static-atoms": [
+      "log1p",
+      "sqrt"
+    ]
+  },
+  "distinct_discovery_analysis": {
+    "descriptive": {
+      "evolutionary-archive": {
+        "cells": 20.0,
+        "efficiency_mean": 0.002043096
+      },
+      "greedy-history": {
+        "cells": 20.0,
+        "efficiency_mean": 0.001848598
+      },
+      "greedy-permuted": {
+        "cells": 20.0,
+        "efficiency_mean": 0.001734104
+      },
+      "random-program": {
+        "cells": 20.0,
+        "efficiency_mean": 0.002040905
+      },
+      "static-atoms": {
+        "cells": 20.0,
+        "efficiency_mean": 0.003592814
+      }
+    },
+    "per_family": {
+      "alpha": {
+        "comparisons": [
+          {
+            "adjusted_p": 1.0,
+            "base": "random-program",
+            "base_mean": 0.0012121212121212121,
+            "candidate": "greedy-history",
+            "candidate_mean": 0.0,
+            "ci_high": 0.0,
+            "ci_low": -0.0036363636363636364,
+            "delta": -0.0012121212121212121,
+            "effect_size": -0.447213595499958,
+            "p_value": 1.0,
+            "relative_delta": -1.0
+          },
+          {
+            "adjusted_p": 1.0,
+            "base": "random-program",
+            "base_mean": 0.0012121212121212121,
+            "candidate": "evolutionary-archive",
+            "candidate_mean": 0.0,
+            "ci_high": 0.0,
+            "ci_low": -0.0036363636363636364,
+            "delta": -0.0012121212121212121,
+            "effect_size": -0.447213595499958,
+            "p_value": 1.0,
+            "relative_delta": -1.0
+          },
+          {
+            "adjusted_p": 1.0,
+            "base": "random-program",
+            "base_mean": 0.0012121212121212121,
+            "candidate": "static-atoms",
+            "candidate_mean": 0.0,
+            "ci_high": 0.0,
+            "ci_low": -0.0036363636363636364,
+            "delta": -0.0012121212121212121,
+            "effect_size": -0.447213595499958,
+            "p_value": 1.0,
+            "relative_delta": -1.0
+          },
+          {
+            "adjusted_p": 1.0,
+            "base": "greedy-history",
+            "base_mean": 0.0,
+            "candidate": "greedy-permuted",
+            "candidate_mean": 0.0,
+            "ci_high": 0.0,
+            "ci_low": 0.0,
+            "delta": 0.0,
+            "effect_size": 0.0,
+            "p_value": 1.0,
+            "relative_delta": 0.0
+          }
+        ],
+        "per_condition": {
+          "evolutionary-archive": {
+            "efficiency_mean": 0.0,
+            "trials": 10
+          },
+          "greedy-history": {
+            "efficiency_mean": 0.0,
+            "trials": 10
+          },
+          "greedy-permuted": {
+            "efficiency_mean": 0.0,
+            "trials": 10
+          },
+          "random-program": {
+            "efficiency_mean": 0.001212121,
+            "trials": 10
+          },
+          "static-atoms": {
+            "efficiency_mean": 0.0,
+            "trials": 10
+          }
+        }
+      },
+      "beta": {
+        "comparisons": [
+          {
+            "adjusted_p": 1.0,
+            "base": "random-program",
+            "base_mean": 0.0028696895424836603,
+            "candidate": "greedy-history",
+            "candidate_mean": 0.003697195987993265,
+            "ci_high": 0.00748554784678349,
+            "ci_low": -0.0046875,
+            "delta": 0.0008275064455096045,
+            "effect_size": 0.11230919260221768,
+            "p_value": 1.0,
+            "relative_delta": 0.28836096492633617
+          },
+          {
+            "adjusted_p": 1.0,
+            "base": "random-program",
+            "base_mean": 0.0028696895424836603,
+            "candidate": "evolutionary-archive",
+            "candidate_mean": 0.004086191586191586,
+            "ci_high": 0.005556779821485704,
+            "ci_low": -0.0033808103661044837,
+            "delta": 0.0012165020437079257,
+            "effect_size": 0.19196409881484638,
+            "p_value": 0.8825587206396801,
+            "relative_delta": 0.4239141641276871
+          },
+          {
+            "adjusted_p": 1.0,
+            "base": "random-program",
+            "base_mean": 0.0028696895424836603,
+            "candidate": "static-atoms",
+            "candidate_mean": 0.007185628742514971,
+            "ci_high": 0.011501567942546281,
+            "ci_low": -0.0008393751712261749,
+            "delta": 0.0043159392000313105,
+            "effect_size": 0.5177908254005597,
+            "p_value": 0.5017491254372813,
+            "relative_delta": 1.5039742578899142
+          },
+          {
+            "adjusted_p": 1.0,
+            "base": "greedy-history",
+            "base_mean": 0.003697195987993265,
+            "candidate": "greedy-permuted",
+            "candidate_mean": 0.0034682080924855487,
+            "ci_high": 0.009255198990100324,
+            "ci_low": -0.007643312101910829,
+            "delta": -0.0002289878955077161,
+            "effect_size": -0.02337706179939979,
+            "p_value": 1.0,
+            "relative_delta": -0.061935557717621666
+          }
+        ],
+        "per_condition": {
+          "evolutionary-archive": {
+            "efficiency_mean": 0.004086192,
+            "trials": 10
+          },
+          "greedy-history": {
+            "efficiency_mean": 0.003697196,
+            "trials": 10
+          },
+          "greedy-permuted": {
+            "efficiency_mean": 0.003468208,
+            "trials": 10
+          },
+          "random-program": {
+            "efficiency_mean": 0.00286969,
+            "trials": 10
+          },
+          "static-atoms": {
+            "efficiency_mean": 0.007185629,
+            "trials": 10
+          }
+        }
+      }
+    }
+  },
+  "experiment_id": "protocol-240-v1",
+  "families": [
+    "alpha",
+    "beta"
+  ],
+  "harness_secondary_statistics": {
+    "held_out_per_condition": {
+      "evolutionary-archive": {
+        "attempts": 150,
+        "compute_credits": 1502.5,
+        "discoveries_per_credit": 0.016639,
+        "validated_discoveries": 25
+      },
+      "greedy-history": {
+        "attempts": 148,
+        "compute_credits": 1534.5,
+        "discoveries_per_credit": 0.01173,
+        "validated_discoveries": 18
+      },
+      "greedy-permuted": {
+        "attempts": 154,
+        "compute_credits": 1594.5,
+        "discoveries_per_credit": 0.012543,
+        "validated_discoveries": 20
+      },
+      "random-program": {
+        "attempts": 124,
+        "compute_credits": 1519.0,
+        "discoveries_per_credit": 0.005925,
+        "validated_discoveries": 9
+      },
+      "static-atoms": {
+        "attempts": 280,
+        "compute_credits": 1695.0,
+        "discoveries_per_credit": 0.018289,
+        "validated_discoveries": 31
+      }
+    },
+    "per_condition": {
+      "b-shuffled": {
+        "attempts": 285,
+        "compute_credits": 1702.0,
+        "discoveries_per_credit": 0.003525,
+        "validated_discoveries": 6
+      },
+      "c-permuted": {
+        "attempts": 292,
+        "compute_credits": 1669.0,
+        "discoveries_per_credit": 0.004793,
+        "validated_discoveries": 8
+      },
+      "evolutionary-archive": {
+        "attempts": 160,
+        "compute_credits": 1548.5,
+        "discoveries_per_credit": 0.002583,
+        "validated_discoveries": 4
+      },
+      "greedy-history": {
+        "attempts": 178,
+        "compute_credits": 1586.0,
+        "discoveries_per_credit": 0.001892,
+        "validated_discoveries": 3
+      },
+      "greedy-permuted": {
+        "attempts": 173,
+        "compute_credits": 1589.5,
+        "discoveries_per_credit": 0.001887,
+        "validated_discoveries": 3
+      },
+      "random-program": {
+        "attempts": 142,
+        "compute_credits": 1520.0,
+        "discoveries_per_credit": 0.001974,
+        "validated_discoveries": 3
+      },
+      "static-atoms": {
+        "attempts": 280,
+        "compute_credits": 1695.0,
+        "discoveries_per_credit": 0.00354,
+        "validated_discoveries": 6
+      }
+    },
+    "per_family_comparisons": {
+      "alpha": [
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0012121212121212121,
+          "candidate": "greedy-history",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": -0.0036363636363636364,
+          "delta": -0.0012121212121212121,
+          "effect_size": -0.447213595499958,
+          "p_value": 1.0,
+          "relative_delta": -1.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0012121212121212121,
+          "candidate": "evolutionary-archive",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": -0.0036363636363636364,
+          "delta": -0.0012121212121212121,
+          "effect_size": -0.447213595499958,
+          "p_value": 1.0,
+          "relative_delta": -1.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0012121212121212121,
+          "candidate": "static-atoms",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": -0.0036363636363636364,
+          "delta": -0.0012121212121212121,
+          "effect_size": -0.447213595499958,
+          "p_value": 1.0,
+          "relative_delta": -1.0
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "greedy-history",
+          "base_mean": 0.0,
+          "candidate": "greedy-permuted",
+          "candidate_mean": 0.0,
+          "ci_high": 0.0,
+          "ci_low": 0.0,
+          "delta": 0.0,
+          "effect_size": 0.0,
+          "p_value": 1.0,
+          "relative_delta": 0.0
+        }
+      ],
+      "beta": [
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0028696895424836603,
+          "candidate": "greedy-history",
+          "candidate_mean": 0.003697195987993265,
+          "ci_high": 0.00748554784678349,
+          "ci_low": -0.0046875,
+          "delta": 0.0008275064455096045,
+          "effect_size": 0.11230919260221768,
+          "p_value": 1.0,
+          "relative_delta": 0.28836096492633617
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0028696895424836603,
+          "candidate": "evolutionary-archive",
+          "candidate_mean": 0.005475080475080475,
+          "ci_high": 0.009551059642971408,
+          "ci_low": -0.003297386845180963,
+          "delta": 0.002605390932596815,
+          "effect_size": 0.32332829969919186,
+          "p_value": 0.6301849075462269,
+          "relative_delta": 0.9078999292522423
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "random-program",
+          "base_mean": 0.0028696895424836603,
+          "candidate": "static-atoms",
+          "candidate_mean": 0.007185628742514971,
+          "ci_high": 0.011501567942546281,
+          "ci_low": -0.0008393751712261749,
+          "delta": 0.0043159392000313105,
+          "effect_size": 0.5177908254005597,
+          "p_value": 0.5017491254372813,
+          "relative_delta": 1.5039742578899142
+        },
+        {
+          "adjusted_p": 1.0,
+          "base": "greedy-history",
+          "base_mean": 0.003697195987993265,
+          "candidate": "greedy-permuted",
+          "candidate_mean": 0.0034682080924855487,
+          "ci_high": 0.009255198990100324,
+          "ci_low": -0.007643312101910829,
+          "delta": -0.0002289878955077161,
+          "effect_size": -0.02337706179939979,
+          "p_value": 1.0,
+          "relative_delta": -0.061935557717621666
+        }
+      ]
+    }
+  },
+  "held_out_family": "gamma",
+  "hypotheses": {
+    "H1_greedy_vs_random_significant_by_family": {
+      "alpha": false,
+      "beta": false
+    },
+    "H1_met": false,
+    "H2_evolutionary_vs_random_significant_by_family": {
+      "alpha": false,
+      "beta": false
+    },
+    "H2_met": false,
+    "H3_met": false,
+    "H4_met": false,
+    "H4_random_vs_static_atoms_directional_by_family": {
+      "alpha": false,
+      "beta": true
+    },
+    "H4_random_vs_static_atoms_significant_by_family": {
+      "alpha": false,
+      "beta": false
+    },
+    "H5_greedy_vs_permuted_directional_by_family": {
+      "alpha": false,
+      "beta": false
+    },
+    "H5_met": false,
+    "arms_with_champions": [
+      "evolutionary-archive",
+      "greedy-history",
+      "greedy-permuted",
+      "random-program",
+      "static-atoms"
+    ],
+    "arms_with_transferring_champion": [],
+    "claim": "Class C: neither a significant policy advantage over random search nor a positively transferring champion was established. (H1=False, H2=False, H3=False, H4=False, H5=False)",
+    "outcome_class": "C"
+  },
+  "primary_comparisons": [
+    {
+      "base": "static",
+      "candidate": "knowledge-informed"
+    },
+    {
+      "base": "static",
+      "candidate": "adaptive"
+    },
+    {
+      "base": "knowledge-informed",
+      "candidate": "adaptive"
+    },
+    {
+      "base": "random-program",
+      "candidate": "greedy-history"
+    },
+    {
+      "base": "random-program",
+      "candidate": "evolutionary-archive"
+    },
+    {
+      "base": "random-program",
+      "candidate": "static-atoms"
+    },
+    {
+      "base": "greedy-history",
+      "candidate": "greedy-permuted"
+    }
+  ],
+  "primary_metric": "distinct_validated_programs / credits_consumed",
+  "program_summary": {
+    "evolutionary-archive": {
+      "attempts": 160,
+      "credits": 1548.5,
+      "discovered_programs": [
+        "log1p+sqrt",
+        "sqrt",
+        "sqrt+standard-scale"
+      ],
+      "distinct_programs_discovered": 3,
+      "distinct_programs_evaluated": 56,
+      "invalid_attempts": 0,
+      "mean_program_length": 1.964
+    },
+    "greedy-history": {
+      "attempts": 178,
+      "credits": 1586.0,
+      "discovered_programs": [
+        "log1p",
+        "sqrt",
+        "sqrt+interaction-top2"
+      ],
+      "distinct_programs_discovered": 3,
+      "distinct_programs_evaluated": 54,
+      "invalid_attempts": 0,
+      "mean_program_length": 2.093
+    },
+    "greedy-permuted": {
+      "attempts": 173,
+      "credits": 1589.5,
+      "discovered_programs": [
+        "log1p+robust-scale",
+        "sqrt",
+        "sqrt+log1p"
+      ],
+      "distinct_programs_discovered": 3,
+      "distinct_programs_evaluated": 56,
+      "invalid_attempts": 0,
+      "mean_program_length": 2.036
+    },
+    "random-program": {
+      "attempts": 142,
+      "credits": 1520.0,
+      "discovered_programs": [
+        "clip-1_99+log1p",
+        "log1p+sqrt",
+        "log1p+sqrt+poly2-top5"
+      ],
+      "distinct_programs_discovered": 3,
+      "distinct_programs_evaluated": 76,
+      "invalid_attempts": 0,
+      "mean_program_length": 2.224
+    },
+    "static-atoms": {
+      "attempts": 280,
+      "credits": 1695.0,
+      "discovered_programs": [
+        "log1p",
+        "sqrt"
+      ],
+      "distinct_programs_discovered": 2,
+      "distinct_programs_evaluated": 9,
+      "invalid_attempts": 0,
+      "mean_program_length": 1.0
+    }
+  },
+  "protocol_version": "1.0.0",
+  "search_space": {
+    "atoms": [
+      "log1p",
+      "sqrt",
+      "clip-1_99",
+      "robust-scale",
+      "standard-scale",
+      "quantile-bin-3",
+      "interaction-top2",
+      "pca-10",
+      "poly2-top5"
+    ],
+    "closed": true,
+    "grammar_version": "1.0.0",
+    "max_program_length": 3,
+    "size": 585
+  },
+  "secondary_metric": "validated_discoveries / credits_consumed (harness metric, counts attempts)"
+}

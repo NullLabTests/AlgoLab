@@ -1,0 +1,105 @@
+{
+  "claim_readiness": {
+    "c_beats_knowledge_informed_by_family": {
+      "alpha": false,
+      "beta": false
+    },
+    "c_beats_static_by_family": {
+      "alpha": false,
+      "beta": false
+    },
+    "claim_ready": false,
+    "held_out_persistence_vs_knowledge_informed": false,
+    "held_out_persistence_vs_static": false,
+    "training_families_analysed": 2,
+    "verdict": "promotion criterion NOT met; unmet components: greedy-history>A with adjusted p < 0.05 on >=2 families; greedy-history>B with adjusted p < 0.05 on >=2 families; gap persistence on held-out gamma"
+  },
+  "comparisons": [
+    {
+      "adjusted_p": 0.24654339496918207,
+      "base": "random-program",
+      "base_mean": 0.0059463621057345515,
+      "candidate": "greedy-history",
+      "candidate_mean": 0.011490213368485682,
+      "ci_high": 0.01221930653244845,
+      "ci_low": -0.001236900623085067,
+      "delta": 0.0055438512627511306,
+      "effect_size": 0.7171129100296741,
+      "p_value": 0.18490754622688654,
+      "relative_delta": 0.9323097322655061
+    },
+    {
+      "adjusted_p": 0.012993503248375811,
+      "base": "random-program",
+      "base_mean": 0.0059463621057345515,
+      "candidate": "evolutionary-archive",
+      "candidate_mean": 0.016777745400753056,
+      "ci_high": 0.01616729817173968,
+      "ci_low": 0.00517746675819754,
+      "delta": 0.010831383295018504,
+      "effect_size": 1.6314949204759288,
+      "p_value": 0.006496751624187906,
+      "relative_delta": 1.821514247269425
+    },
+    {
+      "adjusted_p": 0.009995002498750625,
+      "base": "random-program",
+      "base_mean": 0.0059463621057345515,
+      "candidate": "static-atoms",
+      "candidate_mean": 0.018289085545722714,
+      "ci_high": 0.016098770256686823,
+      "ci_low": 0.009225950619823325,
+      "delta": 0.012342723439988162,
+      "effect_size": 1.9905767937668242,
+      "p_value": 0.0024987506246876563,
+      "relative_delta": 2.075676391803501
+    },
+    {
+      "adjusted_p": 0.8290854572713643,
+      "base": "greedy-history",
+      "base_mean": 0.011490213368485682,
+      "candidate": "greedy-permuted",
+      "candidate_mean": 0.012503757115121705,
+      "ci_high": 0.007188220542770849,
+      "ci_low": -0.005071358193281248,
+      "delta": 0.0010135437466360225,
+      "effect_size": 0.10849729589976077,
+      "p_value": 0.8290854572713643,
+      "relative_delta": 0.08820930596605618
+    }
+  ],
+  "family": "gamma",
+  "note": "Transfer evaluation: arms evaluated on held-out family gamma, which was never included in the K0 prior.",
+  "per_condition": {
+    "evolutionary-archive": {
+      "attempts": 150,
+      "compute_credits": 1502.5,
+      "discoveries_per_credit": 0.016639,
+      "validated_discoveries": 25
+    },
+    "greedy-history": {
+      "attempts": 148,
+      "compute_credits": 1534.5,
+      "discoveries_per_credit": 0.01173,
+      "validated_discoveries": 18
+    },
+    "greedy-permuted": {
+      "attempts": 154,
+      "compute_credits": 1594.5,
+      "discoveries_per_credit": 0.012543,
+      "validated_discoveries": 20
+    },
+    "random-program": {
+      "attempts": 124,
+      "compute_credits": 1519.0,
+      "discoveries_per_credit": 0.005925,
+      "validated_discoveries": 9
+    },
+    "static-atoms": {
+      "attempts": 280,
+      "compute_credits": 1695.0,
+      "discoveries_per_credit": 0.018289,
+      "validated_discoveries": 31
+    }
+  }
+}

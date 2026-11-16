@@ -1,0 +1,317 @@
+{
+  "bundle": "experiments/protocol-239-v1",
+  "experiment_id": "protocol-239-v1",
+  "integrity": {
+    "check": "checksums_at_rest",
+    "files": 44,
+    "pass": true,
+    "problems": []
+  },
+  "pass": true,
+  "protocol_version": "1.1.0",
+  "reproduction": {
+    "failures": [],
+    "files_checked": 44,
+    "pass": true,
+    "results": [
+      {
+        "file": "report.md",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/adaptive/held-out-operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/adaptive/held-out-raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/adaptive/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/adaptive/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/adaptive-cost-aware/held-out-operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/adaptive-cost-aware/held-out-raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/adaptive-cost-aware/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/adaptive-cost-aware/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/b-shuffled/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/b-shuffled/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/basin-escape/held-out-operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/basin-escape/held-out-raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/basin-escape/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/basin-escape/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/c-permuted/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/c-permuted/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/c-plus-permuted/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/c-plus-permuted/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/knowledge-informed-family-commit/held-out-operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/knowledge-informed-family-commit/held-out-raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/knowledge-informed-family-commit/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/knowledge-informed-family-commit/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/qd-adaptive-cost-aware/held-out-operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/qd-adaptive-cost-aware/held-out-raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/qd-adaptive-cost-aware/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/qd-adaptive-cost-aware/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/random/held-out-operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/random/held-out-raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/random/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/random/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/static/held-out-operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/static/held-out-raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/static/operator-selections.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "file": "conditions/static/raw-results.jsonl",
+        "mode": "byte_exact",
+        "pass": true,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [
+          "workload_metadata.measured_operator_seconds"
+        ],
+        "file": "environment.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [],
+        "file": "held-out-statistics.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [],
+        "file": "knowledge-snapshot-by-family.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [],
+        "file": "knowledge-snapshot.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [
+          "created_at"
+        ],
+        "file": "manifest.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [
+          "created_at"
+        ],
+        "file": "plan.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [],
+        "file": "protocol.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [],
+        "file": "qd-archive.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      },
+      {
+        "allowed_additions": [],
+        "excluded_volatile_fields": [],
+        "file": "statistics.json",
+        "mode": "numeric_1e-9",
+        "pass": true,
+        "problem_count": 0,
+        "problems": []
+      }
+    ]
+  },
+  "workload": "transform"
+}

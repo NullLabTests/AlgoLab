@@ -26,7 +26,7 @@ import sqlite3
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any, Protocol, TextIO
 
 from algolab.knowledge.evidence import PROMOTE, EvidenceRepo
 from algolab.knowledge.operators import OPERATOR_BUDGETS
@@ -57,6 +57,7 @@ from algolab.search.policies import (
     KnowledgeSnapshot,
     QDAdaptiveCostAwarePolicy,
     RandomPolicy,
+    SelectionRecord,
     StaticPolicy,
     build_prior_snapshot,
 )
@@ -190,8 +191,29 @@ def _transform_view() -> WorkloadView:
     )
 
 
+def _compose_view() -> WorkloadView:
+    from algolab.search import workload_compose
+
+    return WorkloadView(
+        key="compose",
+        display_name="generative-composition",
+        environment_version=workload_compose.WORKLOAD_VERSION,
+        task_suite_version=workload_compose.TASK_SUITE_VERSION,
+        discovery_gate_version=workload_compose.DISCOVERY_GATE_VERSION,
+        families=tuple(workload_compose.TASK_FAMILIES),
+        held_out_family=workload_compose.HELD_OUT_FAMILY,
+        operators=workload_compose.operators(),
+        has_oracle=False,
+        run_attempt=workload_compose.run_attempt,
+        operator_cost=workload_compose.operator_cost,
+        environment_metadata=workload_compose.environment_metadata,
+    )
+
+
 _WORKLOADS = {"toy": _toy_view, "hpo": _hpo_view, "s2": _s2_view,
-              "transform": _transform_view}
+              "transform": _transform_view, "compose": _compose_view}
+#: Every registered workload key, in registration order.
+WORKLOAD_NAMES: tuple[str, ...] = tuple(_WORKLOADS)
 
 
 def resolve_workload(name: str) -> WorkloadView:
@@ -224,6 +246,14 @@ ARMS_PROTOCOL_234 = ARMS_PROTOCOL_232 + (
 ARMS_PROTOCOL_238 = ARMS_PROTOCOL_234 + (
     "qd-adaptive-cost-aware",
     "basin-escape",
+)
+# Protocol 240: generative composition arms (programs, not catalog entries).
+ARMS_PROTOCOL_240: tuple[str, ...] = (
+    "random-program",
+    "greedy-history",
+    "evolutionary-archive",
+    "static-atoms",
+    "greedy-permuted",
 )
 PRIMARY_COMPARISONS: tuple[tuple[str, str], ...] = (
     ("static", "knowledge-informed"),
@@ -295,6 +325,16 @@ def primary_comparisons_for(
         ]
         if "qd-adaptive-cost-aware" in arms:
             pairs += [("qd-adaptive-cost-aware", "basin-escape")]
+    # Protocol 240 (generative composition): pre-registered by
+    # spec/research/240_GENERATIVE_COMPOSITION_SEARCH.md §7.
+    if "greedy-history" in arms and "random-program" in arms:
+        pairs += [("random-program", "greedy-history")]
+    if "evolutionary-archive" in arms and "random-program" in arms:
+        pairs += [("random-program", "evolutionary-archive")]
+    if "static-atoms" in arms and "random-program" in arms:
+        pairs += [("random-program", "static-atoms")]
+    if "greedy-permuted" in arms and "greedy-history" in arms:
+        pairs += [("greedy-history", "greedy-permuted")]
     return tuple(pairs)
 
 
@@ -317,11 +357,28 @@ DEFAULT_PRIOR_ATTEMPTS_PER_FAMILY = 60
 
 PRIOR_POLICY_LABEL = "prior-uniform"
 
+
+class GenerativePolicy(Protocol):
+    """Structural type for the protocol-240 arms.
+
+    They deliberately do not subclass ``AdaptivePolicy`` (they are defined in a
+    separate module and read richer feedback), so the harness types them by the
+    two methods it actually calls. This keeps strict type checking intact
+    instead of weakening ``Policy`` to ``Any``.
+    """
+
+    def select(self, family: str, step: int) -> tuple[str, SelectionRecord]:
+        ...
+
+    def reset(self) -> None:
+        ...
+
+
 Policy = (StaticPolicy | KnowledgeInformedPolicy | AdaptivePolicy
           | RandomPolicy | AdaptiveCostAwarePolicy | CostRankedKnowledgePolicy
           | AdaptiveCostAwareFamilyPolicy | FamilyConditionedKnowledgePolicy
           | CostRankedFamilyKnowledgePolicy | FamilyCommitPolicy
-          | FamilyAllocPolicy)
+          | FamilyAllocPolicy | GenerativePolicy)
 
 
 class HarnessError(RuntimeError):
@@ -364,6 +421,19 @@ class ExperimentConfig:
         """Family rotation for held-out transfer evaluation (single family)."""
         return [self.workload_view.held_out_family
                 for _ in range(self.episodes_per_trial)]
+
+
+def _gen_versions() -> dict[str, str]:
+    """Policy versions for the protocol-240 generative arms (lazy import)."""
+    from algolab.search import generative_policies as gp
+
+    return {
+        "random-program": gp.RANDOM_PROGRAM_POLICY_VERSION,
+        "greedy-history": gp.GREEDY_HISTORY_POLICY_VERSION,
+        "evolutionary-archive": gp.EVOLUTIONARY_ARCHIVE_POLICY_VERSION,
+        "static-atoms": gp.STATIC_ATOMS_POLICY_VERSION,
+        "greedy-permuted": gp.PERMUTED_GREEDY_POLICY_VERSION,
+    }
 
 
 def freeze_manifest(cfg: ExperimentConfig) -> dict[str, Any]:
@@ -409,6 +479,16 @@ def freeze_manifest(cfg: ExperimentConfig) -> dict[str, Any]:
             **({"basin-escape":
                 BASIN_ESCAPE_POLICY_VERSION}
                if "basin-escape" in cfg.arms else {}),
+            **({"random-program": _gen_versions()["random-program"]}
+               if "random-program" in cfg.arms else {}),
+            **({"greedy-history": _gen_versions()["greedy-history"]}
+               if "greedy-history" in cfg.arms else {}),
+            **({"evolutionary-archive": _gen_versions()["evolutionary-archive"]}
+               if "evolutionary-archive" in cfg.arms else {}),
+            **({"static-atoms": _gen_versions()["static-atoms"]}
+               if "static-atoms" in cfg.arms else {}),
+            **({"greedy-permuted": _gen_versions()["greedy-permuted"]}
+               if "greedy-permuted" in cfg.arms else {}),
         },
         "budget_credits": cfg.budget_credits,
         "episodes_per_trial": cfg.episodes_per_trial,
@@ -777,8 +857,7 @@ class PolicyComparison:
                 if attempt.discovery:
                     episode_discoveries += 1
                     total_discoveries += 1
-                if isinstance(policy, AdaptivePolicy):
-                    policy.update(family, operator, attempt.discovery)
+                self._feed_policy(policy, family, operator, attempt)
                 self._events[arm].append({
                     "trial": trial, "episode": episode, "family": family,
                     "step": step, "operator": operator, "cost": attempt.cost_credits,
@@ -868,7 +947,34 @@ class PolicyComparison:
         if arm == "b-shuffled":
             shuffled = self._shuffled_snapshot(snapshot, rng_seed)
             return KnowledgeInformedPolicy(shuffled, top_k=self.cfg.top_k)
+        generative = self._generative_policy(arm, rng_seed)
+        if generative is not None:
+            return generative
         raise HarnessError(f"unknown arm {arm!r}")
+
+    def _generative_policy(self, arm: str, rng_seed: int) -> Policy | None:
+        """Protocol-240 arms. Returns None when *arm* is not generative."""
+        from algolab.search import generative_policies as gp
+
+        if arm not in ARMS_PROTOCOL_240:
+            return None
+        if arm == "random-program":
+            return gp.GenerativeRandomPolicy(self.snapshot, seed=rng_seed)
+        if arm == "static-atoms":
+            return gp.StaticAtomsPolicy()
+        if arm == "greedy-history":
+            return gp.GreedyHistoryPolicy(
+                self.snapshot, rng_seed,
+                snapshots_by_family=self.snapshots_by_family)
+        if arm == "greedy-permuted":
+            return gp.PermutedGreedyHistoryPolicy(
+                self.snapshot, rng_seed,
+                snapshots_by_family=self.snapshots_by_family)
+        if arm == "evolutionary-archive":
+            return gp.EvolutionaryArchivePolicy(
+                self.snapshot, rng_seed,
+                snapshots_by_family=self.snapshots_by_family)
+        raise HarnessError(f"unknown generative arm {arm!r}")
 
     def _make_qd_archive(self) -> Any:
         """Seed a QD archive from the frozen prior snapshot (deterministic)."""
@@ -954,6 +1060,24 @@ class PolicyComparison:
             target.write_text(
                 "".join(json.dumps(e, sort_keys=True) + "\n" for e in events))
         return results
+
+    @staticmethod
+    def _feed_policy(policy: Policy, family: str, operator: str,
+                     attempt: Attempt) -> None:
+        """Deliver one observation to a policy, if it accepts feedback.
+
+        Existing protocol-230/231/238 arms subclass ``AdaptivePolicy`` and read
+        the binary discovery flag through ``update``. Protocol-240 generative
+        arms additionally read the realised effect through ``observe``; both
+        hooks are optional, so a policy that defines neither is simply frozen
+        (static/random/knowledge-informed behaviour is unchanged).
+        """
+        updater = getattr(policy, "update", None)
+        if updater is not None:
+            updater(family, operator, attempt.discovery)
+        observer = getattr(policy, "observe", None)
+        if observer is not None:
+            observer(family, operator, attempt)
 
     @staticmethod
     def _arm_seed(arm: str) -> int:
@@ -1243,7 +1367,10 @@ class PolicyComparison:
                      "knowledge-informed-family-cost-rank",
                      "knowledge-informed-family-commit",
                      "knowledge-informed-family-alloc",
-                     "c-permuted", "b-shuffled", "c-plus-permuted")
+                     "c-permuted", "b-shuffled", "c-plus-permuted",
+                     "random-program", "greedy-history",
+                     "evolutionary-archive", "static-atoms",
+                     "greedy-permuted")
         for arm in arm_order:
             if arm not in pc:
                 continue
@@ -1580,8 +1707,7 @@ class PolicyComparison:
                 if attempt.discovery:
                     episode_discoveries += 1
                     total_discoveries += 1
-                if isinstance(policy, AdaptivePolicy):
-                    policy.update(family, operator, attempt.discovery)
+                self._feed_policy(policy, family, operator, attempt)
                 self._events[f"held-out-{arm}"].append({
                     "trial": trial, "episode": episode, "family": family,
                     "step": step, "operator": operator,

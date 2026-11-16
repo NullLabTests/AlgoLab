@@ -1,6 +1,8 @@
 # STATUS — proven claims, substrates, sample sizes, evidence links
 
-Updated: quality-hardening pass, 2026-10-14. No new scientific claims added.
+Updated: 2026-11-15 — protocols 239 (transform) and 240 (compose) recorded;
+both bundles independently re-executed and reproduced by
+`scripts/verify_bundle.py`. Protocol 240 adds a **negative** claim (class C).
 The protocol-236 designation was resolved (D-2: 236 = higher-N real workload,
 S2 = protocol 237) — see `docs/quality/protocol-236-conflict.md`. Entry format:
 **claim** — substrate, n, register link, evidence bundle.
@@ -27,6 +29,18 @@ S2 = protocol 237) — see `docs/quality/protocol-236-conflict.md`. Entry format
 | # | Claim | n | Spec | Evidence |
 |---|---|---|---|---|
 | 8 | No confirmatory claim. The aborted partial bundle (manifest + prior snapshots only; no conditions/report/checksums) is archived as non-evidence at `experiments/_aborted/protocol-236-v1-2026-09-19/`; no `protocol-237-v1` bundle has been sealed | — | `spec/research/237_SECOND_SUBSTRATE_TRANSFER.md` | *none sealed* |
+
+## transform substrate (protocol 239, typed feature-transform selection on real data)
+
+| # | Claim | n | Spec | Evidence |
+|---|---|---|---|---|
+| 9 | On real transform selection (`StandardScaler -> LogisticRegression` head, 14 typed transforms), adaptive and cost-aware arms do **not** meet the ≥2-family promotion bar (A ≈ B ≈ C); the bundle reproduces bit-for-bit apart from its recorded wall-clock field | 8 trials/family | `spec/research/239_TYPED_TRANSFORM_SUBSTRATE.md` | `experiments/protocol-239-v1/` |
+
+## compose substrate (protocol 240, generative composition search on real pipelines)
+
+| # | Claim | n | Spec | Evidence |
+|---|---|---|---|---|
+| 10 | A closed 585-program grammar (1–3 typed transforms, no repeats) over three sklearn datasets yields **no** significant policy advantage over uniform random program search on distinct-validated-programs/credit in either training family (H1–H5 all false), and **no** arm's champion transfers positively to the held-out family; outcome class **C**. Scoped to this 585-program space, not to knowledge loops in general | 10 trials/family | `spec/research/240_GENERATIVE_COMPOSITION_SEARCH.md` | `experiments/protocol-240-v1/` |
 
 ## Official milestones (per `planning/MILESTONES.md`)
 

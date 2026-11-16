@@ -38,6 +38,8 @@ EXPECTED_SEALED_BUNDLES = (
     "protocol-234-p120",
     "protocol-234-p240",
     "protocol-235-v1",
+    "protocol-239-v1",
+    "protocol-240-v1",
 )
 
 

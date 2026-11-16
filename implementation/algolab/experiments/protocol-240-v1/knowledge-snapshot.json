@@ -1,0 +1,77 @@
+{
+  "attempts": {
+    "clip-1_99": 0,
+    "interaction-top2": 0,
+    "log1p": 1,
+    "pca-10": 3,
+    "poly2-top5": 2,
+    "quantile-bin-3": 2,
+    "robust-scale": 5,
+    "sqrt": 1,
+    "standard-scale": 2
+  },
+  "credits": {
+    "clip-1_99": 0.0,
+    "interaction-top2": 0.0,
+    "log1p": 5.0,
+    "pca-10": 22.5,
+    "poly2-top5": 16.0,
+    "quantile-bin-3": 12.0,
+    "robust-scale": 27.5,
+    "sqrt": 5.0,
+    "standard-scale": 11.0
+  },
+  "event_range": [
+    "prior-alpha-0",
+    "prior-alpha-1",
+    "prior-alpha-2",
+    "prior-alpha-3",
+    "prior-alpha-4",
+    "prior-alpha-5",
+    "prior-alpha-6",
+    "prior-alpha-7",
+    "prior-beta-0",
+    "prior-beta-1",
+    "prior-beta-2",
+    "prior-beta-3",
+    "prior-beta-4",
+    "prior-beta-5",
+    "prior-beta-6",
+    "prior-beta-7"
+  ],
+  "snapshot_id": "K0-protocol-240-v1",
+  "successes": {
+    "clip-1_99": 0,
+    "interaction-top2": 0,
+    "log1p": 0,
+    "pca-10": 0,
+    "poly2-top5": 0,
+    "quantile-bin-3": 0,
+    "robust-scale": 0,
+    "sqrt": 0,
+    "standard-scale": 0
+  },
+  "sum_effect": {
+    "clip-1_99": 0.0,
+    "interaction-top2": 0.0,
+    "log1p": 0.002632,
+    "pca-10": -0.08151,
+    "poly2-top5": -0.003494,
+    "quantile-bin-3": -0.051985,
+    "robust-scale": 0.0,
+    "sqrt": 0.0,
+    "standard-scale": 0.0
+  },
+  "sum_effect_sq": {
+    "clip-1_99": 0.0,
+    "interaction-top2": 0.0,
+    "log1p": 6.927423999999999e-06,
+    "pca-10": 0.002218920996,
+    "poly2-top5": 6.104018e-06,
+    "quantile-bin-3": 0.0013614488769999999,
+    "robust-scale": 0.0,
+    "sqrt": 0.0,
+    "standard-scale": 0.0
+  },
+  "version": "1.0.0"
+}

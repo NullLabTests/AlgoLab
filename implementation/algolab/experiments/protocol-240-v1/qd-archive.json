@@ -1,0 +1,278 @@
+{
+  "cells": [
+    {
+      "cell": [
+        0,
+        [
+          0.5,
+          0.5
+        ],
+        [
+          0.5,
+          0.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.5,
+          0.5
+        ],
+        [
+          0.5,
+          0.0
+        ]
+      ],
+      "entry_id": "clip-1_99",
+      "metadata": {
+        "operator": "clip-1_99",
+        "phase": "prior"
+      },
+      "novelty": 1.0274024419758794,
+      "payload": {
+        "operator": "clip-1_99"
+      },
+      "quality": 0.1
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.333333,
+          0.5
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.333333,
+          0.5
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "entry_id": "log1p",
+      "metadata": {
+        "operator": "log1p",
+        "phase": "prior"
+      },
+      "novelty": 1.0,
+      "payload": {
+        "operator": "log1p"
+      },
+      "quality": 0.06666666666666667
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.333333,
+          0.25
+        ],
+        [
+          0.2,
+          3.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.333333,
+          0.25
+        ],
+        [
+          0.2,
+          3.0
+        ]
+      ],
+      "entry_id": "pca-10",
+      "metadata": {
+        "operator": "pca-10",
+        "phase": "prior"
+      },
+      "novelty": 1.0047110972259636,
+      "payload": {
+        "operator": "pca-10"
+      },
+      "quality": 0.02666666666666667
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.25,
+          0.5
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.25,
+          0.5
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "entry_id": "poly2-top5",
+      "metadata": {
+        "operator": "poly2-top5",
+        "phase": "prior"
+      },
+      "novelty": 0.18633914719671762,
+      "payload": {
+        "operator": "poly2-top5"
+      },
+      "quality": 0.03125
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.333333,
+          0.333333
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.333333,
+          0.333333
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "entry_id": "quantile-bin-3",
+      "metadata": {
+        "operator": "quantile-bin-3",
+        "phase": "prior"
+      },
+      "novelty": 0.18633914719671762,
+      "payload": {
+        "operator": "quantile-bin-3"
+      },
+      "quality": 0.041666666666666664
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.2,
+          0.25
+        ],
+        [
+          0.142857,
+          5.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.2,
+          0.25
+        ],
+        [
+          0.142857,
+          5.0
+        ]
+      ],
+      "entry_id": "robust-scale",
+      "metadata": {
+        "operator": "robust-scale",
+        "phase": "prior"
+      },
+      "novelty": 4.0145434105841975,
+      "payload": {
+        "operator": "robust-scale"
+      },
+      "quality": 0.025974025974025972
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.5,
+          0.333333
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.5,
+          0.333333
+        ],
+        [
+          0.333333,
+          1.0
+        ]
+      ],
+      "entry_id": "sqrt",
+      "metadata": {
+        "operator": "sqrt",
+        "phase": "prior"
+      },
+      "novelty": 0.23570273180003665,
+      "payload": {
+        "operator": "sqrt"
+      },
+      "quality": 0.06666666666666667
+    },
+    {
+      "cell": [
+        0,
+        [
+          0.5,
+          0.25
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "descriptor": [
+        0,
+        [
+          0.5,
+          0.25
+        ],
+        [
+          0.25,
+          2.0
+        ]
+      ],
+      "entry_id": "standard-scale",
+      "metadata": {
+        "operator": "standard-scale",
+        "phase": "prior"
+      },
+      "novelty": 1.0069204426259306,
+      "payload": {
+        "operator": "standard-scale"
+      },
+      "quality": 0.045454545454545456
+    }
+  ],
+  "novelty_weight": 0.25,
+  "version": "1.0.0"
+}
