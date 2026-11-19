@@ -16,6 +16,7 @@ from dataclasses import asdict, dataclass, field
 from enum import StrEnum
 from typing import Any
 
+from algolab.knowledge.operators import OPERATOR_BUDGETS
 from algolab.meta_search.policies import Observation, SearchPolicy
 from algolab.meta_search.replay import ReplayEnv, ReplayResult
 from algolab.search.toy import (
@@ -77,6 +78,7 @@ def replay_evaluation(
         "stage": "A_historical_replay",
         "is_prospective_evidence": False,
         "decision_quality_agreement": result.agreement,
+        "n_agreement_applicable": result.n_applicable,
         "n_decisions": len(result.decisions),
         "n_observed": result.observed_count,
         "n_counterfactual_uncertain": result.uncertain_count,
@@ -117,6 +119,7 @@ def _trial_score(
             tuple(DEFAULT_OPERATORS),
             tuple(observations),
             seed=seed_base + trial * 100_000 + episode,
+            costs=OPERATOR_BUDGETS,
         )
         attempt = run_attempt(
             family,
@@ -328,10 +331,12 @@ def promote(
         reasons.append("stage B is not prospective evidence")
     # Rule 2: must beat baseline prospectively with a positive lower CI bound.
     b = stage_b["primary"]
-    if not (b["delta"] > 0 and b["ci_low"] > 0 and b["p_value"] < alpha):
+    # When several arms are tested, preregistered BH-FDR q-values replace raw p.
+    effective_p = float(b.get("p_adjusted", b["p_value"]))
+    if not (b["delta"] > 0 and b["ci_low"] > 0 and effective_p < alpha):
         reasons.append(
             "prospective primary metric did not significantly beat baseline "
-            f"(delta={b['delta']:.6g}, ci_low={b['ci_low']:.6g}, p={b['p_value']:.6g})"
+            f"(delta={b['delta']:.6g}, ci_low={b['ci_low']:.6g}, p={effective_p:.6g})"
         )
     if stage_b["secondary"]["ci_low"] < 0:
         reasons.append("prospective secondary metric shows significant degradation")

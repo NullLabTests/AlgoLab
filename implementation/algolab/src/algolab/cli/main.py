@@ -190,6 +190,12 @@ def _build_parser() -> argparse.ArgumentParser:
     p_meta.add_argument("--seed-base", type=int, default=424_242)
     p_meta.add_argument("--confirmation-seed-base", type=int, default=989_898)
     p_meta.add_argument("--bootstrap-iterations", type=int, default=1000)
+    p_meta.add_argument("--protocol-id", default="protocol-241")
+    p_meta.add_argument("--protocol-version", default="1.0.0")
+    p_meta.add_argument("--apply-bh", action="store_true",
+                        help="Benjamini-Hochberg FDR across non-baseline arms")
+    p_meta.add_argument("--record-historical-choice", action="store_true",
+                        help="record the actual historical decision on the trace")
     p_meta.add_argument("--force", action="store_true",
                         help="overwrite an existing sealed bundle")
     p_meta.add_argument("--json", action="store_true")
@@ -562,6 +568,10 @@ def cmd_meta_search_run(args: argparse.Namespace) -> int:
         budget=args.budget, seed_base=args.seed_base,
         confirmation_seed_base=args.confirmation_seed_base,
         bootstrap_iterations=args.bootstrap_iterations,
+        protocol_id=args.protocol_id,
+        protocol_version=args.protocol_version,
+        apply_bh=args.apply_bh,
+        record_historical_choice=args.record_historical_choice,
     )
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True))

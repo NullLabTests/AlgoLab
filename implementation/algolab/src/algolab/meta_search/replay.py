@@ -17,6 +17,7 @@ Any attempt to present replay output as prospective evidence is rejected by
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
 from enum import StrEnum
 from typing import Any
@@ -47,6 +48,7 @@ class ReplayDecision:
     uncertain: bool = True
     uncertainty_reason: str = ""
     matches_historical: bool = False
+    agreement_applicable: bool = True
     rationale: str = ""
 
     def to_dict(self) -> dict[str, Any]:
@@ -72,10 +74,18 @@ class ReplayResult:
         return sum(d.uncertain for d in self.decisions)
 
     @property
+    def n_applicable(self) -> int:
+        return sum(d.agreement_applicable for d in self.decisions)
+
+    @property
     def agreement(self) -> float:
-        if not self.decisions:
+        # Agreement is only defined where the trace records an actual decision.
+        applicable = self.n_applicable
+        if not applicable:
             return 0.0
-        return sum(d.matches_historical for d in self.decisions) / len(self.decisions)
+        return sum(
+            d.matches_historical for d in self.decisions if d.agreement_applicable
+        ) / applicable
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -89,6 +99,7 @@ class ReplayResult:
                 "n_decisions": len(self.decisions),
                 "n_observed": self.observed_count,
                 "n_uncertain": self.uncertain_count,
+                "n_agreement_applicable": self.n_applicable,
                 "agreement_with_history": self.agreement,
             },
         }
@@ -140,11 +151,13 @@ class ReplayEnv:
         trace: DiscoveryTrace,
         *,
         unexplored_candidates: tuple[str, ...] = (),
+        costs: Mapping[str, float] | None = None,
     ) -> None:
         if not trace.verify_integrity():
             raise ValueError("cannot replay a trace that fails integrity verification")
         self.trace = trace
         self.unexplored_candidates = tuple(unexplored_candidates)
+        self.costs = costs
 
     def available_actions(self, node_id: str) -> tuple[str, ...]:
         children = self.trace.children(node_id)
@@ -164,10 +177,12 @@ class ReplayEnv:
                 continue  # leaf state with no recorded decision
             observations = _prefix_observations(self.trace, node)
             selection = policy.select(
-                methods, observations, seed=seed + len(observations)
+                methods, observations, seed=seed + len(observations), costs=self.costs
             )
             child_by_method = {c.candidate_generation_method: c for c in children}
-            historical = children[0].candidate_generation_method if children else None
+            recorded = node.search_parameters.get("historical_choice")
+            historical = recorded if isinstance(recorded, str) else None
+            applicable = historical is not None and historical in methods
             chosen_child = child_by_method.get(selection.method)
             if chosen_child is not None:
                 decision = ReplayDecision(
@@ -185,7 +200,8 @@ class ReplayEnv:
                     estimated_outcome=None,
                     uncertain=False,
                     uncertainty_reason="",
-                    matches_historical=selection.method == historical,
+                    matches_historical=applicable and selection.method == historical,
+                    agreement_applicable=applicable,
                     rationale=selection.rationale,
                 )
             else:
@@ -204,6 +220,7 @@ class ReplayEnv:
                         "no outcome label exists and none was manufactured"
                     ),
                     matches_historical=False,
+                    agreement_applicable=applicable,
                     rationale=selection.rationale,
                 )
             result.decisions.append(decision)

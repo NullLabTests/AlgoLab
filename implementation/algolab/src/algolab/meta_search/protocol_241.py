@@ -19,6 +19,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from algolab.knowledge.operators import OPERATOR_BUDGETS
 from algolab.meta_search.evaluation import evaluate_policy, promote
 from algolab.meta_search.policies import (
     BASELINE_POLICY,
@@ -30,6 +31,7 @@ from algolab.meta_search.policies import (
 from algolab.meta_search.replay import ReplayEnv
 from algolab.meta_search.traces import DiscoveryTrace, TraceIntegrityError, TraceNode
 from algolab.search.toy import run_attempt
+from algolab.statistics import benjamini_hochberg
 
 PROTOCOL_ID = "protocol-241"
 PROTOCOL_VERSION = "1.0.0"
@@ -44,8 +46,13 @@ TRACE_SEED = 77_100
 FAMILIES = ("alpha", "beta")
 
 
-def build_pilot_trace() -> DiscoveryTrace:
-    """Create a deterministic, clearly-labelled synthetic historical trace."""
+def build_pilot_trace(*, record_historical_choice: bool = False) -> DiscoveryTrace:
+    """Create a deterministic, clearly-labelled synthetic historical trace.
+
+    ``record_historical_choice`` writes the *actual* recorded decision on the
+    root state so replay agreement is defined. Protocol 241's sealed bundle
+    predates this field; protocol 242 enables it.
+    """
     trace = DiscoveryTrace(trace_id="trace-pilot-241", experiment_id="EXP-META-241")
     root = TraceNode(
         experiment_id="EXP-META-241",
@@ -54,7 +61,10 @@ def build_pilot_trace() -> DiscoveryTrace:
         policy_version=str(BASELINE_POLICY.version),
         candidate_id="root",
         candidate_generation_method="fixed-baseline",
-        search_parameters={"families": list(FAMILIES)},
+        search_parameters={
+            "families": list(FAMILIES),
+            **({"historical_choice": "tune"} if record_historical_choice else {}),
+        },
         selection_decision="seed root",
         seed=TRACE_SEED,
         dataset_id="toy",
@@ -121,22 +131,28 @@ def run_pilot(
     seed_base: int = 424_242,
     confirmation_seed_base: int = 989_898,
     bootstrap_iterations: int = 1000,
+    protocol_id: str = PROTOCOL_ID,
+    protocol_version: str = PROTOCOL_VERSION,
+    arms: tuple[SearchPolicy, ...] = ARMS,
+    apply_bh: bool = False,
+    record_historical_choice: bool = False,
 ) -> dict[str, Any]:
-    """Run the preregistered pilot and seal a deterministic artifact bundle."""
+    """Run a preregistered meta-search experiment and seal its bundle."""
     target = Path(out_dir)
     target.mkdir(parents=True, exist_ok=True)
-    trace = build_pilot_trace()
+    trace = build_pilot_trace(record_historical_choice=record_historical_choice)
     trace.write(target / "trace.json")
     env = ReplayEnv(
         trace,
         unexplored_candidates=("synthesize", "validate", "polyglot", "rollback"),
+        costs=OPERATOR_BUDGETS,
     )
     (target / "replay").mkdir(exist_ok=True)
     (target / "evaluations").mkdir(exist_ok=True)
     (target / "promotions").mkdir(exist_ok=True)
 
     summaries: list[dict[str, Any]] = []
-    for policy in ARMS:
+    for policy in arms:
         replay = env.deterministic_artifact(policy, seed=17)
         _write_json(target / "replay" / f"{policy.name}.json", replay)
         evaluation = evaluate_policy(
@@ -172,10 +188,30 @@ def run_pilot(
             }
         )
 
+    if apply_bh:
+        # Preregistered BH-FDR across the non-baseline arms only.
+        tested = [s for s in summaries if s["arm"] != BASELINE_POLICY.name]
+        q_values = benjamini_hochberg([s["prospective_p"] for s in tested])
+        for summary, q in zip(tested, q_values, strict=True):
+            summary["prospective_q"] = q
+            path = target / "evaluations" / f"{summary['arm']}.json"
+            evaluation = json.loads(path.read_text(encoding="utf-8"))
+            evaluation["stage_b"]["primary"]["p_adjusted"] = q
+            _write_json(path, evaluation)
+            decision = promote(
+                next(p for p in arms if p.name == summary["arm"]),
+                BASELINE_POLICY,
+                evaluation,
+            )
+            _write_json(
+                target / "promotions" / f"{summary['arm']}.json", decision.to_dict()
+            )
+            summary["promotion"] = decision.status.value
+
     manifest = {
         "schema_version": BUNDLE_SCHEMA_VERSION,
-        "protocol": PROTOCOL_ID,
-        "protocol_version": PROTOCOL_VERSION,
+        "protocol": protocol_id,
+        "protocol_version": protocol_version,
         "trace_kind": "synthetic_pilot_trace",
         "trace_is_prospective_evidence": False,
         "substrate": "algolab.search.toy",
@@ -187,7 +223,8 @@ def run_pilot(
         "seed_base": seed_base,
         "confirmation_seed_base": confirmation_seed_base,
         "bootstrap_iterations": bootstrap_iterations,
-        "arms": [p.name for p in ARMS],
+        "arms": [p.name for p in arms],
+        "multiple_comparison_correction": "benjamini-hochberg" if apply_bh else "none",
         "promotion_gate": (
             "stage A replay-only never promotes; B requires positive CI and p<0.05; "
             "C requires non-negative delta and CI>=-0.001 on held-out gamma"
@@ -211,20 +248,22 @@ def _write_json(path: Path, payload: Any) -> None:
 
 def _render_report(manifest: dict[str, Any], summaries: list[dict[str, Any]]) -> str:
     lines = [
-        f"# {manifest['protocol']} — Meta-Search bounded pilot",
+        f"# {manifest['protocol']} — Meta-Search bounded experiment",
         "",
-        "Status: **exploratory pilot**. The historical trace is synthetic and is "
-        "not prospective evidence. No policy is promoted on replay performance.",
+        "Status: **preregistered experiment**. The historical trace is synthetic "
+        "and is not prospective evidence. No policy is promoted on replay "
+        "performance.",
         "",
         "| Arm | Replay agreement | Prospective Δ/credit | 95% CI low | "
-        "p | Held-out Δ | Promotion |",
-        "|---|---|---|---|---|---|---|",
+        "p | q (BH) | Held-out Δ | Promotion |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for s in summaries:
+        q = f"{s['prospective_q']:.4f}" if "prospective_q" in s else "—"
         lines.append(
             f"| {s['arm']} | {s['historical_agreement']:.3f} | "
             f"{s['prospective_delta']:+.6f} | {s['prospective_ci_low']:+.6f} | "
-            f"{s['prospective_p']:.4f} | {s['confirmation_delta']:+.6f} | "
+            f"{s['prospective_p']:.4f} | {q} | {s['confirmation_delta']:+.6f} | "
             f"{s['promotion']} |"
         )
     lines += [

@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import random
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field, replace
 from typing import Any
 
@@ -79,6 +80,7 @@ class SearchPolicy:
         observations: tuple[Observation, ...],
         *,
         seed: int,
+        costs: Mapping[str, float] | None = None,
     ) -> Selection:
         """Choose one method from *candidates* using only prefix observations."""
         if self.kind == "random_control":
@@ -118,8 +120,11 @@ class SearchPolicy:
         def score(method: str) -> float:
             bucket = stats.get(method)
             if not bucket or bucket["n"] == 0:
-                # Unknown methods get an optimistic prior so they are tried once.
-                return alpha * 1.0 + beta * 1.0
+                # Cost-normalised optimistic prior: an untried method is judged
+                # by how much information one credit buys. Without this the
+                # tie-break silently picks the most expensive operator.
+                cost = max(float((costs or {}).get(method, 1.0)), 1e-9)
+                return (alpha + beta) / cost
             n = bucket["n"]
             win_rate = bucket["wins"] / n
             per_credit = bucket["wins"] / bucket["credits"]
