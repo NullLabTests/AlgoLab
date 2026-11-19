@@ -159,8 +159,11 @@ no policy source is self-modified and no paid API is required.
 - Preregistration: `spec/research/241_META_SEARCH_POLICY_IMPROVEMENT.md`
 - Run: `algolab meta-search-run --dir experiments/protocol-241-v1` then
   `algolab meta-verify --dir experiments/protocol-241-v1`
-- Result: **negative** — no arm beat the fixed baseline; nothing promoted.
-  Historical replay is explicitly *not* prospective evidence.
+- Results: protocol 241 pilot was **mis-scaled and uninformative**; protocol
+  242 screen found positive effects that failed BH-FDR; protocol 243
+  **promoted** the evolved policy on fresh seeds (toy substrate only):
+  +0.0187 discoveries/credit (95% CI +0.0103 to +0.0275, p = 0.0005),
+  held-out +0.0213. Historical replay is *not* prospective evidence.
 
 ## Non-negotiable constraints
 

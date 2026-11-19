@@ -48,6 +48,13 @@ S2 = protocol 237) — see `docs/quality/protocol-236-conflict.md`. Entry format
 |---|---|---|---|---|
 | 11 | Exploratory pilot only: no policy beat the fixed baseline on discoveries/credit (all REJECTED_PROSPECTIVE); the preregistered 10-credit budget was below most operator costs. A post-hoc 40-credit diagnostic also found no improvement (cost-aware Δ = −0.006548, p = 0.14). No promotion; replay never used as prospective evidence | 4 trials/family | `spec/research/241_META_SEARCH_POLICY_IMPROVEMENT.md` | `experiments/protocol-241-v1/`, `experiments/protocol-241-v1-diagnostic/` |
 
+## meta-search confirmatory line (protocols 242–243)
+
+| # | Claim | n | Spec | Evidence |
+|---|---|---|---|---|
+| 12 | Screen with cost-normalised policies and budget matched to operator costs: both cost-aware arms improved prospects and held-out delta, but failed BH-FDR (evolved Δ = +0.020833, CI low +0.003819, q = 0.0907). No promotion | 8 trials/family | `spec/research/242_META_SEARCH_CORRECTED_PROMOTION.md` | `experiments/protocol-242-v1/` |
+| 13 | **Promoted (toy substrate only):** fresh-seed confirmatory run of the evolved policy beats fixed baseline: Δ = +0.018720 discoveries/credit (95% CI +0.010324 to +0.027454, p = q = 0.0005, d = 1.01); held-out gamma Δ = +0.021296 (CI low +0.015046, d = 1.38); secondary also positive. All gates passed; replay was diagnostic only | 24 trials/family | `spec/research/243_META_SEARCH_CONFIRMATORY.md` | `experiments/protocol-243-v1/` |
+
 ## Official milestones (per `planning/MILESTONES.md`)
 
 M0 Delivered · M1 Delivered · **M2 Reference rediscovery — not delivered

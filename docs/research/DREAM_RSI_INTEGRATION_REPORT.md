@@ -89,10 +89,30 @@ than baseline (Δ = −0.006548/credit, 95% CI low −0.0125, p = 0.14) and the
 random control Δ = −0.007540 (p = 0.31); held-out deltas also non-positive.
 All arms again `REJECTED_PROSPECTIVE`, bundle independently verified.
 
-**Conclusion:** no research improvement is claimed. The capability works
-(traces record, replay stays counterfactual-honest, gates fail closed), but the
-tested policies did not discover algorithms better than the fixed baseline
-under the same budget. This is a negative result reported as measured.
+**Protocol 242 — preregistered corrected screen** (`experiments/protocol-242-v1/`,
+spec committed before run). Defects fixed: cost-normalised cold-start prior and
+replay agreement against a *recorded* decision. Budget 40 (matched to operator
+costs), 8 trials/family, BH-FDR. Both cost-aware arms improved: evolved Δ =
++0.020833/credit (CI low +0.003819, raw p = 0.0465) and held-out Δ = +0.022778,
+but BH q = 0.0907 → **not promoted**. Replay agreement is now well-defined and
+measured against an actual recorded decision.
+
+**Protocol 243 — preregistered confirmatory run**
+(`experiments/protocol-243-v1/`, spec committed before run). Single arm
+`evolved` vs fixed baseline, 24 trials/family, fresh seeds
+`1337711 / 2711337`, BH across one comparison. Prospective Δ = +0.018720
+discoveries/credit (95% CI +0.010324 to +0.027454, p = q = 0.0005, d = 1.01);
+secondary Δ = +0.011594 (CI low +0.007701); held-out gamma Δ = +0.021296
+(CI low +0.015046, d = 1.38); secondary held-out Δ = +0.006019 (CI low
++0.004861). All gates passed → **PROMOTED** (checksum
+`355ec5510eb46ed7910997a65b35f29e7cd4826a8f1409d03d809e6b073b2f99`).
+Bundle independently verified (10 files, trace integrity OK).
+
+**Conclusion:** the capability is now scientifically informative. Within the
+**toy substrate**, the evolved cost-aware policy measurably improves
+discoveries per credit under fresh, matched, FDR-corrected conditions and on a
+held-out family. This is *not* a real-workload or deployment claim; it makes
+the policy eligible for subsequent research runs only.
 
 ## 10. Limitations
 
@@ -101,9 +121,14 @@ under the same budget. This is a negative result reported as measured.
 - Replay cannot estimate outcomes for branches never explored; those decisions
   are recorded with `uncertain=true` and no label.
 - Toy substrate only; no real-workload transfer shown.
-- The preregistered budget was mis-scaled to operator costs, making the pilot
-  uninformative about policy quality; the diagnostic is post-hoc.
-- Sample size (4 trials/family) is small; no confirmatory run is justified.
+- The protocol-241 budget was mis-scaled to operator costs; its null is a
+  methodology artifact, explicitly superseded by protocols 242/243.
+- Protocol 243 is confirmatory **within the toy substrate only**; transfer to
+  real workloads (hpo/transform/compose) remains untested. The policy was
+  selected by the protocol-242 screen, so an independent replication on a
+  different substrate is still required before any broader claim.
+- Replay agreement is defined only on states whose trace records a decision;
+  it remains diagnostic, never a promotion criterion.
 
 ## 11. Reproduction
 
@@ -116,6 +141,9 @@ cd implementation/algolab
 .venv/bin/python -m algolab.cli.main meta-verify --dir experiments/protocol-241-v1
 # post-hoc diagnostic only:
 .venv/bin/python -m algolab.cli.main meta-search-run --dir experiments/protocol-241-v1-diagnostic --budget 40 --force
+# preregistered corrected screen and confirmatory run:
+.venv/bin/python -m algolab.cli.main meta-search-run --dir experiments/protocol-242-v1 --protocol-id protocol-242 --trials 8 --budget 40 --seed-base 555111 --confirmation-seed-base 777333 --apply-bh --record-historical-choice --force
+.venv/bin/python -m algolab.cli.main meta-search-run --dir experiments/protocol-243-v1 --protocol-id protocol-243 --arms fixed-baseline,evolved --trials 24 --budget 40 --seed-base 1337711 --confirmation-seed-base 2711337 --apply-bh --record-historical-choice --force
 ```
 
 ## 12. Future research

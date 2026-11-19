@@ -217,6 +217,43 @@ class TestPolicies:
             )
 
 
+class TestCorrectedMechanisms:
+    def test_cold_start_prior_is_cost_normalised(self) -> None:
+        costs = {"rollback": 5.0, "decompose": 20.0}
+        for policy in (REPLAY_POLICY, EVOLVED_POLICY):
+            choice = policy.select(("rollback", "decompose"), (), seed=1, costs=costs)
+            assert choice.method == "rollback", policy.name
+
+    def test_replay_agreement_uses_recorded_decision(self) -> None:
+        from algolab.meta_search.protocol_241 import build_pilot_trace
+
+        trace = build_pilot_trace(record_historical_choice=True)
+        result = ReplayEnv(trace).run(BASELINE_POLICY, seed=17)
+        assert result.n_applicable == 1
+        assert result.decisions[0].historically_chosen_method == "tune"
+        assert result.decisions[0].agreement_applicable is True
+        # Without a recorded decision, agreement is inapplicable, not zero-scored.
+        plain = ReplayEnv(build_pilot_trace()).run(BASELINE_POLICY, seed=17)
+        assert plain.n_applicable == 0
+        assert all(not d.agreement_applicable for d in plain.decisions)
+
+    def test_bh_adjusted_p_gates_promotion(self) -> None:
+        evaluation = {
+            "stage_a": {"is_prospective_evidence": False},
+            "stage_b": {
+                "is_prospective_evidence": True,
+                "primary": {"delta": 0.02, "ci_low": 0.01, "p_value": 0.04,
+                            "p_adjusted": 0.09},
+                "secondary": {"ci_low": 0.01},
+            },
+            "stage_c": {"is_prospective_evidence": True,
+                        "primary": {"delta": 0.02, "ci_low": 0.01}},
+        }
+        decision = promote(EVOLVED_POLICY, BASELINE_POLICY, evaluation)
+        assert decision.status != PromotionStatus.PROMOTED
+        assert "p=0.09" in " ".join(decision.reasons)
+
+
 class TestPromotion:
     def test_historical_replay_alone_cannot_promote(
         self, trace: DiscoveryTrace
@@ -274,8 +311,9 @@ class TestPromotion:
 
 
 class TestPilotAndVerification:
+    @staticmethod
     @pytest.fixture(scope="class")
-    def bundle(self, tmp_path_factory: pytest.TempPathFactory) -> Path:
+    def bundle(tmp_path_factory: pytest.TempPathFactory) -> Path:
         path = tmp_path_factory.mktemp("meta") / "protocol-241-v1"
         run_pilot(path, trials=3, episodes=6, bootstrap_iterations=200)
         return path
