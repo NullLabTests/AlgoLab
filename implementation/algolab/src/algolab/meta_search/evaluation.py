@@ -13,7 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from algolab.meta_search.policies import Observation, SearchPolicy
@@ -30,7 +30,7 @@ PRIMARY_METRIC = "discoveries_per_credit"
 SECONDARY_METRIC = "distinct_useful_per_credit"
 
 
-class PromotionStatus(str, Enum):
+class PromotionStatus(StrEnum):
     PROMOTED = "PROMOTED"
     REJECTED_HISTORICAL_ONLY = "REJECTED_HISTORICAL_ONLY"
     REJECTED_PROSPECTIVE = "REJECTED_PROSPECTIVE"
@@ -58,12 +58,18 @@ class PromotionDecision:
         return raw
 
 
-def replay_evaluation(env: ReplayEnv, policy: SearchPolicy, *, seed: int = 0) -> dict[str, Any]:
+def replay_evaluation(
+    env: ReplayEnv, policy: SearchPolicy, *, seed: int = 0
+) -> dict[str, Any]:
     """Stage A: decision quality, efficiency, coverage and explicit limits."""
     result: ReplayResult = env.run(policy, seed=seed)
     observed = [d for d in result.decisions if d.observed_outcome]
     spent = sum(
-        float((d.observed_outcome or {}).get("evaluation_result", {}).get("cost_credits", 1.0))
+        float(
+            (d.observed_outcome or {})
+            .get("evaluation_result", {})
+            .get("cost_credits", 1.0)
+        )
         for d in observed
     )
     chosen_methods = [d.chosen_method for d in result.decisions]
@@ -77,11 +83,13 @@ def replay_evaluation(env: ReplayEnv, policy: SearchPolicy, *, seed: int = 0) ->
         "search_efficiency_credits": spent,
         "candidate_diversity": len(set(chosen_methods)),
         "coverage": len(set(chosen_methods)) / max(len(set(DEFAULT_OPERATORS)), 1),
-        "failure_patterns": sorted({
-            str((d.observed_outcome or {}).get("fail_class"))
-            for d in observed
-            if (d.observed_outcome or {}).get("fail_class")
-        }),
+        "failure_patterns": sorted(
+            {
+                str((d.observed_outcome or {}).get("fail_class"))
+                for d in observed
+                if (d.observed_outcome or {}).get("fail_class")
+            }
+        ),
         "replay_limitations": [
             "no outcome labels for unexplored branches",
             "cannot measure what would have happened off the recorded tree",
@@ -90,8 +98,15 @@ def replay_evaluation(env: ReplayEnv, policy: SearchPolicy, *, seed: int = 0) ->
     }
 
 
-def _trial_score(policy: SearchPolicy, *, family: str, seed_base: int, trial: int,
-                 episodes: int, budget: float) -> dict[str, float]:
+def _trial_score(
+    policy: SearchPolicy,
+    *,
+    family: str,
+    seed_base: int,
+    trial: int,
+    episodes: int,
+    budget: float,
+) -> dict[str, float]:
     """One deterministic prospective trial of a policy on one task family."""
     observations: list[Observation] = []
     credits = 0.0
@@ -99,12 +114,17 @@ def _trial_score(policy: SearchPolicy, *, family: str, seed_base: int, trial: in
     useful_found: set[str] = set()
     for episode in range(episodes):
         selection = policy.select(
-            tuple(DEFAULT_OPERATORS), tuple(observations),
+            tuple(DEFAULT_OPERATORS),
+            tuple(observations),
             seed=seed_base + trial * 100_000 + episode,
         )
         attempt = run_attempt(
-            family, selection.method, seed_base=seed_base,
-            trial=trial, episode=episode, attempt=episode,
+            family,
+            selection.method,
+            seed_base=seed_base,
+            trial=trial,
+            episode=episode,
+            attempt=episode,
         )
         credits += attempt.cost_credits
         if credits > budget:
@@ -143,24 +163,64 @@ def _stage(
     alpha: float,
 ) -> dict[str, Any]:
     primary: EffectAnalysis = analyze(
-        [ _trial_score(baseline, family=f, seed_base=seed_base, trial=t,
-                       episodes=episodes, budget=budget)[PRIMARY_METRIC]
-          for f in families for t in range(trials) ],
-        [ _trial_score(policy, family=f, seed_base=seed_base, trial=t,
-                       episodes=episodes, budget=budget)[PRIMARY_METRIC]
-          for f in families for t in range(trials) ],
-        metric=PRIMARY_METRIC, seed=seed_base + 1,
-        bootstrap_iterations=bootstrap_iterations, alpha=alpha,
+        [
+            _trial_score(
+                baseline,
+                family=f,
+                seed_base=seed_base,
+                trial=t,
+                episodes=episodes,
+                budget=budget,
+            )[PRIMARY_METRIC]
+            for f in families
+            for t in range(trials)
+        ],
+        [
+            _trial_score(
+                policy,
+                family=f,
+                seed_base=seed_base,
+                trial=t,
+                episodes=episodes,
+                budget=budget,
+            )[PRIMARY_METRIC]
+            for f in families
+            for t in range(trials)
+        ],
+        metric=PRIMARY_METRIC,
+        seed=seed_base + 1,
+        bootstrap_iterations=bootstrap_iterations,
+        alpha=alpha,
     )
     secondary: EffectAnalysis = analyze(
-        [ _trial_score(baseline, family=f, seed_base=seed_base, trial=t,
-                       episodes=episodes, budget=budget)[SECONDARY_METRIC]
-          for f in families for t in range(trials) ],
-        [ _trial_score(policy, family=f, seed_base=seed_base, trial=t,
-                       episodes=episodes, budget=budget)[SECONDARY_METRIC]
-          for f in families for t in range(trials) ],
-        metric=SECONDARY_METRIC, seed=seed_base + 2,
-        bootstrap_iterations=bootstrap_iterations, alpha=alpha,
+        [
+            _trial_score(
+                baseline,
+                family=f,
+                seed_base=seed_base,
+                trial=t,
+                episodes=episodes,
+                budget=budget,
+            )[SECONDARY_METRIC]
+            for f in families
+            for t in range(trials)
+        ],
+        [
+            _trial_score(
+                policy,
+                family=f,
+                seed_base=seed_base,
+                trial=t,
+                episodes=episodes,
+                budget=budget,
+            )[SECONDARY_METRIC]
+            for f in families
+            for t in range(trials)
+        ],
+        metric=SECONDARY_METRIC,
+        seed=seed_base + 2,
+        bootstrap_iterations=bootstrap_iterations,
+        alpha=alpha,
     )
     return {
         "families": list(families),
@@ -202,23 +262,32 @@ def evaluate_policy(
     alpha: float = 0.05,
 ) -> dict[str, Any]:
     """Run stages A/B/C and return a structured, reproducible evaluation."""
-    stage_a = (
-        replay_evaluation(replay_env, policy) if replay_env is not None else None
-    )
+    stage_a = replay_evaluation(replay_env, policy) if replay_env is not None else None
     if stage_a is not None:
         stage_a["policy_checksum"] = policy.checksum()
     stage_b = _stage(
-        policy, baseline, families=families, seed_base=seed_base,
-        trials=trials, episodes=episodes, budget=budget,
-        bootstrap_iterations=bootstrap_iterations, alpha=alpha,
+        policy,
+        baseline,
+        families=families,
+        seed_base=seed_base,
+        trials=trials,
+        episodes=episodes,
+        budget=budget,
+        bootstrap_iterations=bootstrap_iterations,
+        alpha=alpha,
     )
     stage_b["stage"] = "B_prospective"
     stage_b["is_prospective_evidence"] = True
     stage_c = _stage(
-        policy, baseline, families=(confirmation_family,),
-        seed_base=confirmation_seed_base, trials=trials,
-        episodes=episodes, budget=budget,
-        bootstrap_iterations=bootstrap_iterations, alpha=alpha,
+        policy,
+        baseline,
+        families=(confirmation_family,),
+        seed_base=confirmation_seed_base,
+        trials=trials,
+        episodes=episodes,
+        budget=budget,
+        bootstrap_iterations=bootstrap_iterations,
+        alpha=alpha,
     )
     stage_c["stage"] = "C_independent_confirmation"
     stage_c["is_prospective_evidence"] = True
@@ -248,8 +317,11 @@ def promote(
     stage_c = evaluation.get("stage_c")
     if not stage_a or not stage_b or not stage_c:
         return PromotionDecision(
-            PromotionStatus.REJECTED_INCOMPLETE, candidate.policy_id,
-            baseline.policy_id, ("missing one or more evaluation stages",), evaluation,
+            PromotionStatus.REJECTED_INCOMPLETE,
+            candidate.policy_id,
+            baseline.policy_id,
+            ("missing one or more evaluation stages",),
+            evaluation,
         )
     # Rule 1: replay alone can never promote.
     if stage_b.get("is_prospective_evidence") is not True:
@@ -274,13 +346,20 @@ def promote(
         reasons.append("stage C is not prospective evidence")
     if reasons:
         return PromotionDecision(
-            PromotionStatus.REJECTED_PROSPECTIVE if "prospective primary" in " ".join(reasons)
+            PromotionStatus.REJECTED_PROSPECTIVE
+            if "prospective primary" in " ".join(reasons)
             else PromotionStatus.REJECTED_INDEPENDENT,
-            candidate.policy_id, baseline.policy_id, tuple(reasons), evaluation,
+            candidate.policy_id,
+            baseline.policy_id,
+            tuple(reasons),
+            evaluation,
         )
     return PromotionDecision(
-        PromotionStatus.PROMOTED, candidate.policy_id, baseline.policy_id,
-        ("all promotion gates passed",), evaluation,
+        PromotionStatus.PROMOTED,
+        candidate.policy_id,
+        baseline.policy_id,
+        ("all promotion gates passed",),
+        evaluation,
     )
 
 

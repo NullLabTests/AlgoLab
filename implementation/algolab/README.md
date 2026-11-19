@@ -138,6 +138,7 @@ src/algolab/
   workloads/     adapter interface + deterministic quadratic_optimizer workload
   knowledge/     evidence records, M4 operator catalog, skill registry
   search/        protocol-230 toy environment, policies, A/B/C comparison harness
+  meta_search/   protocol-241 replay traces, versioned policies, fail-closed promotion
   statistics.py  deterministic inference: bootstrap CI, Welch's t, Cohen's d, FDR
   util.py        shared utilities
   schemas/       canonical JSON Schemas (byte-identical copies)

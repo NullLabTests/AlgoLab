@@ -28,13 +28,18 @@ from algolab.meta_search.policies import (
     SearchPolicy,
 )
 from algolab.meta_search.replay import ReplayEnv
-from algolab.meta_search.traces import DiscoveryTrace, TraceNode
+from algolab.meta_search.traces import DiscoveryTrace, TraceIntegrityError, TraceNode
 from algolab.search.toy import run_attempt
 
 PROTOCOL_ID = "protocol-241"
 PROTOCOL_VERSION = "1.0.0"
 BUNDLE_SCHEMA_VERSION = "meta-pilot/1.0"
-ARMS: tuple[SearchPolicy, ...] = (BASELINE_POLICY, REPLAY_POLICY, EVOLVED_POLICY, CONTROL_POLICY)
+ARMS: tuple[SearchPolicy, ...] = (
+    BASELINE_POLICY,
+    REPLAY_POLICY,
+    EVOLVED_POLICY,
+    CONTROL_POLICY,
+)
 TRACE_SEED = 77_100
 FAMILIES = ("alpha", "beta")
 
@@ -46,7 +51,7 @@ def build_pilot_trace() -> DiscoveryTrace:
         experiment_id="EXP-META-241",
         parent_id=None,
         policy_id=BASELINE_POLICY.policy_id,
-        policy_version=BASELINE_POLICY.version,
+        policy_version=str(BASELINE_POLICY.version),
         candidate_id="root",
         candidate_generation_method="fixed-baseline",
         search_parameters={"families": list(FAMILIES)},
@@ -57,21 +62,28 @@ def build_pilot_trace() -> DiscoveryTrace:
         observation={"discovery": False, "valid": True},
         derived_metrics={"mean_effect": 0.0},
         created_at_utc="synthetic-pilot",
-        execution_provenance={"source": "synthetic_pilot_trace", "protocol": PROTOCOL_ID},
+        execution_provenance={
+            "source": "synthetic_pilot_trace",
+            "protocol": PROTOCOL_ID,
+        },
     )
     root_node = trace.append(root)
     for index, method in enumerate(("tune", "reparameterize", "decompose", "refresh")):
         family = FAMILIES[index % 2]
         attempt = run_attempt(
-            family, method, seed_base=TRACE_SEED, trial=index,
-            episode=0, attempt=index,
+            family,
+            method,
+            seed_base=TRACE_SEED,
+            trial=index,
+            episode=0,
+            attempt=index,
         )
         trace.append(
             TraceNode(
                 experiment_id="EXP-META-241",
                 parent_id=root_node.node_id,
                 policy_id=BASELINE_POLICY.policy_id,
-                policy_version=BASELINE_POLICY.version,
+                policy_version=str(BASELINE_POLICY.version),
                 candidate_id=f"cand-{method}",
                 candidate_generation_method=method,
                 search_parameters={"family": family, "trial": index},
@@ -91,7 +103,10 @@ def build_pilot_trace() -> DiscoveryTrace:
                 },
                 derived_metrics={"mean_effect": attempt.mean_effect},
                 created_at_utc="synthetic-pilot",
-                execution_provenance={"source": "synthetic_pilot_trace", "protocol": PROTOCOL_ID},
+                execution_provenance={
+                    "source": "synthetic_pilot_trace",
+                    "protocol": PROTOCOL_ID,
+                },
             )
         )
     return trace
@@ -125,10 +140,15 @@ def run_pilot(
         replay = env.deterministic_artifact(policy, seed=17)
         _write_json(target / "replay" / f"{policy.name}.json", replay)
         evaluation = evaluate_policy(
-            policy, BASELINE_POLICY, replay_env=env,
-            families=FAMILIES, seed_base=seed_base,
+            policy,
+            BASELINE_POLICY,
+            replay_env=env,
+            families=FAMILIES,
+            seed_base=seed_base,
             confirmation_seed_base=confirmation_seed_base,
-            trials=trials, episodes=episodes, budget=budget,
+            trials=trials,
+            episodes=episodes,
+            budget=budget,
             bootstrap_iterations=bootstrap_iterations,
         )
         _write_json(target / "evaluations" / f"{policy.name}.json", evaluation)
@@ -136,17 +156,21 @@ def run_pilot(
         _write_json(target / "promotions" / f"{policy.name}.json", decision.to_dict())
         b = evaluation["stage_b"]["primary"]
         c = evaluation["stage_c"]["primary"]
-        summaries.append({
-            "arm": policy.name,
-            "policy_id": policy.policy_id,
-            "historical_agreement": evaluation["stage_a"]["decision_quality_agreement"],
-            "prospective_delta": b["delta"],
-            "prospective_ci_low": b["ci_low"],
-            "prospective_p": b["p_value"],
-            "confirmation_delta": c["delta"],
-            "confirmation_ci_low": c["ci_low"],
-            "promotion": decision.status.value,
-        })
+        summaries.append(
+            {
+                "arm": policy.name,
+                "policy_id": policy.policy_id,
+                "historical_agreement": evaluation["stage_a"][
+                    "decision_quality_agreement"
+                ],
+                "prospective_delta": b["delta"],
+                "prospective_ci_low": b["ci_low"],
+                "prospective_p": b["p_value"],
+                "confirmation_delta": c["delta"],
+                "confirmation_ci_low": c["ci_low"],
+                "promotion": decision.status.value,
+            }
+        )
 
     manifest = {
         "schema_version": BUNDLE_SCHEMA_VERSION,
@@ -192,7 +216,8 @@ def _render_report(manifest: dict[str, Any], summaries: list[dict[str, Any]]) ->
         "Status: **exploratory pilot**. The historical trace is synthetic and is "
         "not prospective evidence. No policy is promoted on replay performance.",
         "",
-        "| Arm | Replay agreement | Prospective Δ/credit | 95% CI low | p | Held-out Δ | Promotion |",
+        "| Arm | Replay agreement | Prospective Δ/credit | 95% CI low | "
+        "p | Held-out Δ | Promotion |",
         "|---|---|---|---|---|---|---|",
     ]
     for s in summaries:
@@ -238,10 +263,15 @@ def verify_pilot(out_dir: str | Path) -> dict[str, Any]:
     extra = sorted(
         p.relative_to(target).as_posix()
         for p in target.rglob("*")
-        if p.is_file() and p.name != "checksums.json"
+        if p.is_file()
+        and p.name != "checksums.json"
         and p.relative_to(target).as_posix() not in expected
     )
-    trace = DiscoveryTrace.load(target / "trace.json")
+    trace_integrity = False
+    try:
+        trace_integrity = DiscoveryTrace.load(target / "trace.json").verify_integrity()
+    except (TraceIntegrityError, ValueError, OSError, json.JSONDecodeError):
+        trace_integrity = False
     promotions = {}
     for path in sorted((target / "promotions").glob("*.json")):
         raw = json.loads(path.read_text(encoding="utf-8"))
@@ -258,12 +288,14 @@ def verify_pilot(out_dir: str | Path) -> dict[str, Any]:
             replay_only_promoted = True
     return {
         "schema_version": BUNDLE_SCHEMA_VERSION,
-        "verified": not mismatches and not extra and trace.verify_integrity()
+        "verified": not mismatches
+        and not extra
+        and trace_integrity
         and not replay_only_promoted,
         "n_files_verified": len(expected),
         "mismatches": mismatches,
         "extra_files": extra,
-        "trace_integrity": trace.verify_integrity(),
+        "trace_integrity": trace_integrity,
         "replay_only_promotion_detected": replay_only_promoted,
         "promotion_verdicts": promotions,
     }

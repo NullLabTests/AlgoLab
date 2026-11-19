@@ -18,7 +18,7 @@ Any attempt to present replay output as prospective evidence is rejected by
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from algolab.meta_search.policies import Observation, SearchPolicy
@@ -27,7 +27,7 @@ from algolab.meta_search.traces import DiscoveryTrace, TraceNode
 REPLAY_SCHEMA_VERSION = "meta-replay/1.0"
 
 
-class OutcomeKind(str, Enum):
+class OutcomeKind(StrEnum):
     OBSERVED = "observed"
     COUNTERFACTUAL_UNCERTAIN = "counterfactual_uncertain"
     ESTIMATED = "estimated"
@@ -105,9 +105,7 @@ def assert_not_prospective(result: ReplayResult) -> None:
 def _observation_from_node(node: TraceNode) -> Observation:
     derived = node.derived_metrics
     obs = node.observation
-    mean_effect = float(
-        derived.get("mean_effect", obs.get("mean_effect", 0.0))  # type: ignore[arg-type]
-    )
+    mean_effect = float(derived.get("mean_effect", obs.get("mean_effect", 0.0)))
     discovery = bool(obs.get("discovery", False) or derived.get("discovery", False))
     return Observation(
         method=node.candidate_generation_method,
@@ -118,7 +116,9 @@ def _observation_from_node(node: TraceNode) -> Observation:
     )
 
 
-def _prefix_observations(trace: DiscoveryTrace, node: TraceNode) -> tuple[Observation, ...]:
+def _prefix_observations(
+    trace: DiscoveryTrace, node: TraceNode
+) -> tuple[Observation, ...]:
     """Observations from ancestors only -- never the current/future nodes."""
     by_id = {n.node_id: n for n in trace.nodes}
     out: list[Observation] = []
@@ -163,11 +163,10 @@ class ReplayEnv:
             if not children and not self.unexplored_candidates:
                 continue  # leaf state with no recorded decision
             observations = _prefix_observations(self.trace, node)
-            selection = policy.select(methods, observations, seed=seed + len(observations))
-            child_by_method = {
-                c.candidate_generation_method: c
-                for c in children
-            }
+            selection = policy.select(
+                methods, observations, seed=seed + len(observations)
+            )
+            child_by_method = {c.candidate_generation_method: c for c in children}
             historical = children[0].candidate_generation_method if children else None
             chosen_child = child_by_method.get(selection.method)
             if chosen_child is not None:
@@ -211,7 +210,9 @@ class ReplayEnv:
         assert_not_prospective(result)
         return result
 
-    def deterministic_artifact(self, policy: SearchPolicy, *, seed: int = 0) -> dict[str, Any]:
+    def deterministic_artifact(
+        self, policy: SearchPolicy, *, seed: int = 0
+    ) -> dict[str, Any]:
         """Replay artifact with an explicit limitations section."""
         result = self.run(policy, seed=seed)
         payload = result.to_dict()
@@ -219,7 +220,7 @@ class ReplayEnv:
             "Replay evaluates decisions at recorded states only.",
             "It cannot establish outcomes for branches never explored.",
             "Counterfactual decisions carry no outcome label (uncertain=true).",
-            "Historical replay is not prospective evidence and cannot promote a policy.",
+            "Historical replay is not prospective evidence and cannot promote.",
         ]
         payload["observed_vs_counterfactual"] = {
             "observed": result.observed_count,

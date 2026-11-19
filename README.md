@@ -147,6 +147,21 @@ is optimal in-domain but fragile under shift, so pair it with adaptation
 whenever transfer is on the line; family-conditioning requires informative
 slice sizes to pay off.
 
+## Meta-Search (protocol 241, exploratory pilot)
+
+AlgoLab can now record its own research search histories, replay alternative
+decisions against them, and evaluate versioned search policies with a
+fail-closed promotion gate. Built from DREAM-RSI ideas but AlgoLab-native;
+no policy source is self-modified and no paid API is required.
+
+- Audit: `docs/research/DREAM_RSI_INTEGRATION_AUDIT.md`
+- Report: `docs/research/DREAM_RSI_INTEGRATION_REPORT.md`
+- Preregistration: `spec/research/241_META_SEARCH_POLICY_IMPROVEMENT.md`
+- Run: `algolab meta-search-run --dir experiments/protocol-241-v1` then
+  `algolab meta-verify --dir experiments/protocol-241-v1`
+- Result: **negative** — no arm beat the fixed baseline; nothing promoted.
+  Historical replay is explicitly *not* prospective evidence.
+
 ## Non-negotiable constraints
 
 - **Human oversight by default, autonomy by exception** — autonomy is

@@ -83,7 +83,9 @@ class SearchPolicy:
         """Choose one method from *candidates* using only prefix observations."""
         if self.kind == "random_control":
             rng = random.Random(seed)
-            return Selection(rng.choice(list(candidates)), "seeded uniform control", True)
+            return Selection(
+                rng.choice(list(candidates)), "seeded uniform control", True
+            )
         if self.kind == "fixed":
             priority = self.config.get("priority", 0.0)
             ordered = sorted(candidates)
@@ -124,8 +126,13 @@ class SearchPolicy:
             avg_effect = bucket["effect"] / n
             return alpha * win_rate + beta * per_credit + gamma * avg_effect
 
-        chosen = max(candidates, key=lambda name: (score(name), -ord(name[0]) if name else 0, name))
-        return Selection(chosen, f"score={score(chosen):.4f} (prefix observations only)")
+        chosen = max(
+            candidates,
+            key=lambda name: (score(name), -ord(name[0]) if name else 0, name),
+        )
+        return Selection(
+            chosen, f"score={score(chosen):.4f} (prefix observations only)"
+        )
 
 
 def _preset(
@@ -156,24 +163,36 @@ def _preset(
 
 
 BASELINE_POLICY = _preset(
-    "fixed-baseline", "fixed", 1, {"priority": 0},
-    "Initial fixed lexicographic search policy", "Existing AlgoLab fixed search behaviour",
+    "fixed-baseline",
+    "fixed",
+    1,
+    {"priority": 0},
+    "Initial fixed lexicographic search policy",
+    "Existing AlgoLab fixed search behaviour",
 )
 REPLAY_POLICY = _preset(
-    "replay-cost-aware", "replay_cost_aware", 1,
+    "replay-cost-aware",
+    "replay_cost_aware",
+    1,
     {"alpha": 0.25, "beta": 0.75, "gamma": 0.0, "epsilon": 0.10},
     "Score methods by observed success-per-credit with 10% exploration",
     "DREAM-RSI replay: cheap-and-good branches deserve more spend",
 )
 EVOLVED_POLICY = _preset(
-    "evolved", "evolved", 2,
+    "evolved",
+    "evolved",
+    2,
     {"alpha": 0.0, "beta": 1.0, "gamma": 0.5, "epsilon": 0.05},
     "Commit to per-credit efficiency with an effect-size term and 5% exploration",
     "Prior protocols found commitment plus cost-awareness efficient in-domain",
 )
 CONTROL_POLICY = _preset(
-    "random-control", "random_control", 1, {},
-    "Seeded uniform random method selection", "Calibration floor for any learned policy",
+    "random-control",
+    "random_control",
+    1,
+    {},
+    "Seeded uniform random method selection",
+    "Calibration floor for any learned policy",
 )
 
 

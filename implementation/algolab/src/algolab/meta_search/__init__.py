@@ -16,21 +16,22 @@ No DREAM-RSI source code is copied.  See
 ``docs/research/DREAM_RSI_INTEGRATION_AUDIT.md`` and ``THIRD_PARTY_NOTICES.md``.
 """
 
+from algolab.meta_search.evaluation import (
+    PromotionDecision,
+    PromotionStatus,
+    evaluate_policy,
+    promote,
+    replay_evaluation,
+)
 from algolab.meta_search.policies import (
     BASELINE_POLICY,
     CONTROL_POLICY,
     EVOLVED_POLICY,
     REPLAY_POLICY,
+    Observation,
     SearchPolicy,
     Selection,
-    Observation,
     propose_policy,
-)
-from algolab.meta_search.traces import (
-    TRACE_SCHEMA_VERSION,
-    DiscoveryTrace,
-    TraceIntegrityError,
-    TraceNode,
 )
 from algolab.meta_search.replay import (
     OutcomeKind,
@@ -38,12 +39,11 @@ from algolab.meta_search.replay import (
     ReplayEnv,
     ReplayResult,
 )
-from algolab.meta_search.evaluation import (
-    PromotionDecision,
-    PromotionStatus,
-    evaluate_policy,
-    promote,
-    replay_evaluation,
+from algolab.meta_search.traces import (
+    TRACE_SCHEMA_VERSION,
+    DiscoveryTrace,
+    TraceIntegrityError,
+    TraceNode,
 )
 
 __all__ = [

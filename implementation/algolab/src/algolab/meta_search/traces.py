@@ -89,7 +89,9 @@ class TraceNode:
 
     def seal(self, previous_checksum: str) -> TraceNode:
         """Return a node with stable id and checksum set (pure function)."""
-        base = replace(self, previous_checksum=previous_checksum, node_id="", checksum="")
+        base = replace(
+            self, previous_checksum=previous_checksum, node_id="", checksum=""
+        )
         digest = _sha256(base.content())
         return replace(base, node_id=f"trn_{digest[:20]}", checksum=digest)
 

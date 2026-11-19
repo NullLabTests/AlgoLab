@@ -42,6 +42,12 @@ S2 = protocol 237) — see `docs/quality/protocol-236-conflict.md`. Entry format
 |---|---|---|---|---|
 | 10 | A closed 585-program grammar (1–3 typed transforms, no repeats) over three sklearn datasets yields **no** significant policy advantage over uniform random program search on distinct-validated-programs/credit in either training family (H1–H5 all false), and **no** arm's champion transfers positively to the held-out family; outcome class **C**. Scoped to this 585-program space, not to knowledge loops in general | 10 trials/family | `spec/research/240_GENERATIVE_COMPOSITION_SEARCH.md` | `experiments/protocol-240-v1/` |
 
+## meta-search substrate (protocol 241, replay-grounded policy improvement)
+
+| # | Claim | n | Spec | Evidence |
+|---|---|---|---|---|
+| 11 | Exploratory pilot only: no policy beat the fixed baseline on discoveries/credit (all REJECTED_PROSPECTIVE); the preregistered 10-credit budget was below most operator costs. A post-hoc 40-credit diagnostic also found no improvement (cost-aware Δ = −0.006548, p = 0.14). No promotion; replay never used as prospective evidence | 4 trials/family | `spec/research/241_META_SEARCH_POLICY_IMPROVEMENT.md` | `experiments/protocol-241-v1/`, `experiments/protocol-241-v1-diagnostic/` |
+
 ## Official milestones (per `planning/MILESTONES.md`)
 
 M0 Delivered · M1 Delivered · **M2 Reference rediscovery — not delivered
