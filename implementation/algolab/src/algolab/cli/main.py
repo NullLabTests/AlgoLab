@@ -192,6 +192,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p_meta.add_argument("--bootstrap-iterations", type=int, default=1000)
     p_meta.add_argument("--protocol-id", default="protocol-241")
     p_meta.add_argument("--protocol-version", default="1.0.0")
+    p_meta.add_argument("--arms", default=None,
+                        help="comma-separated arm names (default: all four)")
     p_meta.add_argument("--apply-bh", action="store_true",
                         help="Benjamini-Hochberg FDR across non-baseline arms")
     p_meta.add_argument("--record-historical-choice", action="store_true",
@@ -557,7 +559,15 @@ def cmd_search_run(args: argparse.Namespace) -> int:
 
 
 def cmd_meta_search_run(args: argparse.Namespace) -> int:
-    from algolab.meta_search.protocol_241 import run_pilot
+    from algolab.meta_search.protocol_241 import ARMS, run_pilot
+
+    arms = ARMS
+    if args.arms:
+        selected = {name.strip() for name in args.arms.split(",")}
+        arms = tuple(p for p in ARMS if p.name in selected)
+        if not arms:
+            print(f"no known arms in {args.arms!r}", file=sys.stderr)
+            return 2
 
     if (args.dir / "checksums.json").exists() and not args.force:
         print(f"refusing to overwrite sealed bundle: {args.dir} (use --force)",
@@ -572,6 +582,7 @@ def cmd_meta_search_run(args: argparse.Namespace) -> int:
         protocol_version=args.protocol_version,
         apply_bh=args.apply_bh,
         record_historical_choice=args.record_historical_choice,
+        arms=arms,
     )
     if args.json:
         print(json.dumps(result, indent=2, sort_keys=True))
