@@ -37,7 +37,7 @@ the executable core of the platform, delivered across five milestones:
   `../../spec/research/230_*` … `240_*`; findings summarized in the root
   README ("What we learned").
 
-The test suite currently has **443 passing tests** covering unit, integration,
+The test suite currently has **467 passing tests** covering unit, integration,
 ontology-invariant, protocol-compliance (230–240, including a provenance and
 s2 smoke test), committed-artifact integrity, sealed-bundle reproduction, and
 golden reproduction behavior. `make test` runs the fast lane (`-m "not slow"`);
