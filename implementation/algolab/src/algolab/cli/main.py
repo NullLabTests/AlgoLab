@@ -179,6 +179,26 @@ def _build_parser() -> argparse.ArgumentParser:
     p_search.add_argument("--json", action="store_true",
                           help="emit the statistics document as JSON")
 
+    p_meta = sub.add_parser(
+        "meta-search-run",
+        help="run the preregistered protocol-241 meta-search pilot")
+    p_meta.add_argument("--dir", type=Path, required=True,
+                        help="artifact directory for the sealed bundle")
+    p_meta.add_argument("--trials", type=int, default=4)
+    p_meta.add_argument("--episodes", type=int, default=8)
+    p_meta.add_argument("--budget", type=float, default=10.0)
+    p_meta.add_argument("--seed-base", type=int, default=424_242)
+    p_meta.add_argument("--confirmation-seed-base", type=int, default=989_898)
+    p_meta.add_argument("--bootstrap-iterations", type=int, default=1000)
+    p_meta.add_argument("--force", action="store_true",
+                        help="overwrite an existing sealed bundle")
+    p_meta.add_argument("--json", action="store_true")
+
+    p_mverify = sub.add_parser(
+        "meta-verify", help="independently verify a sealed meta-search bundle")
+    p_mverify.add_argument("--dir", type=Path, required=True)
+    p_mverify.add_argument("--json", action="store_true")
+
     return parser
 
 
@@ -530,6 +550,41 @@ def cmd_search_run(args: argparse.Namespace) -> int:
     return rc
 
 
+def cmd_meta_search_run(args: argparse.Namespace) -> int:
+    from algolab.meta_search.protocol_241 import run_pilot
+
+    if (args.dir / "checksums.json").exists() and not args.force:
+        print(f"refusing to overwrite sealed bundle: {args.dir} (use --force)",
+              file=sys.stderr)
+        return 2
+    result = run_pilot(
+        args.dir, trials=args.trials, episodes=args.episodes,
+        budget=args.budget, seed_base=args.seed_base,
+        confirmation_seed_base=args.confirmation_seed_base,
+        bootstrap_iterations=args.bootstrap_iterations,
+    )
+    if args.json:
+        print(json.dumps(result, indent=2, sort_keys=True))
+    else:
+        for summary in result["summaries"]:
+            print(f"{summary['arm']:>16}  d={summary['prospective_delta']:+.6f}  "
+                  f"ci_low={summary['prospective_ci_low']:+.6f}  "
+                  f"{summary['promotion']}")
+    return 0
+
+
+def cmd_meta_verify(args: argparse.Namespace) -> int:
+    from algolab.meta_search.protocol_241 import verify_pilot
+
+    verdict = verify_pilot(args.dir)
+    if args.json:
+        print(json.dumps(verdict, indent=2, sort_keys=True))
+    else:
+        print(f"verified={verdict['verified']} files={verdict['n_files_verified']} "
+              f"trace_integrity={verdict['trace_integrity']}")
+    return 0 if verdict["verified"] else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
@@ -564,6 +619,10 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_audit_log(args)
     if command == "search-run":
         return cmd_search_run(args)
+    if command == "meta-search-run":
+        return cmd_meta_search_run(args)
+    if command == "meta-verify":
+        return cmd_meta_verify(args)
     parser.print_help()
     return 2
 
