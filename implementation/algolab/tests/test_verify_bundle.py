@@ -143,6 +143,29 @@ class TestNumericComparison:
         assert "compute.evaluation_seconds" in excluded
         assert "nested.measured_operator_seconds" in excluded
 
+    def test_interpreter_version_is_volatile_but_library_versions_are_not(
+            self) -> None:
+        payload = {
+            "workload_metadata": {
+                "python_version": "3.14.4",
+                "numpy_version": "2.5.2",
+                "sklearn_version": "1.9.0",
+            }
+        }
+        excluded: list[str] = []
+        stripped = verify._strip_volatile(payload, excluded)
+        assert stripped == {
+            "workload_metadata": {
+                "numpy_version": "2.5.2",
+                "sklearn_version": "1.9.0",
+            }
+        }
+        assert excluded == ["workload_metadata.python_version"]
+        assert verify.compare_values(
+            {"workload_metadata": {"numpy_version": "2.5.2"}},
+            {"workload_metadata": {"numpy_version": "2.4.6"}},
+        ) != []
+
     def test_bool_is_not_compared_as_a_number(self) -> None:
         assert verify.compare_values(True, True) == []
         assert verify.compare_values(True, 1)

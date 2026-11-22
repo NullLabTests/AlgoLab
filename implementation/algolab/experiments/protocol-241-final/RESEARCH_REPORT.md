@@ -112,7 +112,7 @@ The correction, derivation, and non-decision relevance are recorded in
 
 ## Automated checks
 
-- `.venv/bin/python -m pytest -q --durations=15`: **474 passed, 0 failed**.
+- `.venv/bin/python -m pytest -q --durations=15`: **475 passed, 0 failed**.
   Complete output: `test-results.txt`. Warnings were pre-existing Pydantic,
   NumPy/sklearn deprecation, and ResourceWarnings; none were test failures.
 - `.venv/bin/python -m ruff check src tests scripts`: **All checks passed!**
@@ -131,6 +131,13 @@ PR review found that this final-summary bundle initially recorded checksums as
 format was corrected before merge; no research result, threshold, historical
 bundle, or sealed protocol artifact was changed. All checks above were re-run
 after the correction.
+
+A second review fix made the protocol-240 clean-reproduction test portable:
+`scripts/verify_bundle.py` now treats `python_version` as provenance while
+still comparing NumPy/scikit-learn versions and byte-exact raw streams. The
+test skips outside the sealed numerical environment, and CI gained a dedicated
+`repro` job pinned to NumPy 2.5.2 / scikit-learn 1.9.0 where it runs for real.
+No historical bundle was rewritten.
 
 ## Failure analysis and limitations
 

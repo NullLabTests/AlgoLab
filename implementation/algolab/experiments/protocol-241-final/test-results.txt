@@ -3,8 +3,8 @@
 ........................................................................ [ 45%]
 ........................................................................ [ 60%]
 ........................................................................ [ 75%]
-........................................................................ [ 91%]
-..........................................                               [100%]
+........................................................................ [ 90%]
+...........................................                              [100%]
 =============================== warnings summary ===============================
 tests/test_cli_execution.py::test_cli_error_handling
   /home/illy/AlgoLaB/implementation/algolab/.venv/lib/python3.14/site-packages/pydantic/main.py:475: UserWarning: Pydantic serializer warnings:
@@ -19,38 +19,20 @@ tests/test_provenance_and_s2.py::TestS2Substrate::test_resolves_and_metadata_lis
   As an alternative, you can create a new view using np.reshape (with copy=False if needed).
     images.shape = (-1, 8, 8)
 
-tests/test_search.py::test_cli_search_run_s2_workload_is_reachable
-  /home/illy/AlgoLaB/implementation/algolab/.venv/lib/python3.14/site-packages/sklearn/utils/parallel.py:161: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x706984765f30>
-    for k, v in zip(warning_filter_keys, filter_args)
-  Enable tracemalloc to get traceback where the object was allocated.
-  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
-
-tests/test_search.py::test_cli_search_run_s2_workload_is_reachable
-  /home/illy/AlgoLaB/implementation/algolab/.venv/lib/python3.14/site-packages/sklearn/utils/parallel.py:161: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x706985a8fd30>
-    for k, v in zip(warning_filter_keys, filter_args)
-  Enable tracemalloc to get traceback where the object was allocated.
-  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
-
-tests/test_search.py::test_cli_search_run_s2_workload_is_reachable
-  /home/illy/AlgoLaB/implementation/algolab/.venv/lib/python3.14/site-packages/sklearn/utils/parallel.py:161: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x706985a8fe20>
-    for k, v in zip(warning_filter_keys, filter_args)
-  Enable tracemalloc to get traceback where the object was allocated.
-  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
-
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ============================= slowest 15 durations =============================
-519.64s call     tests/test_protocol_240.py::TestCommittedBundleReproduces::test_committed_bundle_reproduces_in_a_clean_process
-71.25s call     tests/test_protocol_239.py::TestProtocol239ComplianceSmoke::test_tiny_run_produces_bundle
-70.31s call     tests/test_protocol_240.py::TestProtocol240Bundle::test_report_is_byte_stable_across_runs
-39.37s call     tests/test_search.py::test_cli_search_run_s2_workload_is_reachable
-35.53s call     tests/test_protocol_240.py::TestProtocol240Bundle::test_report_contains_the_pre_registered_hypotheses
-34.52s call     tests/test_protocol_240.py::TestProtocol240Bundle::test_smoke_run_seals_a_verifiable_bundle
-19.24s call     tests/test_protocol_235.py::TestHpoEndToEnd::test_tiny_hpo_run_produces_artifacts
-16.53s call     tests/test_protocol_238.py::TestProtocolComplianceSmoke::test_tiny_run_produces_qd_bundle
+521.45s call     tests/test_protocol_240.py::TestCommittedBundleReproduces::test_committed_bundle_reproduces_in_a_clean_process
+73.83s call     tests/test_protocol_240.py::TestProtocol240Bundle::test_report_is_byte_stable_across_runs
+71.22s call     tests/test_protocol_239.py::TestProtocol239ComplianceSmoke::test_tiny_run_produces_bundle
+39.05s call     tests/test_search.py::test_cli_search_run_s2_workload_is_reachable
+36.11s call     tests/test_protocol_240.py::TestProtocol240Bundle::test_smoke_run_seals_a_verifiable_bundle
+35.51s call     tests/test_protocol_240.py::TestProtocol240Bundle::test_report_contains_the_pre_registered_hypotheses
+19.22s call     tests/test_protocol_235.py::TestHpoEndToEnd::test_tiny_hpo_run_produces_artifacts
+16.50s call     tests/test_protocol_238.py::TestProtocolComplianceSmoke::test_tiny_run_produces_qd_bundle
 9.49s call     tests/test_cli_execution.py::test_worker_is_deterministic_across_cli_invocations
-8.47s call     tests/test_rules_library.py::TestHpoEndToEnd::test_tiny_hpo_run_produces_artifacts
-6.18s call     tests/test_cli_execution.py::test_full_cli_workflow
-6.11s call     tests/test_artifact_integrity.py::test_every_recorded_digest_matches_the_artifact_bytes
+8.55s call     tests/test_rules_library.py::TestHpoEndToEnd::test_tiny_hpo_run_produces_artifacts
+6.46s call     tests/test_artifact_integrity.py::test_every_recorded_digest_matches_the_artifact_bytes
+6.20s call     tests/test_cli_execution.py::test_full_cli_workflow
 5.28s call     tests/test_lifecycle.py::test_full_lifecycle_all_success
 4.82s call     tests/test_lifecycle.py::test_cancelled_run_releases_reservation
 4.10s call     tests/test_determinism.py::test_deterministic_outcomes_across_clean_projects

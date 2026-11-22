@@ -14,7 +14,7 @@
       "command": ".venv/bin/python -m pytest -q --durations=15",
       "complete_output": "implementation/algolab/experiments/protocol-241-final/test-results.txt",
       "failed": 0,
-      "passed": 474
+      "passed": 475
     },
     "ruff": {
       "command": ".venv/bin/python -m ruff check src tests scripts",
@@ -81,7 +81,7 @@
     "before": "nested {bytes, sha256} objects",
     "after": "flat filename -> sha256 map",
     "research_content_changed": false,
-    "note": "Corrected before merge to satisfy tests/test_artifact_integrity.py; all checks re-run afterward."
+    "note": "Corrected before merge to satisfy tests/test_artifact_integrity.py; all checks re-run afterward. A follow-up CI fix made protocol-240 reproduction portable: python_version is now volatile provenance, numerical library versions and byte-exact raw streams remain compared, and a pinned repro job runs the test."
   },
   "protocol_244": {
     "checksums_file_sha256": "b97d66243aba8862deb49a2fc3bb5dcd7e1c157e147daa1f4924ea4a040b46b4",

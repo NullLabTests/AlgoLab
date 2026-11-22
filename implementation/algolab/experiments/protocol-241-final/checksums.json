@@ -1,10 +1,10 @@
 {
-  "RESEARCH_REPORT.md": "8ce7316c10a3d7114d11a1530946c833d2d56cad2f30c429dd1eeedbdd96d6a9",
+  "RESEARCH_REPORT.md": "8233c3dcd216b36eba4c06b20e9945c287fa7247bdda733f3f3f06938813808d",
   "compute-accounting-correction.json": "7385a012641172cb23ce9293add459c329783ae37bad8dcba282c753b50e6c41",
   "mypy.txt": "960745a059df2e6bf5556b518f6404c7707247bf3da084d48c3008145eb95a5d",
   "protocol-244-reproduction-verification.json": "548170212183423d7db95d292bf11319b67a51d50f4d67177ec9bd1fdc1e4bb8",
   "reproduction-verification.json": "e83348ae014fdf434f1734f112ee6147c3254458729273d7392baa5f882637f6",
-  "results_manifest.json": "006c4e2a5b7060900019914609d93dda7cafc89f2e3910dd2b285439718d013d",
+  "results_manifest.json": "63c4f46fb04bf41d66c9e9da4f06720be70de60bb0569b147e4e52602dd4d27f",
   "ruff.txt": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
-  "test-results.txt": "773ef28479929405c8ee311d3d4630ee82a0b63d1962f01a4dcea7ab5ee7cb9c"
+  "test-results.txt": "5d66077faef1a6d89d7ec70c5b0f9f9eccfe00bb1abe35c850de3e8619a21842"
 }

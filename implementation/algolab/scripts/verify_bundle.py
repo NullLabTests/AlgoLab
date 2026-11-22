@@ -17,10 +17,14 @@ Given a bundle directory (e.g. ``experiments/protocol-230-v1``), this script:
      (bootstrap/BLAS last-digit differences; defect D-10);
    - ``manifest.json`` / ``plan.json`` are compared field-by-field with
      wall-clock fields excluded (``created_at``, ``measured_operator_seconds``,
-     ``evaluation_seconds`` — recorded but never read by any decision) and a
+     ``evaluation_seconds`` — recorded but never read by any decision), the
+     interpreter version excluded as provenance (``python_version``; the
+     byte-exact raw streams still detect any result change), and a
      small, justified allow-list of *additive* metadata fields accepted (see
      :data:`ADDITIVE_FIELDS`). Every excluded field is listed in the verdict,
-     so the exclusion is auditable rather than silent.
+     so the exclusion is auditable rather than silent. Numerical library
+     versions (``numpy_version``, ``sklearn_version``) remain compared: they
+     have changed raw results in practice and are therefore decision-relevant.
 5. writes ``<bundle>/reproduction-verification.json`` (or ``--out``) with the
    per-file verdicts and exits non-zero on any failure.
 
@@ -55,10 +59,14 @@ BYTE_EXACT_FILES = ("report.md",)
 #: is hidden. ``created_at`` is a wall-clock timestamp; every ``*_seconds``
 #: field is a measured wall-clock duration. Both are *recorded but never read*:
 #: no search decision, no statistic, and no artifact value depends on them
-#: (protocol 240 §8 states this contract explicitly). Attempt counts, credit
-#: totals, seeds, and every derived statistic are still compared.
+#: (protocol 240 §8 states this contract explicitly). ``python_version`` is
+#: interpreter provenance: the same pinned numerical libraries produce the same
+#: byte-exact raw streams on Python 3.11/3.12/3.14, so comparing the interpreter
+#: string alone would reject an otherwise exact reproduction. Attempt counts,
+#: credit totals, seeds, library versions, and every derived statistic are still
+#: compared.
 VOLATILE_FIELDS = ("created_at", "measured_operator_seconds",
-                   "evaluation_seconds")
+                   "evaluation_seconds", "python_version")
 #: Committed-field additions the verifier accepts without treating the bundle
 #: as unreproduced. Each entry must name *why* the extra field cannot change an
 #: outcome; a field is never allowed merely because it is convenient. The

@@ -505,6 +505,25 @@ class TestProtocol240Bundle:
             assert volatile not in text, volatile
 
 
+def _numerical_environment() -> dict[str, str]:
+    """Versions that determine byte-exact raw streams for this bundle."""
+    import numpy
+    import sklearn
+
+    meta = json.loads(
+        (COMMITTED_BUNDLE / "environment.json").read_text())["workload_metadata"]
+    return {
+        "sealed": {
+            "numpy": str(meta["numpy_version"]),
+            "sklearn": str(meta["sklearn_version"]),
+        },
+        "installed": {
+            "numpy": str(numpy.__version__),
+            "sklearn": str(sklearn.__version__),
+        },
+    }
+
+
 @pytest.mark.skipif(not COMMITTED_BUNDLE.is_dir(),
                     reason="protocol-240-v1 bundle not sealed in this tree")
 class TestCommittedBundleReproduces:
@@ -521,6 +540,12 @@ class TestCommittedBundleReproduces:
 
     def test_committed_bundle_reproduces_in_a_clean_process(self,
                                                             tmp_path) -> None:
+        versions = _numerical_environment()
+        if versions["sealed"] != versions["installed"]:
+            pytest.skip(
+                "protocol-240-v1 was sealed with "
+                f"{versions['sealed']}; installed {versions['installed']}. "
+                "Byte-exact reproduction runs in the pinned CI repro job.")
         out = tmp_path / "verdict.json"
         result = subprocess.run(  # noqa: S603 - fixed argv, no shell
             [sys.executable, str(VERIFY_SCRIPT), str(COMMITTED_BUNDLE),
