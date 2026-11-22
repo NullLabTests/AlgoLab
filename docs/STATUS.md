@@ -1,11 +1,11 @@
 # STATUS — proven claims, substrates, sample sizes, evidence links
 
-Updated: 2026-11-15 — protocols 239 (transform) and 240 (compose) recorded;
-both bundles independently re-executed and reproduced by
-`scripts/verify_bundle.py`. Protocol 240 adds a **negative** claim (class C).
-The protocol-236 designation was resolved (D-2: 236 = higher-N real workload,
-S2 = protocol 237) — see `docs/quality/protocol-236-conflict.md`. Entry format:
-**claim** — substrate, n, register link, evidence bundle.
+Updated: 2026-11-22 — protocols 239 (transform) and 240 (compose) remain
+independently reproduced; the meta-search line now includes protocol 244, a
+preregistered **negative transfer** result on real workloads. The protocol-236
+designation was resolved (D-2: 236 = higher-N real workload, S2 = protocol 237)
+— see `docs/quality/protocol-236-conflict.md`. Entry format: **claim** —
+substrate, n, register link, evidence bundle.
 
 ## toy substrate (deterministic planted-truth generator)
 
@@ -41,6 +41,20 @@ S2 = protocol 237) — see `docs/quality/protocol-236-conflict.md`. Entry format
 | # | Claim | n | Spec | Evidence |
 |---|---|---|---|---|
 | 10 | A closed 585-program grammar (1–3 typed transforms, no repeats) over three sklearn datasets yields **no** significant policy advantage over uniform random program search on distinct-validated-programs/credit in either training family (H1–H5 all false), and **no** arm's champion transfers positively to the held-out family; outcome class **C**. Scoped to this 585-program space, not to knowledge loops in general | 10 trials/family | `spec/research/240_GENERATIVE_COMPOSITION_SEARCH.md` | `experiments/protocol-240-v1/` |
+
+## meta-search substrate (protocol 241, replay-grounded policy improvement)
+
+| # | Claim | n | Spec | Evidence |
+|---|---|---|---|---|
+| 11 | Exploratory pilot only: no policy beat the fixed baseline on discoveries/credit (all REJECTED_PROSPECTIVE); the preregistered 10-credit budget was below most operator costs. A post-hoc 40-credit diagnostic also found no improvement (cost-aware Δ = −0.006548, p = 0.14). No promotion; replay never used as prospective evidence | 4 trials/family | `spec/research/241_META_SEARCH_POLICY_IMPROVEMENT.md` | `experiments/protocol-241-v1/`, `experiments/protocol-241-v1-diagnostic/` |
+
+## meta-search confirmatory line (protocols 242–243)
+
+| # | Claim | n | Spec | Evidence |
+|---|---|---|---|---|
+| 12 | Screen with cost-normalised policies and budget matched to operator costs: both cost-aware arms improved prospects and held-out delta, but failed BH-FDR (evolved Δ = +0.020833, CI low +0.003819, q = 0.0907). No promotion | 8 trials/family | `spec/research/242_META_SEARCH_CORRECTED_PROMOTION.md` | `experiments/protocol-242-v1/` |
+| 13 | **Promoted (toy substrate only):** fresh-seed confirmatory run of the evolved policy beats fixed baseline: Δ = +0.018720 discoveries/credit (95% CI +0.010324 to +0.027454, p = q = 0.0005, d = 1.01); held-out gamma Δ = +0.021296 (CI low +0.015046, d = 1.38); secondary also positive. All gates passed; replay was diagnostic only | 24 trials/family | `spec/research/243_META_SEARCH_CONFIRMATORY.md` | `experiments/protocol-243-v1/` |
+| 14 | **Not demonstrated (real workloads):** the unchanged evolved policy does not transfer to `transform` or `hpo`: prospective Δ = +0.004045 (transform, CI low −0.003175, q = 0.5052) and +0.002500 (hpo, CI low 0, q = 0.5052); both `REJECTED_PROSPECTIVE`, replay diagnostic only; bundle byte-reproduced | 8 trials/family/stage per workload | `spec/research/244_META_SEARCH_REAL_WORKLOAD_TRANSFER.md` | `experiments/protocol-244-v1/`, `implementation/algolab/experiments/protocol-241-final/RESEARCH_REPORT.md` |
 
 ## Official milestones (per `planning/MILESTONES.md`)
 

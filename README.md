@@ -147,6 +147,30 @@ is optimal in-domain but fragile under shift, so pair it with adaptation
 whenever transfer is on the line; family-conditioning requires informative
 slice sizes to pay off.
 
+## Meta-Search (protocols 241–244, toy confirmation and real-workload transfer test)
+
+AlgoLab can record its own research search histories, replay alternative
+decisions against them, and evaluate versioned search policies with a
+fail-closed promotion gate. Built from DREAM-RSI ideas but AlgoLab-native;
+no policy source is self-modified and no paid API is required.
+
+- Audit: `docs/research/DREAM_RSI_INTEGRATION_AUDIT.md`
+- Reports: `docs/research/DREAM_RSI_INTEGRATION_REPORT.md` and the consolidated
+  `implementation/algolab/experiments/protocol-241-final/RESEARCH_REPORT.md`
+- Preregistrations: `spec/research/241_META_SEARCH_POLICY_IMPROVEMENT.md` …
+  `244_META_SEARCH_REAL_WORKLOAD_TRANSFER.md`
+- Run: `algolab meta-search-run --dir experiments/protocol-243-v1` (or
+  `algolab meta-transfer-run --dir experiments/protocol-244-v1`), then
+  `algolab meta-verify --dir <bundle>`
+- Results: protocol 241 pilot was **mis-scaled and uninformative**; protocol
+  242 screen found positive effects that failed BH-FDR; protocol 243
+  **promoted** the evolved policy on fresh seeds (toy substrate only):
+  +0.0187 discoveries/credit (95% CI +0.0103 to +0.0275, p = 0.0005),
+  held-out +0.0213. Protocol 244 tested that unchanged policy on real
+  `transform`/`hpo` workloads and **did not transfer it**: both arms were
+  `REJECTED_PROSPECTIVE` (q = 0.5052). Historical replay is *not* prospective
+  evidence; no deployment or autonomy claim follows from the toy promotion.
+
 ## Non-negotiable constraints
 
 - **Human oversight by default, autonomy by exception** — autonomy is

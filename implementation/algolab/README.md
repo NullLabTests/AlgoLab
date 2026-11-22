@@ -37,7 +37,7 @@ the executable core of the platform, delivered across five milestones:
   `../../spec/research/230_*` … `240_*`; findings summarized in the root
   README ("What we learned").
 
-The test suite currently has **443 passing tests** covering unit, integration,
+The test suite currently has **467 passing tests** covering unit, integration,
 ontology-invariant, protocol-compliance (230–240, including a provenance and
 s2 smoke test), committed-artifact integrity, sealed-bundle reproduction, and
 golden reproduction behavior. `make test` runs the fast lane (`-m "not slow"`);
@@ -138,6 +138,7 @@ src/algolab/
   workloads/     adapter interface + deterministic quadratic_optimizer workload
   knowledge/     evidence records, M4 operator catalog, skill registry
   search/        protocol-230 toy environment, policies, A/B/C comparison harness
+  meta_search/   protocol-241 replay traces, versioned policies, fail-closed promotion
   statistics.py  deterministic inference: bootstrap CI, Welch's t, Cohen's d, FDR
   util.py        shared utilities
   schemas/       canonical JSON Schemas (byte-identical copies)
@@ -176,8 +177,10 @@ docs/decisions/  architecture decision records (ADR-0001..0008)
   its ≥2-family promotion bar; the cost-aware successor C+ met it
   (`experiments/protocol-230-v2/`); follow-up protocols isolated
   representation, data-quantity, and decision-rule effects. Scope caveat:
-  toy substrate only — real-workload transfer is unproven, so autonomy
-  beyond Level 1 remains ungranted.
+  toy substrate only for that claim. The separate meta-search line
+  (protocols 241–244) promotes the evolved policy on the toy substrate, but the
+  preregistered real-workload transfer test (protocol 244) rejected promotion on
+  `transform` and `hpo`. Autonomy beyond Level 1 remains ungranted.
 
 ## Documentation
 

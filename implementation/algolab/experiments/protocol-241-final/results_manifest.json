@@ -1,0 +1,281 @@
+{
+  "branch": "integration/dream-rsi-meta-search",
+  "checks": {
+    "meta_verification": {
+      "protocol_243": "verified=true, 10 files, trace_integrity=true, no replay-only promotion",
+      "protocol_244": "verified=true, 16 files, trace_integrity=true, no replay-only promotion"
+    },
+    "mypy": {
+      "command": ".venv/bin/python -m mypy",
+      "output": "implementation/algolab/experiments/protocol-241-final/mypy.txt",
+      "result": "Success: no issues found in 59 source files"
+    },
+    "pytest": {
+      "command": ".venv/bin/python -m pytest -q --durations=15",
+      "complete_output": "implementation/algolab/experiments/protocol-241-final/test-results.txt",
+      "failed": 0,
+      "passed": 474
+    },
+    "ruff": {
+      "command": ".venv/bin/python -m ruff check src tests scripts",
+      "output": "implementation/algolab/experiments/protocol-241-final/ruff.txt",
+      "result": "All checks passed!"
+    }
+  },
+  "evidence_files": {
+    "compute_correction": "implementation/algolab/experiments/protocol-241-final/compute-accounting-correction.json",
+    "final_report": "implementation/algolab/experiments/protocol-241-final/RESEARCH_REPORT.md",
+    "protocol_243_reproduction": "implementation/algolab/experiments/protocol-241-final/reproduction-verification.json",
+    "protocol_244_reproduction": "implementation/algolab/experiments/protocol-241-final/protocol-244-reproduction-verification.json"
+  },
+  "final_position": "Toy-substrate meta-search capability demonstrated; real-workload transfer and autonomy expansion not demonstrated.",
+  "generated": "2026-11-22",
+  "historical_bundles": {
+    "protocol_241_diagnostic": {
+      "checksums_file_sha256": "4aaa44c77c4cdfc37ffd61456420e4ab9234c9b15146b5e8bca1ce72ed4d195e",
+      "n_sealed_files": 16,
+      "path": "implementation/algolab/experiments/protocol-241-v1-diagnostic",
+      "status": "post-hoc exploratory diagnostic; all arms REJECTED_PROSPECTIVE"
+    },
+    "protocol_241_pilot": {
+      "checksums_file_sha256": "4626410a0519b6d6d32343222a6ca99c427d8b083bf4aa60a455b348a7f01f1b",
+      "n_sealed_files": 16,
+      "path": "implementation/algolab/experiments/protocol-241-v1",
+      "status": "negative pilot; all arms REJECTED_PROSPECTIVE"
+    },
+    "protocol_242_screen": {
+      "checksums_file_sha256": "ac9914d46aa6f566a1e4c2ffd16964a7149d6bed90d7a60e2c112b71fcc1e000",
+      "n_sealed_files": 16,
+      "path": "implementation/algolab/experiments/protocol-242-v1",
+      "status": "positive raw effects, BH q=0.0907; no promotion"
+    },
+    "protocol_243_confirmatory": {
+      "checksums_file_sha256": "fe3b3ddd1e0df3b8c7ab85053c28419f255c26e6f3d198e9fddfc7e5e187d586",
+      "held_out_delta": 0.021296,
+      "n_sealed_files": 10,
+      "p_value": 0.0005,
+      "path": "implementation/algolab/experiments/protocol-243-v1",
+      "primary_ci_high": 0.027454,
+      "primary_ci_low": 0.010324,
+      "primary_delta": 0.01872,
+      "q_value": 0.0005,
+      "status": "PROMOTED within toy substrate only"
+    }
+  },
+  "historical_bundles_preserved": true,
+  "limitations": [
+    "Protocol 244 sample size is modest (8 trials per family per stage); no transfer effect was established under the preregistered gate.",
+    "Protocol 244 workloads are offline sklearn benchmarks, not a production search environment.",
+    "Replay traces are diagnostic; off-policy branches have no outcomes.",
+    "Protocol 243 promotion is toy-substrate only and does not grant deployment or autonomy.",
+    "Protocol 244 bundle planning upper bounds were overcounted; correction is reported without rewriting the sealed bundle."
+  ],
+  "preregistrations": [
+    "spec/research/241_META_SEARCH_POLICY_IMPROVEMENT.md",
+    "spec/research/242_META_SEARCH_CORRECTED_PROMOTION.md",
+    "spec/research/243_META_SEARCH_CONFIRMATORY.md",
+    "spec/research/244_META_SEARCH_REAL_WORKLOAD_TRANSFER.md"
+  ],
+  "review_correction": {
+    "artifact": "experiments/protocol-241-final/checksums.json",
+    "before": "nested {bytes, sha256} objects",
+    "after": "flat filename -> sha256 map",
+    "research_content_changed": false,
+    "note": "Corrected before merge to satisfy tests/test_artifact_integrity.py; all checks re-run afterward."
+  },
+  "protocol_244": {
+    "checksums_file_sha256": "b97d66243aba8862deb49a2fc3bb5dcd7e1c157e147daa1f4924ea4a040b46b4",
+    "command": ".venv/bin/python -m algolab.cli.main meta-transfer-run --dir experiments/protocol-244-v1 --protocol-id protocol-244 --workloads transform,hpo --trials 8 --episodes 8 --budget 40 --seed-base 924211 --confirmation-seed-base 351773 --bootstrap-iterations 2000 --apply-bh --force",
+    "compute_accounting": {
+      "bundle_modified": false,
+      "corrected": {
+        "nominal_credits_upper_bound": 3840.0,
+        "planned_upper_bound_attempts": 768
+      },
+      "decision_relevant": false,
+      "recorded_in_bundle": {
+        "nominal_credits_upper_bound": 7680.0,
+        "planned_upper_bound_attempts": 1536
+      },
+      "report": "implementation/algolab/experiments/protocol-241-final/compute-accounting-correction.json"
+    },
+    "n_sealed_files": 16,
+    "parameters": {
+      "alpha": 0.05,
+      "arms": [
+        "fixed-baseline",
+        "evolved"
+      ],
+      "bootstrap_iterations": 2000,
+      "budget": 40.0,
+      "confirmation_seed_base": 351773,
+      "episodes": 8,
+      "multiple_comparison_correction": "benjamini-hochberg across two workload p-values",
+      "replay_seed": 17,
+      "seed_base": 924211,
+      "trace_seed": 77100,
+      "trials": 8,
+      "workloads": [
+        "transform",
+        "hpo"
+      ]
+    },
+    "path": "implementation/algolab/experiments/protocol-244-v1",
+    "preregistration_date": "2026-11-22",
+    "preregistration_written_before_execution": true,
+    "reproduction": {
+      "diff_rq": "IDENTICAL_TREES",
+      "method": "fresh process with copied source tree, fresh output directory",
+      "original": "implementation/algolab/experiments/protocol-244-v1",
+      "reproduction": "/tmp/opencode/repro-244",
+      "verification": "pass=True, 16 files, no failures, no extra files"
+    },
+    "results": [
+      {
+        "arm": "evolved",
+        "held_out_delta": 0.0,
+        "primary_ci_high": 0.011069307501585654,
+        "primary_ci_low": -0.003174603174603174,
+        "primary_delta": 0.0040446536684211835,
+        "promotion": "REJECTED_PROSPECTIVE",
+        "q_value": 0.5052473763118441,
+        "raw_p": 0.40929535232383807,
+        "rejection_reasons": [
+          "prospective primary metric did not significantly beat baseline",
+          "prospective secondary metric shows significant degradation"
+        ],
+        "secondary_ci_low": -0.0032565114784886447,
+        "workload": "transform"
+      },
+      {
+        "arm": "evolved",
+        "held_out_delta": 0.0125,
+        "primary_ci_high": 0.00625,
+        "primary_ci_low": 0.0,
+        "primary_delta": 0.0025,
+        "promotion": "REJECTED_PROSPECTIVE",
+        "q_value": 0.5052473763118441,
+        "raw_p": 0.5052473763118441,
+        "rejection_reasons": [
+          "prospective primary metric did not significantly beat baseline"
+        ],
+        "secondary_ci_low": 0.0,
+        "workload": "hpo"
+      }
+    ],
+    "stage_a": {
+      "decision_quality_agreement": 0.5,
+      "is_prospective_evidence": false,
+      "promotion_status": "REJECTED_PROSPECTIVE"
+    },
+    "verification": {
+      "extra_files": [],
+      "mismatches": [],
+      "n_files_verified": 16,
+      "replay_only_promotion_detected": false,
+      "trace_integrity": true,
+      "verified": true
+    },
+    "verification_command": ".venv/bin/python -m algolab.cli.main meta-verify --dir experiments/protocol-244-v1 --json"
+  },
+  "repository_root": ".",
+  "retrospective_changes_to_hypotheses_thresholds_evaluators_promotions_or_bundles": false,
+  "schema_version": "protocol-241-final/results-manifest/1.0",
+  "source_state": "single PR commit after review correction",
+  "verdicts_a_j": [
+    {
+      "claim": "DREAM-RSI audit is source-grounded and attribution is recorded",
+      "evidence": [
+        "docs/research/DREAM_RSI_INTEGRATION_AUDIT.md",
+        "docs/research/DREAM_RSI_INTEGRATION_REPORT.md",
+        "implementation/algolab/THIRD_PARTY_NOTICES.md"
+      ],
+      "id": "A",
+      "verdict": "DEMONSTRATED"
+    },
+    {
+      "claim": "No incompatible source copy, new runtime dependency, paid API, GPU, or second event/artifact store",
+      "evidence": [
+        "spec/architecture/100_SYSTEM_ARCHITECTURE.md",
+        "docs/api/README.md",
+        "implementation/algolab/pyproject.toml"
+      ],
+      "id": "B",
+      "verdict": "DEMONSTRATED"
+    },
+    {
+      "claim": "Frozen content-addressed traces and read-only replay with counterfactual uncertainty",
+      "evidence": [
+        "implementation/algolab/src/algolab/meta_search/traces.py",
+        "implementation/algolab/src/algolab/meta_search/replay.py",
+        "implementation/algolab/tests/test_meta_search.py"
+      ],
+      "id": "C",
+      "verdict": "DEMONSTRATED"
+    },
+    {
+      "claim": "Versioned frozen policies and structured proposals without agent-rewritten source",
+      "evidence": [
+        "implementation/algolab/src/algolab/meta_search/policies.py",
+        "implementation/algolab/tests/test_meta_search.py"
+      ],
+      "id": "D",
+      "verdict": "DEMONSTRATED"
+    },
+    {
+      "claim": "Fail-closed promotion: replay-only, incomplete, degraded, and q-failed evidence reject",
+      "evidence": [
+        "implementation/algolab/src/algolab/meta_search/evaluation.py",
+        "implementation/algolab/tests/test_meta_search.py",
+        "experiments/protocol-242-v1"
+      ],
+      "id": "E",
+      "verdict": "DEMONSTRATED"
+    },
+    {
+      "claim": "Protocol 241 pilot found no preregistered improvement; diagnostic also negative",
+      "evidence": [
+        "experiments/protocol-241-v1",
+        "experiments/protocol-241-v1-diagnostic"
+      ],
+      "id": "F",
+      "verdict": "DEMONSTRATED"
+    },
+    {
+      "claim": "Protocol 242 corrected screen supports direction but fails BH-FDR",
+      "evidence": [
+        "experiments/protocol-242-v1",
+        "spec/research/242_META_SEARCH_CORRECTED_PROMOTION.md"
+      ],
+      "id": "G",
+      "verdict": "PARTIALLY DEMONSTRATED"
+    },
+    {
+      "claim": "Protocol 243 promotes evolved policy within toy substrate",
+      "evidence": [
+        "experiments/protocol-243-v1",
+        "spec/research/243_META_SEARCH_CONFIRMATORY.md"
+      ],
+      "id": "H",
+      "verdict": "DEMONSTRATED"
+    },
+    {
+      "claim": "Sealed bundles independently verify and reproduce byte-for-byte; replay never promotes",
+      "evidence": [
+        "experiments/protocol-241-final/reproduction-verification.json",
+        "experiments/protocol-241-final/protocol-244-reproduction-verification.json"
+      ],
+      "id": "I",
+      "verdict": "DEMONSTRATED"
+    },
+    {
+      "claim": "Promoted toy policy transfers to real transform/hpo workloads",
+      "evidence": [
+        "experiments/protocol-244-v1",
+        "spec/research/244_META_SEARCH_REAL_WORKLOAD_TRANSFER.md"
+      ],
+      "id": "J",
+      "verdict": "NOT DEMONSTRATED"
+    }
+  ]
+}
