@@ -202,6 +202,24 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="overwrite an existing sealed bundle")
     p_meta.add_argument("--json", action="store_true")
 
+    p_transfer = sub.add_parser(
+        "meta-transfer-run",
+        help="run a preregistered real-workload policy-transfer experiment")
+    p_transfer.add_argument("--dir", type=Path, required=True,
+                            help="artifact directory for the sealed bundle")
+    p_transfer.add_argument("--workloads", default="transform,hpo",
+                            help="comma-separated workload names")
+    p_transfer.add_argument("--trials", type=int, default=8)
+    p_transfer.add_argument("--episodes", type=int, default=8)
+    p_transfer.add_argument("--budget", type=float, default=40.0)
+    p_transfer.add_argument("--seed-base", type=int, default=924_211)
+    p_transfer.add_argument("--confirmation-seed-base", type=int, default=351_773)
+    p_transfer.add_argument("--bootstrap-iterations", type=int, default=2_000)
+    p_transfer.add_argument("--protocol-id", default="protocol-244")
+    p_transfer.add_argument("--apply-bh", action="store_true")
+    p_transfer.add_argument("--force", action="store_true")
+    p_transfer.add_argument("--json", action="store_true")
+
     p_mverify = sub.add_parser(
         "meta-verify", help="independently verify a sealed meta-search bundle")
     p_mverify.add_argument("--dir", type=Path, required=True)
@@ -594,6 +612,44 @@ def cmd_meta_search_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_meta_transfer_run(args: argparse.Namespace) -> int:
+    from algolab.meta_search.transfer import run_transfer
+
+    workloads = tuple(
+        name.strip() for name in args.workloads.split(",") if name.strip()
+    )
+    if not workloads:
+        print("no workloads selected", file=sys.stderr)
+        return 2
+    if (args.dir / "checksums.json").exists() and not args.force:
+        print(f"refusing to overwrite sealed bundle: {args.dir} (use --force)",
+              file=sys.stderr)
+        return 2
+    result = run_transfer(
+        args.dir,
+        workloads=workloads,
+        trials=args.trials,
+        episodes=args.episodes,
+        budget=args.budget,
+        seed_base=args.seed_base,
+        confirmation_seed_base=args.confirmation_seed_base,
+        bootstrap_iterations=args.bootstrap_iterations,
+        protocol_id=args.protocol_id,
+        apply_bh=args.apply_bh,
+    )
+    if args.json:
+        print(json.dumps(result, indent=2, sort_keys=True))
+    else:
+        for summary in result["summaries"]:
+            q = summary.get("primary_q")
+            q_text = f"{q:.4f}" if q is not None else "n/a"
+            print(f"{summary['workload']:>10} {summary['arm']:>15}  "
+                  f"d={summary['prospective_delta']:+.6f}  "
+                  f"ci_low={summary['prospective_ci_low']:+.6f}  "
+                  f"q={q_text}  {summary['promotion']}")
+    return 0
+
+
 def cmd_meta_verify(args: argparse.Namespace) -> int:
     from algolab.meta_search.protocol_241 import verify_pilot
 
@@ -642,6 +698,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_search_run(args)
     if command == "meta-search-run":
         return cmd_meta_search_run(args)
+    if command == "meta-transfer-run":
+        return cmd_meta_transfer_run(args)
     if command == "meta-verify":
         return cmd_meta_verify(args)
     parser.print_help()

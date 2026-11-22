@@ -154,3 +154,12 @@ cd implementation/algolab
    `search-run` bundles (requires a trace-export bridge).
 3. Add a held-out *task* (not only family) and an LLM-proposer arm that is
    strictly optional and gated by the same promotion logic.
+
+## 13. Update (2026-11-22): real-workload transfer tested
+
+Protocol 244 preregistered and executed the transfer test left open in §10.
+The unchanged evolved policy did **not** transfer to real `transform` or `hpo`
+workloads: both comparisons were `REJECTED_PROSPECTIVE` after BH correction
+(q = 0.5052). The consolidated verdicts and reproduction evidence are in
+`implementation/algolab/experiments/protocol-241-final/RESEARCH_REPORT.md`.
+No historical bundle or threshold was changed.

@@ -1,0 +1,107 @@
+{
+  "extra_files": [],
+  "failures": [],
+  "files_checked": 10,
+  "original": "experiments/protocol-243-v1",
+  "original_verification": {
+    "extra_files": [],
+    "mismatches": [],
+    "n_files_verified": 10,
+    "promotion_verdicts": {
+      "evolved": "PROMOTED",
+      "fixed-baseline": "REJECTED_PROSPECTIVE"
+    },
+    "replay_only_promotion_detected": false,
+    "schema_version": "meta-pilot/1.0",
+    "trace_integrity": true,
+    "verified": true
+  },
+  "pass": true,
+  "reproduction": "/tmp/opencode/repro-243",
+  "reproduction_verification": {
+    "extra_files": [],
+    "mismatches": [],
+    "n_files_verified": 10,
+    "promotion_verdicts": {
+      "evolved": "PROMOTED",
+      "fixed-baseline": "REJECTED_PROSPECTIVE"
+    },
+    "replay_only_promotion_detected": false,
+    "schema_version": "meta-pilot/1.0",
+    "trace_integrity": true,
+    "verified": true
+  },
+  "results": [
+    {
+      "expected_sha256": "7a039b9fd4c377be49acb3229d6ffea4cd876edc0af95b28259bb7f51f05339c",
+      "file": "evaluations/evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "f3909d548195384701e24f090bd109c20acdd47165d87c455a37ff77ccafa66b",
+      "file": "evaluations/fixed-baseline.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "bd8e23fe2a84de26e4d4f7639ac03bf1ee82aec51c1cb648b77e49c026cd9f1e",
+      "file": "manifest.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "47160d1ab5cb9c251edb43eaca1603c74b1bdbc890119551757affa237a43405",
+      "file": "promotions/evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "44cc04d8d4e66132c2b6e8d366e2ba9241cfc9ae9df8f2ab8a15a479abc5254c",
+      "file": "promotions/fixed-baseline.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "f96efbaa18885348d8fcb19581260ead786f4c76e005e0450034df8500f41606",
+      "file": "replay/evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "f4f3863c2a11a08dfc5853f187a2afae77973ccea6005eb583cb4142423cafb6",
+      "file": "replay/fixed-baseline.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "f3281dcc911b1c236a486d31f2a71d1cfe1f7586108bc286dae07782b213d676",
+      "file": "report.md",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "0285b23ae1e76095bf50e41ed3d69fd172860e0c556535850a064fd419f88af9",
+      "file": "trace.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "a6b5d77b0074c0e2d536019aaf40201fa5adcb6aa9402616f734d7d414b85e2d",
+      "file": "trace.json.sha256",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    }
+  ],
+  "tolerance": 1e-09
+}

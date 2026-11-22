@@ -177,8 +177,10 @@ docs/decisions/  architecture decision records (ADR-0001..0008)
   its ≥2-family promotion bar; the cost-aware successor C+ met it
   (`experiments/protocol-230-v2/`); follow-up protocols isolated
   representation, data-quantity, and decision-rule effects. Scope caveat:
-  toy substrate only — real-workload transfer is unproven, so autonomy
-  beyond Level 1 remains ungranted.
+  toy substrate only for that claim. The separate meta-search line
+  (protocols 241–244) promotes the evolved policy on the toy substrate, but the
+  preregistered real-workload transfer test (protocol 244) rejected promotion on
+  `transform` and `hpo`. Autonomy beyond Level 1 remains ungranted.
 
 ## Documentation
 

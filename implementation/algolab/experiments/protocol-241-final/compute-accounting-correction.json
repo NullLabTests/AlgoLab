@@ -1,0 +1,39 @@
+{
+  "schema_version": "protocol-241-final/compute-correction/1.0",
+  "protocol": "protocol-244",
+  "status": "reporting-only correction",
+  "bundle_modified": false,
+  "affected_manifest_fields": [
+    "compute.planned_upper_bound_attempts",
+    "compute.nominal_credits_upper_bound"
+  ],
+  "recorded_in_bundle": {
+    "planned_upper_bound_attempts": 1536,
+    "nominal_credits_upper_bound": 7680.0
+  },
+  "corrected": {
+    "planned_upper_bound_attempts": 768,
+    "nominal_credits_upper_bound": 3840.0
+  },
+  "derivation": {
+    "workloads": 2,
+    "arms": 2,
+    "prospective_trials_per_arm_per_workload": {
+      "stage_b": "2 training families x 8 trials = 16",
+      "stage_c": "1 held-out family x 8 trials = 8",
+      "total": 24
+    },
+    "episodes_per_trial": 8,
+    "attempt_upper_bound": "2 workloads x 2 arms x 24 trials x 8 episodes = 768",
+    "credit_upper_bound": "2 workloads x 2 arms x 24 trials x 40 credits = 3840"
+  },
+  "root_cause": "run_transfer added a factor of two inside the per-policy accounting loop even though the loop already iterates both arms; this doubled both stored upper bounds.",
+  "decision_relevance": "none: the fields are labelled planning upper bounds, are not read by the evaluator or promotion gate, and all decisions are derived from stage B/C statistics",
+  "remediation": "documented here rather than rewriting the sealed protocol-244 bundle; the frozen runner is left unchanged so the bundle remains byte-reproducible",
+  "evidence": [
+    "experiments/protocol-244-v1/manifest.json",
+    "experiments/protocol-244-v1/evaluations/transform-evolved.json",
+    "experiments/protocol-244-v1/evaluations/hpo-evolved.json",
+    "spec/research/244_META_SEARCH_REAL_WORKLOAD_TRANSFER.md"
+  ]
+}

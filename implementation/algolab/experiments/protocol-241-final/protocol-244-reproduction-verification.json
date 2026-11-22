@@ -1,0 +1,149 @@
+{
+  "extra_files": [],
+  "failures": [],
+  "files_checked": 16,
+  "original": "experiments/protocol-244-v1",
+  "original_verification": {
+    "extra_files": [],
+    "mismatches": [],
+    "n_files_verified": 16,
+    "promotion_verdicts": {
+      "hpo-evolved": "REJECTED_PROSPECTIVE",
+      "transform-evolved": "REJECTED_PROSPECTIVE"
+    },
+    "replay_only_promotion_detected": false,
+    "schema_version": "meta-pilot/1.0",
+    "trace_integrity": true,
+    "verified": true
+  },
+  "pass": true,
+  "reproduction": "/tmp/opencode/repro-244",
+  "reproduction_verification": {
+    "extra_files": [],
+    "mismatches": [],
+    "n_files_verified": 16,
+    "promotion_verdicts": {
+      "hpo-evolved": "REJECTED_PROSPECTIVE",
+      "transform-evolved": "REJECTED_PROSPECTIVE"
+    },
+    "replay_only_promotion_detected": false,
+    "schema_version": "meta-pilot/1.0",
+    "trace_integrity": true,
+    "verified": true
+  },
+  "results": [
+    {
+      "expected_sha256": "9c077c1aa2b9bd22a02a8082b0d26a33119500854571183e2991c197e71af336",
+      "file": "environment-hpo.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "fe1f6a98b55d29952938e21f407ace86b3a1e2e62d1ed2f52922a814a8766609",
+      "file": "environment-transform.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "f8c5b8f9a949c152db4833099ccf1146abdd7a000dbf5b7f9ce4bbb0d3cd742b",
+      "file": "evaluations/hpo-evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "e4e52f69ddf3b6bc40c684ce0feb4f71cb88ff06ca3c5f91369dfcc344a9538b",
+      "file": "evaluations/hpo-fixed-baseline.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "453d524061afc881cba98464779aeef009f18e1925fd99ba1618d799a7ef00ca",
+      "file": "evaluations/transform-evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "1a10f43545e483380b76e8e622c4bb040825e04e759b26488f59589d59f49b61",
+      "file": "evaluations/transform-fixed-baseline.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "507c4cd97522ec761db4818ebf9597a035babcde4876c1418a354896a5c436e3",
+      "file": "manifest.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "b9b6540c2fb8608a784ecc8cba0ee5151583ed6cce5f9ab3bab5f8363ebdd427",
+      "file": "promotions/hpo-evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "ce97901b0626160978ffedafcf5e8a35aedd587771f57df5669fcf5c4948b366",
+      "file": "promotions/transform-evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "ee30e06f3db0090ed40add535cc10d90ccf2fa0f467539feae49489b3172f335",
+      "file": "replay/hpo-evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "b0702fe749f3235a1c574cea315ef0dc8fada17c0fe9c6da95bae9e5d3e2c51c",
+      "file": "replay/hpo-fixed-baseline.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "ee30e06f3db0090ed40add535cc10d90ccf2fa0f467539feae49489b3172f335",
+      "file": "replay/transform-evolved.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "b0702fe749f3235a1c574cea315ef0dc8fada17c0fe9c6da95bae9e5d3e2c51c",
+      "file": "replay/transform-fixed-baseline.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "4fbdbfc6fb28075f7ca55d89ff56110a188fdd344af3eb1b1599bb4354fe4bab",
+      "file": "report.md",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "836b785dbd8c43dfaf59887d93aee6d0c60ea5d02cdce171d79bc3374dc19955",
+      "file": "trace.json",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    },
+    {
+      "expected_sha256": "154e38ec9a38ed4e0cce498f0e8e81210d3e129b3b9f9d1fc72aaf1e6b926d38",
+      "file": "trace.json.sha256",
+      "mode": "byte_exact",
+      "pass": true,
+      "problems": []
+    }
+  ],
+  "tolerance": 1e-09
+}
