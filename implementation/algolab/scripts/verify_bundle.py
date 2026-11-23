@@ -273,7 +273,20 @@ def reexecute(manifest: dict[str, Any], workdir: Path) -> Path:
     out_dir = workdir / "artifacts"
     db_path = workdir / "repro.sqlite"
     cmd = reconstruct_cli_args(manifest, out_dir, db_path)
-    env = {"PYTHONPATH": str(SRC), "PATH": "/usr/bin:/bin:/usr/local/bin"}
+    # Pin the BLAS kernel and thread count. The sealed bundle was produced on
+    # an AVX2 host; on AVX512 CI hosts OpenBLAS can take a different PCA/SVD
+    # path and return different (but otherwise deterministic) effect values
+    # for identical operator programs. Forcing the Haswell kernel keeps the
+    # byte-exact raw streams host-independent without changing any historical
+    # artifact or relaxing a scientific comparison.
+    env = {
+        "PYTHONPATH": str(SRC),
+        "PATH": "/usr/bin:/bin:/usr/local/bin",
+        "OPENBLAS_CORETYPE": "Haswell",
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+    }
     result = subprocess.run(  # noqa: S603 - fixed argv, no shell
         cmd, cwd=str(REPO_ROOT), env=env,
         capture_output=True, text=True)

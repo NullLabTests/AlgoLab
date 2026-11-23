@@ -19,6 +19,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 from types import ModuleType
 
@@ -169,3 +170,30 @@ class TestNumericComparison:
     def test_bool_is_not_compared_as_a_number(self) -> None:
         assert verify.compare_values(True, True) == []
         assert verify.compare_values(True, 1)
+
+
+class TestReproductionEnvironment:
+    def test_blas_kernel_and_threads_are_pinned(self, tmp_path,
+                                                 monkeypatch) -> None:
+        """Byte-exact replay must not depend on host AVX dispatch or threads."""
+        captured: dict[str, str] = {}
+
+        def _fake_run(cmd, **kwargs):
+            captured.update(kwargs["env"])
+            (tmp_path / "artifacts").mkdir()
+            (tmp_path / "artifacts" / "statistics.json").write_text("{}")
+            return subprocess.CompletedProcess(cmd, 0, "", "")
+
+        monkeypatch.setattr(verify.subprocess, "run", _fake_run)
+        manifest = {
+            "experiment_id": "test", "workload": "compose", "arms": ["a"],
+            "trials": 1, "episodes_per_trial": 1,
+            "prior_attempts_per_family": 1, "budget_credits": 100,
+            "prior_seed": 1, "analysis_seed": 2, "seed_base": 3, "top_k": 1,
+        }
+        verify.reexecute(manifest, tmp_path)
+        assert captured["OPENBLAS_CORETYPE"] == "Haswell"
+        assert captured["OPENBLAS_NUM_THREADS"] == "1"
+        assert captured["OMP_NUM_THREADS"] == "1"
+        assert captured["MKL_NUM_THREADS"] == "1"
+
