@@ -30,11 +30,13 @@ jobs:
       - name: Test (pytest, fast lane)
         run: pytest -q -m "not slow"
 
-  # Byte-exact reproduction of protocol-240-v1 is environment-sensitive: its
-  # raw streams depend on NumPy/scikit-learn versions, and NumPy 2.5.2 requires
-  # Python >=3.12. The matrix above still tests Python 3.11/3.12 compatibility;
-  # this dedicated job pins the sealed bundle's numerical environment so the
-  # reproduction test actually runs and is not silently skipped.
+  # Reproduction of protocol-240-v1 is environment-sensitive: its raw streams
+  # depend on NumPy/scikit-learn versions, and NumPy 2.5.2 requires Python
+  # >=3.12. The matrix above still tests Python 3.11/3.12 compatibility; this
+  # dedicated job pins the sealed bundle's numerical environment so the test
+  # actually runs. The verifier checks portable scientific reproduction
+  # (exact decisions and derived statistics) and records strict byte identity
+  # separately, since identical code can flip one CV sample across CPUs.
   repro:
     runs-on: ubuntu-latest
     defaults:
@@ -49,7 +51,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]" numpy==2.5.2 scikit-learn==1.9.0
-      - name: Verify committed protocol-240 bundle reproduces
+      - name: Verify portable reproduction of committed protocol-240 bundle
         run: >-
           pytest -q
           tests/test_protocol_240.py::TestCommittedBundleReproduces::test_committed_bundle_reproduces_in_a_clean_process
