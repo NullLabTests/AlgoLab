@@ -286,6 +286,35 @@ def reexecute(manifest: dict[str, Any], workdir: Path) -> Path:
     return out_dir
 
 
+def _stream_differences(committed: Path, regenerated: Path,
+                        limit: int = 5) -> list[str]:
+    """Explain a byte-exact JSONL mismatch at field level.
+
+    A byte difference may be only a last-digit floating-point change caused by
+    BLAS/CPU dispatch. Reporting the differing fields (rather than just
+    ``bytes differ``) makes that distinction auditable in the verdict.
+    """
+    old_lines = committed.read_text().splitlines()
+    new_lines = regenerated.read_text().splitlines()
+    if len(old_lines) != len(new_lines):
+        return [f"line count {len(old_lines)} != {len(new_lines)}"]
+    problems: list[str] = []
+    for number, (old_line, new_line) in enumerate(
+            zip(old_lines, new_lines, strict=True), start=1):
+        try:
+            old_record = json.loads(old_line)
+            new_record = json.loads(new_line)
+        except json.JSONDecodeError:
+            if old_line != new_line:
+                problems.append(f"line {number}: non-JSON bytes differ")
+        else:
+            problems.extend(f"line {number}:{problem}" for problem in
+                            compare_values(old_record, new_record))
+        if len(problems) >= limit:
+            break
+    return problems[:limit]
+
+
 def compare_bundles(committed_dir: Path, regenerated_dir: Path) -> dict[str, Any]:
     """Compare the regenerated artifacts to the committed ones."""
     results: list[dict[str, Any]] = []
@@ -314,9 +343,12 @@ def compare_bundles(committed_dir: Path, regenerated_dir: Path) -> dict[str, Any
                             "problems": ["missing in regenerated run"]})
             continue
         same = stream.read_bytes() == other.read_bytes()
+        problems: list[str] = []
+        if not same:
+            problems = _stream_differences(stream, other) or ["bytes differ"]
         results.append({
             "file": str(rel), "mode": "byte_exact", "pass": same,
-            "problems": [] if same else ["bytes differ"],
+            "problems": problems,
         })
 
     json_files = sorted(
