@@ -551,8 +551,10 @@ class TestCommittedBundleReproduces:
             [sys.executable, str(VERIFY_SCRIPT), str(COMMITTED_BUNDLE),
              "--out", str(out), "--quiet"],
             cwd=str(REPO_ROOT), capture_output=True, text=True, timeout=3600)
-        assert result.returncode == 0, result.stdout + result.stderr
-        verdict = json.loads(out.read_text())
+        verdict_text = out.read_text() if out.exists() else ""
+        assert result.returncode == 0, (
+            result.stdout + result.stderr + "\nverdict:\n" + verdict_text)
+        verdict = json.loads(verdict_text)
         assert verdict["integrity"]["pass"] is True
         assert verdict["reproduction"]["pass"] is True
         assert verdict["pass"] is True
