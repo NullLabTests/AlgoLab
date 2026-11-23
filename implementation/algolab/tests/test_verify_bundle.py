@@ -197,3 +197,32 @@ class TestReproductionEnvironment:
         assert captured["OMP_NUM_THREADS"] == "1"
         assert captured["MKL_NUM_THREADS"] == "1"
 
+
+class TestRawStreamComparison:
+    def test_small_effect_change_is_portable(self, tmp_path) -> None:
+        old = tmp_path / "old.jsonl"
+        new = tmp_path / "new.jsonl"
+        record = {"operator": "pca-10", "discovery": False, "effect_1": -0.02,
+                  "effect_2": 0.01, "mean_effect": -0.005, "trial": 4}
+        changed = dict(record, effect_1=-0.02 + verify.RAW_EFFECT_TOL / 2)
+        old.write_text(json.dumps(record) + "\n")
+        new.write_text(json.dumps(changed) + "\n")
+        assert verify.compare_raw_stream(old, new) == []
+        assert old.read_bytes() != new.read_bytes()
+
+    def test_large_effect_change_fails(self, tmp_path) -> None:
+        old = tmp_path / "old.jsonl"
+        new = tmp_path / "new.jsonl"
+        old.write_text(json.dumps({"effect_1": 0.0}) + "\n")
+        new.write_text(json.dumps({"effect_1": 0.2}) + "\n")
+        problems = verify.compare_raw_stream(old, new)
+        assert problems and "tol" in problems[0]
+
+    def test_decision_change_is_never_tolerated(self, tmp_path) -> None:
+        old = tmp_path / "old.jsonl"
+        new = tmp_path / "new.jsonl"
+        old.write_text(json.dumps({"discovery": False, "effect_1": 0.0}) + "\n")
+        new.write_text(json.dumps({"discovery": True, "effect_1": 0.0}) + "\n")
+        problems = verify.compare_raw_stream(old, new)
+        assert problems and "discovery" in problems[0]
+

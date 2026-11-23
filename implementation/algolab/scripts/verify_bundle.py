@@ -11,15 +11,21 @@ Given a bundle directory (e.g. ``experiments/protocol-230-v1``), this script:
 3. re-executes the experiment in a *separate process* with a fresh temporary
    database and artifact directory (no shared state with the original run);
 4. compares the regenerated artifacts to the committed ones:
-   - raw attempt streams (``conditions/**/*.jsonl``) and ``report.md`` are
-     compared **byte-for-byte**;
+   - ``report.md`` is compared **byte-for-byte**;
+   - raw attempt streams (``conditions/**/*.jsonl``) are compared *portably*:
+     discrete fields (trial, family, operator, validity, discovery, cost, ...)
+     must match exactly, while the three cross-validation effect fields may
+     differ by at most two validation samples (see :data:`RAW_EFFECT_TOL`).
+     Byte-exact identity is still recorded per file in ``byte_exact``, but it
+     is host-specific: the same pinned scikit-learn can flip one CV sample on
+     a different CPU/BLAS kernel without changing any decision;
    - derived JSON is compared **numerically** at 1e-9 relative/absolute
      (bootstrap/BLAS last-digit differences; defect D-10);
    - ``manifest.json`` / ``plan.json`` are compared field-by-field with
      wall-clock fields excluded (``created_at``, ``measured_operator_seconds``,
      ``evaluation_seconds`` — recorded but never read by any decision), the
      interpreter version excluded as provenance (``python_version``; the
-     byte-exact raw streams still detect any result change), and a
+     portable raw-stream comparison still detects any decision change), and a
      small, justified allow-list of *additive* metadata fields accepted (see
      :data:`ADDITIVE_FIELDS`). Every excluded field is listed in the verdict,
      so the exclusion is auditable rather than silent. Numerical library
@@ -82,6 +88,14 @@ ADDITIVE_FIELDS: dict[str, str] = {
 }
 REL_TOL = 1e-9
 ABS_TOL = 1e-9
+#: Effect fields whose cross-validation values can differ by a couple of
+#: validation samples across CPU/BLAS kernels even with identical libraries.
+#: The smallest CV fold in the compose workload is the wine family
+#: (178 rows / 5 folds ~= 35), so two samples are ~= 0.057. ``discovery`` is
+#: compared exactly, so a tolerance that crossed the 0.005 discovery gate
+#: would still be reported as a failure.
+RAW_EFFECT_FIELDS = ("effect_1", "effect_2", "mean_effect")
+RAW_EFFECT_TOL = 0.06
 
 
 class VerificationError(RuntimeError):
@@ -328,6 +342,50 @@ def _stream_differences(committed: Path, regenerated: Path,
     return problems[:limit]
 
 
+def compare_raw_stream(committed: Path, regenerated: Path,
+                       limit: int = 20) -> list[str]:
+    """Portable JSONL comparison: exact decisions, sample-tolerant effects."""
+    old_lines = committed.read_text().splitlines()
+    new_lines = regenerated.read_text().splitlines()
+    if len(old_lines) != len(new_lines):
+        return [f"line count {len(old_lines)} != {len(new_lines)}"]
+    problems: list[str] = []
+    for number, (old_line, new_line) in enumerate(
+            zip(old_lines, new_lines, strict=True), start=1):
+        try:
+            old_record = json.loads(old_line)
+            new_record = json.loads(new_line)
+        except json.JSONDecodeError:
+            if old_line != new_line:
+                problems.append(f"line {number}: non-JSON bytes differ")
+            continue
+        if not isinstance(old_record, dict) or not isinstance(new_record, dict):
+            if old_record != new_record:
+                problems.append(f"line {number}: record type changed")
+            continue
+        for key in sorted(set(old_record) | set(new_record)):
+            child = f"line {number}:{key}"
+            if key not in old_record or key not in new_record:
+                problems.append(f"{child}: field missing from one run")
+                continue
+            old_value, new_value = old_record[key], new_record[key]
+            if key in RAW_EFFECT_FIELDS and isinstance(
+                    old_value, (int, float)) and isinstance(
+                    new_value, (int, float)) and not isinstance(
+                    old_value, bool) and not isinstance(new_value, bool):
+                if not math.isclose(old_value, new_value,
+                                    rel_tol=0.0, abs_tol=RAW_EFFECT_TOL):
+                    problems.append(
+                        f"{child}: {old_value!r} != {new_value!r} "
+                        f"(tol {RAW_EFFECT_TOL})")
+            else:
+                problems.extend(f"line {number}:{problem}" for problem in
+                                compare_values(old_value, new_value, key))
+        if len(problems) >= limit:
+            break
+    return problems[:limit]
+
+
 def compare_bundles(committed_dir: Path, regenerated_dir: Path) -> dict[str, Any]:
     """Compare the regenerated artifacts to the committed ones."""
     results: list[dict[str, Any]] = []
@@ -356,11 +414,14 @@ def compare_bundles(committed_dir: Path, regenerated_dir: Path) -> dict[str, Any
                             "problems": ["missing in regenerated run"]})
             continue
         same = stream.read_bytes() == other.read_bytes()
-        problems: list[str] = []
-        if not same:
-            problems = _stream_differences(stream, other) or ["bytes differ"]
+        problems = compare_raw_stream(stream, other)
         results.append({
-            "file": str(rel), "mode": "byte_exact", "pass": same,
+            "file": str(rel),
+            "mode": f"jsonl_portable_1e-9/effect_{RAW_EFFECT_TOL:g}",
+            "pass": not problems,
+            "byte_exact": same,
+            "byte_differences": (_stream_differences(stream, other)
+                                 if not same else []),
             "problems": problems,
         })
 
@@ -392,6 +453,7 @@ def compare_bundles(committed_dir: Path, regenerated_dir: Path) -> dict[str, Any
         "files_checked": len(results),
         "failures": [r for r in results if not r["pass"]],
         "results": results,
+        "byte_exact": all(r.get("byte_exact", True) for r in results),
         "pass": all(r["pass"] for r in results),
     }
 
@@ -459,7 +521,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"integrity:   {integrity['files']} files, "
               f"{'PASS' if integrity['pass'] else 'FAIL'}")
         print(f"re-execution: {repro['files_checked']} artifacts compared, "
-              f"{'PASS' if repro['pass'] else 'FAIL'}")
+              f"{'PASS' if repro['pass'] else 'FAIL'} "
+              f"(byte-exact: {'yes' if repro['byte_exact'] else 'no'})")
         for failure in repro["failures"]:
             print(f"  FAIL {failure['file']}: "
                   f"{failure.get('problems', [])[:3]}")
