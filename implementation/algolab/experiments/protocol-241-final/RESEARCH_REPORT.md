@@ -112,7 +112,7 @@ The correction, derivation, and non-decision relevance are recorded in
 
 ## Automated checks
 
-- `.venv/bin/python -m pytest -q --durations=15`: **475 passed, 0 failed**.
+- `.venv/bin/python -m pytest -q --durations=15`: **479 passed, 0 failed**.
   Complete output: `test-results.txt`. Warnings were pre-existing Pydantic,
   NumPy/sklearn deprecation, and ResourceWarnings; none were test failures.
 - `.venv/bin/python -m ruff check src tests scripts`: **All checks passed!**
@@ -132,12 +132,18 @@ format was corrected before merge; no research result, threshold, historical
 bundle, or sealed protocol artifact was changed. All checks above were re-run
 after the correction.
 
-A second review fix made the protocol-240 clean-reproduction test portable:
-`scripts/verify_bundle.py` now treats `python_version` as provenance while
-still comparing NumPy/scikit-learn versions and byte-exact raw streams. The
-test skips outside the sealed numerical environment, and CI gained a dedicated
-`repro` job pinned to NumPy 2.5.2 / scikit-learn 1.9.0 where it runs for real.
-No historical bundle was rewritten.
+A second review fix made the protocol-240 clean-reproduction test portable.
+`scripts/verify_bundle.py` treats `python_version` as provenance, keeps
+NumPy/scikit-learn versions under comparison, and pins BLAS kernel/thread
+settings. A dedicated CI `repro` job runs the test with NumPy 2.5.2 /
+scikit-learn 1.9.0. Repeated CI runs showed that identical operator programs
+can still flip a single cross-validation sample on different host CPUs, so the
+verifier now reports **portable reproduction** separately from strict byte
+identity: every discrete field, `discovery` decision, and derived statistic
+must match exactly, while the three effect fields are allowed at most two
+validation samples of drift (0.06, chosen from the smallest 5-fold CV fold in
+the workload). `byte_exact` is still recorded per raw-stream file. No
+historical bundle, threshold, evaluator, or promotion decision was rewritten.
 
 ## Failure analysis and limitations
 

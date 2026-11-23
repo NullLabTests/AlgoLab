@@ -506,7 +506,7 @@ class TestProtocol240Bundle:
 
 
 def _numerical_environment() -> dict[str, str]:
-    """Versions that determine byte-exact raw streams for this bundle."""
+    """Numerical library versions relevant to this bundle's raw streams."""
     import numpy
     import sklearn
 

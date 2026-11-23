@@ -66,11 +66,10 @@ BYTE_EXACT_FILES = ("report.md",)
 #: field is a measured wall-clock duration. Both are *recorded but never read*:
 #: no search decision, no statistic, and no artifact value depends on them
 #: (protocol 240 §8 states this contract explicitly). ``python_version`` is
-#: interpreter provenance: the same pinned numerical libraries produce the same
-#: byte-exact raw streams on Python 3.11/3.12/3.14, so comparing the interpreter
-#: string alone would reject an otherwise exact reproduction. Attempt counts,
-#: credit totals, seeds, library versions, and every derived statistic are still
-#: compared.
+#: interpreter provenance: with the same pinned numerical libraries it does not
+#: change any decision, so comparing the interpreter string alone would reject
+#: an otherwise equivalent reproduction. Attempt counts, credit totals, seeds,
+#: library versions, and every derived statistic are still compared.
 VOLATILE_FIELDS = ("created_at", "measured_operator_seconds",
                    "evaluation_seconds", "python_version")
 #: Committed-field additions the verifier accepts without treating the bundle
@@ -287,12 +286,11 @@ def reexecute(manifest: dict[str, Any], workdir: Path) -> Path:
     out_dir = workdir / "artifacts"
     db_path = workdir / "repro.sqlite"
     cmd = reconstruct_cli_args(manifest, out_dir, db_path)
-    # Pin the BLAS kernel and thread count. The sealed bundle was produced on
-    # an AVX2 host; on AVX512 CI hosts OpenBLAS can take a different PCA/SVD
-    # path and return different (but otherwise deterministic) effect values
-    # for identical operator programs. Forcing the Haswell kernel keeps the
-    # byte-exact raw streams host-independent without changing any historical
-    # artifact or relaxing a scientific comparison.
+    # Pin the BLAS kernel and thread count to reduce host-to-host numeric
+    # drift. It cannot eliminate every cross-CPU difference: a CV accuracy can
+    # still flip by one validation sample. The portable stream comparison
+    # below records that explicitly instead of pretending byte identity is a
+    # scientific requirement.
     env = {
         "PYTHONPATH": str(SRC),
         "PATH": "/usr/bin:/bin:/usr/local/bin",
